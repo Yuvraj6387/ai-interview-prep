@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FiPlus, FiBookmark } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import JobCard from '../components/JobCard';
@@ -6,7 +6,6 @@ import AddJobModal from '../components/AddJobModal';
 import QuestionsView from './QuestionsView';
 import { profileAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
-import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
   const [profiles, setProfiles] = useState([]);
@@ -17,11 +16,7 @@ const Dashboard = () => {
   const [createLoading, setCreateLoading] = useState(false);
   const { showToast } = useToast();
 
-  useEffect(() => {
-    loadProfiles();
-  }, []);
-
-  const loadProfiles = async () => {
+  const loadProfiles = useCallback(async () => {
     try {
       const response = await profileAPI.getAll();
       setProfiles(response.data);
@@ -31,7 +26,11 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
+
+  useEffect(() => {
+    loadProfiles();
+  }, [loadProfiles]);
 
   const handleCreateProfile = async (profileData) => {
     setCreateLoading(true);

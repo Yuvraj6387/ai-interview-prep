@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FiArrowLeft, FiRefreshCw, FiLoader } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import QuestionCard from '../components/QuestionCard';
@@ -13,28 +13,7 @@ const QuestionsView = ({ profile, onBack }) => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const { showToast } = useToast();
 
-  useEffect(() => {
-    loadQuestions();
-  }, [profile]);
-
-  const loadQuestions = async () => {
-    setLoading(true);
-    try {
-      const response = await questionAPI.getByProfile(profile._id);
-      setQuestions(response.data);
-      
-      // If no questions exist, generate them automatically
-      if (response.data.length === 0) {
-        await generateQuestions();
-      }
-    } catch (error) {
-      console.error('Error loading questions:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const generateQuestions = async () => {
+  const generateQuestions = useCallback(async () => {
     const profileId = profile?._id || profile?.id;
     if (!profileId) {
       showToast('Invalid profile selected. Please choose a valid job profile.', 'error');
@@ -52,7 +31,28 @@ const QuestionsView = ({ profile, onBack }) => {
     } finally {
       setGenerating(false);
     }
-  };
+  }, [profile, showToast]);
+
+  const loadQuestions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await questionAPI.getByProfile(profile._id);
+      setQuestions(response.data);
+      
+      // If no questions exist, generate them automatically
+      if (response.data.length === 0) {
+        await generateQuestions();
+      }
+    } catch (error) {
+      console.error('Error loading questions:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [profile, generateQuestions]);
+
+  useEffect(() => {
+    loadQuestions();
+  }, [loadQuestions]);
 
   const handleTogglePin = async (questionId) => {
     try {

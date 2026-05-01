@@ -1,10 +1,10 @@
 import React from 'react';
 import { FiTrash2, FiCalendar, FiAward, FiClock } from 'react-icons/fi';
 import { motion } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
+
 
 const JobCard = ({ profile, onSelect, onDelete }) => {
-  const { user } = useAuth();
+
   const owner = profile.userId && typeof profile.userId === 'object' ? profile.userId : null;
   const isOwner = true; // Allow any user to delete any job profile
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FiX, FiLoader } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -12,11 +12,7 @@ const ExplanationPanel = ({ question, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    loadExplanation();
-  }, [question]);
-
-  const loadExplanation = async () => {
+  const loadExplanation = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -29,7 +25,11 @@ const ExplanationPanel = ({ question, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [question._id]);
+
+  useEffect(() => {
+    loadExplanation();
+  }, [loadExplanation]);
 
   return (
     <AnimatePresence>

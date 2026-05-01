@@ -121,59 +121,6 @@ git clone <repository-url>
 cd interview-prep-app
 ```
 
-### 2. Backend Setup
-
-```bash
-# Navigate to server directory
-cd server
-
-# Install dependencies
-npm install
-
-# Create .env file
-cp .env.example .env
-
-# Edit .env file with your credentials
-# Required variables:
-# - MONGODB_URI=mongodb://localhost:27017/interview-prep
-# - JWT_SECRET=your_secret_key
-# - GROQ_API_KEY=your_groq_api_key
-# - PORT=5000
-
-# Start the server
-npm run dev
-```
-
-### 3. Frontend Setup
-
-```bash
-# Open new terminal
-cd client
-
-# Install dependencies
-npm install
-
-# Start the React app
-npm start
-```
-
-The application will open at `http://localhost:3000`
-
-### 4. MongoDB Setup
-
-**Option A: Local MongoDB**
-```bash
-# Install MongoDB
-# Start MongoDB service
-mongod
-```
-
-**Option B: MongoDB Atlas (Cloud)**
-1. Create account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Create a cluster
-3. Get connection string
-4. Update MONGODB_URI in .env
-
 ## 🔑 Environment Variables
 
 ### Server (.env)
@@ -184,39 +131,10 @@ JWT_SECRET=your_super_secret_jwt_key_change_this
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
-### Client (Optional)
-Create `.env` in client folder for custom API URL:
-```env
-REACT_APP_API_URL=http://localhost:5000/api
-```
 
-## 📝 API Documentation
 
-### Authentication Endpoints
 
-#### Register
-```http
-POST /api/auth/register
-Content-Type: application/json
 
-{
-  "fullName": "John Doe",
-  "email": "john@example.com",
-  "password": "password123",
-  "profileImage": "https://example.com/avatar.jpg" (optional)
-}
-```
-
-#### Login
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
 
 #### Get Current User
 ```http

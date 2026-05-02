@@ -27,7 +27,7 @@ const AppContent = () => {
               <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mx-auto mb-5 shadow-2xl">
                 <span className="text-8xl">⚡</span>
               </div>
-              <h1 className="text-5xl font-bold text-white mb-3 font-display">
+              <h1 className="text-3xl md:text-5xl font-bold text-white mb-3 font-display leading-tight">
                 Welcome to InterviewPreparation AI
               </h1>
               <p className="text-xl text-purple-100 mb-8">

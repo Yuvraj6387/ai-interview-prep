@@ -14,8 +14,8 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold gradient-text font-display">
+            <div className="flex items-center flex-shrink-0 mr-4">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold gradient-text font-display truncate">
                 ⚡ InterviewPreparation.AI
               </h1>
             </div>

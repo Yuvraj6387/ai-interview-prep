@@ -82,7 +82,7 @@ const Dashboard = () => {
         >
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2 font-display">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">
                 Interview Dashboard
               </h1>
               <p className="text-purple-100">
@@ -90,10 +90,10 @@ const Dashboard = () => {
               </p>
             </div>
             
-            <div className="flex space-x-3 mt-4 md:mt-0">
+            <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0 w-full md:w-auto">
               <button
                 onClick={() => setShowPinned(!showPinned)}
-                className="flex items-center space-x-2 px-5 py-3 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-smooth border border-white/30"
+                className="flex items-center justify-center space-x-2 px-5 py-3 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-smooth border border-white/30 w-full sm:w-auto"
               >
                 <FiBookmark />
                 <span>Pinned</span>
@@ -101,7 +101,7 @@ const Dashboard = () => {
               
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center space-x-2 px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:shadow-xl transition-smooth"
+                className="flex items-center justify-center space-x-2 px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:shadow-xl transition-smooth w-full sm:w-auto"
               >
                 <FiPlus size={20} />
                 <span>Add New</span>

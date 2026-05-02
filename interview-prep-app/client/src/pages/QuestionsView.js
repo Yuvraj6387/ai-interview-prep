@@ -84,8 +84,8 @@ const QuestionsView = ({ profile, onBack }) => {
 
           <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-              <div className="flex-1 mb-4 md:mb-0">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2 font-display">
+              <div className="flex-1 mb-4 md:mb-0 w-full">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 font-display leading-tight">
                   {profile.targetRole}
                 </h1>
                 <div className="flex flex-wrap gap-2 mb-3">
@@ -111,7 +111,7 @@ const QuestionsView = ({ profile, onBack }) => {
               <button
                 onClick={generateQuestions}
                 disabled={generating}
-                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
               >
                 {generating ? (
                   <>

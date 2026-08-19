@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiFileText, FiMic, FiBarChart2, FiBookOpen, FiArrowRight } from 'react-icons/fi';
+import {
+  FiFileText, FiMic, FiBarChart2, FiBookOpen, FiArrowRight,
+  FiCheckCircle, FiZap
+} from 'react-icons/fi';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/ToastProvider';
 import Navbar from './components/Navbar';
@@ -54,63 +57,138 @@ const FEATURES = [
   },
 ];
 
+const CHECKLIST = [
+  'Resume-aware interview questions, not generic ones',
+  'Instant AI scoring across 6 skill dimensions',
+  '100% free, no credit card required',
+];
+
+const ResumePreviewCard = () => (
+  <motion.div
+    initial={{ opacity: 0, y: 20, rotate: -3 }}
+    animate={{ opacity: 1, y: 0, rotate: -3 }}
+    transition={{ duration: 0.6, delay: 0.3 }}
+    className="absolute -top-6 -left-4 w-52 bg-white rounded-xl shadow-2xl p-4 hidden sm:block"
+  >
+    <div className="flex items-center gap-2 mb-3">
+      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white flex-shrink-0">
+        <FiZap size={13} />
+      </div>
+      <p className="text-xs font-semibold text-gray-700">Resume Score</p>
+    </div>
+    <p className="text-3xl font-bold text-gray-800 font-display mb-3">84%</p>
+    <div className="flex flex-wrap gap-1.5">
+      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-700">React ✓</span>
+      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-700">Node.js ✓</span>
+      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700">Docker ⚠</span>
+    </div>
+  </motion.div>
+);
+
+const InterviewPreviewCard = () => (
+  <motion.div
+    initial={{ opacity: 0, y: 20, rotate: 3 }}
+    animate={{ opacity: 1, y: 0, rotate: 3 }}
+    transition={{ duration: 0.6, delay: 0.45 }}
+    className="relative w-72 bg-white rounded-xl shadow-2xl p-4 ml-auto"
+  >
+    <div className="flex items-center gap-2 mb-3">
+      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white flex-shrink-0">
+        <FiMic size={13} />
+      </div>
+      <p className="text-xs font-semibold text-gray-700">Mock Interview</p>
+      <span className="ml-auto text-[10px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">Follow-up</span>
+    </div>
+    <p className="text-sm text-gray-800 leading-snug mb-3">
+      "You mentioned Gemini API — how did you handle rate limits?"
+    </p>
+    <div className="h-8 rounded-lg bg-gray-100 flex items-center px-3">
+      <span className="text-xs text-gray-400">Type your answer...</span>
+    </div>
+  </motion.div>
+);
+
 const Landing = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   return (
-    <div className="relative min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-16 overflow-hidden">
+    <div className="relative overflow-hidden">
       {/* Decorative glow */}
-      <div className="pointer-events-none absolute inset-0 flex items-start justify-center">
-        <div className="w-[36rem] h-[36rem] bg-white/10 rounded-full blur-3xl -translate-y-1/3" />
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-32 left-1/4 w-[30rem] h-[30rem] bg-cyan-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-40 right-0 w-[24rem] h-[24rem] bg-slate-500/20 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative text-center max-w-5xl">
+      {/* Hero */}
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 grid lg:grid-cols-2 gap-16 items-center">
         <motion.div
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-8"
         >
-          <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl ring-4 ring-white/20">
-            <span className="text-7xl">⚡</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-cyan-300 text-xs font-semibold mb-6">
+            <FiZap size={12} />
+            AI-Powered Interview Prep
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 font-display leading-tight">
+
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-5 font-display leading-tight">
             Turn Your Resume Into an Interview Plan
           </h1>
-          <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-xl mx-auto">
-            Upload your resume, let AI score it and spot the gaps, then generate interview questions matched to exactly what's on it
+          <p className="text-lg text-slate-300 mb-7 max-w-lg">
+            Upload your resume, let AI score it and spot the gaps, then generate interview questions matched to exactly what's on it.
           </p>
 
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowLoginModal(true)}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-cyan-700 font-bold text-lg rounded-xl shadow-xl hover:shadow-2xl transition-shadow"
+            className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold rounded-xl shadow-xl hover:shadow-2xl transition-smooth mb-8"
           >
             <span>Get Started Free</span>
             <FiArrowRight />
           </motion.button>
+
+          <div className="space-y-2.5">
+            {CHECKLIST.map((item) => (
+              <div key={item} className="flex items-center gap-2.5 text-sm text-slate-300">
+                <FiCheckCircle className="text-cyan-400 flex-shrink-0" size={16} />
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
         </motion.div>
 
+        <div className="relative hidden lg:block h-72">
+          <ResumePreviewCard />
+          <InterviewPreviewCard />
+        </div>
+      </div>
+
+      {/* Features */}
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"
         >
-          {FEATURES.map(({ icon: Icon, title, description, accent }) => (
-            <motion.div
-              key={title}
-              whileHover={{ y: -6 }}
-              className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-left transition-colors hover:bg-white/15"
-            >
-              <div className={`w-12 h-12 ${accent} rounded-xl flex items-center justify-center mb-4`}>
-                <Icon className="text-white" size={22} />
-              </div>
-              <h3 className="text-white font-bold mb-2 font-display">{title}</h3>
-              <p className="text-slate-300 text-sm leading-relaxed">{description}</p>
-            </motion.div>
-          ))}
+          <h2 className="text-xl font-bold text-white mb-6 font-display text-center">
+            Everything you need to walk in prepared
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {FEATURES.map(({ icon: Icon, title, description, accent }) => (
+              <motion.div
+                key={title}
+                whileHover={{ y: -6 }}
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-left transition-colors hover:bg-white/15"
+              >
+                <div className={`w-12 h-12 ${accent} rounded-xl flex items-center justify-center mb-4`}>
+                  <Icon className="text-white" size={22} />
+                </div>
+                <h3 className="text-white font-bold mb-2 font-display">{title}</h3>
+                <p className="text-slate-300 text-sm leading-relaxed">{description}</p>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
       </div>
 

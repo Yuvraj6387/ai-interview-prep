@@ -78,41 +78,41 @@ const LoginModal = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-scale-in">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden animate-scale-in">
         {/* Header */}
-        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-white font-display">
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-5 py-3.5 flex justify-between items-center">
+          <h2 className="text-lg font-bold text-white font-display">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h2>
           <button
             onClick={onClose}
-            className="text-white hover:bg-white/20 rounded-full p-2 transition-smooth"
+            className="text-white hover:bg-white/20 rounded-full p-1.5 transition-smooth"
           >
-            <FiX size={24} />
+            <FiX size={20} />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-3">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-xs">
               {error}
             </div>
           )}
 
           {!isLogin && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Full Name
               </label>
               <div className="relative">
-                <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                 <input
                   type="text"
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
+                  className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
                   placeholder="John Doe"
                   required={!isLogin}
                 />
@@ -121,17 +121,17 @@ const LoginModal = ({ onClose }) => {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
               Email Address
             </label>
             <div className="relative">
-              <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
+                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
                 placeholder="john@example.com"
                 required
               />
@@ -139,17 +139,17 @@ const LoginModal = ({ onClose }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
               Password
             </label>
             <div className="relative">
-              <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
+                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
                 placeholder="••••••••"
                 required
               />
@@ -158,23 +158,21 @@ const LoginModal = ({ onClose }) => {
 
           {!isLogin && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Profile Image (Optional)
               </label>
-              <div className="flex flex-col gap-3">
-                <div className="relative rounded-xl border border-gray-300 bg-gray-50 p-3 text-sm text-gray-600">
-                  <FiImage className="absolute left-3 top-3 text-gray-400" />
+              <div className="flex items-center gap-3">
+                <div className="relative flex-1 rounded-lg border border-gray-300 bg-gray-50 text-xs text-gray-600">
+                  <FiImage className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleFileUpload}
-                    className="w-full pl-10 pr-4 py-3 bg-transparent outline-none"
+                    className="w-full pl-9 pr-3 py-2.5 bg-transparent outline-none"
                   />
                 </div>
                 {profilePreview && (
-                  <div className="rounded-xl overflow-hidden border border-gray-200">
-                    <img src={profilePreview} alt="Profile preview" className="w-full h-36 object-cover" />
-                  </div>
+                  <img src={profilePreview} alt="Profile preview" className="w-10 h-10 rounded-lg object-cover border border-gray-200 flex-shrink-0" />
                 )}
               </div>
             </div>
@@ -183,11 +181,11 @@ const LoginModal = ({ onClose }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 text-sm rounded-lg hover:shadow-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             {loading ? (
               <>
-                <FiLoader className="animate-spin" />
+                <FiLoader className="animate-spin" size={16} />
                 <span>{isLogin ? 'Logging in...' : 'Creating account...'}</span>
               </>
             ) : (
@@ -196,7 +194,7 @@ const LoginModal = ({ onClose }) => {
           </button>
 
           {slowLoading && (
-            <p className="text-center text-sm text-gray-500">
+            <p className="text-center text-xs text-gray-500">
               Waking up the server — this can take up to a minute on the first request. Hang tight!
             </p>
           )}
@@ -209,7 +207,7 @@ const LoginModal = ({ onClose }) => {
                 setError('');
                 setFormData({ email: '', password: '', fullName: '', profileImage: '' });
               }}
-              className="text-cyan-600 hover:text-cyan-800 font-medium text-sm transition-smooth"
+              className="text-cyan-600 hover:text-cyan-800 font-medium text-xs transition-smooth"
             >
               {isLogin
                 ? "Don't have an account? Sign up"

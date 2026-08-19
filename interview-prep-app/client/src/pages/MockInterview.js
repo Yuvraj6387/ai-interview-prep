@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiBriefcase, FiAward, FiLayers, FiTrendingUp, FiHash, FiLoader,
-  FiClock, FiSkipForward, FiXCircle, FiSend, FiMessageCircle, FiZap, FiUser
+  FiClock, FiSkipForward, FiXCircle, FiSend, FiMessageCircle, FiZap, FiUser,
+  FiCheckCircle, FiFileText, FiArrowRight
 } from 'react-icons/fi';
-import { interviewAPI } from '../services/api';
+import { interviewAPI, resumeAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
 
 const INTERVIEW_TYPES = ['Technical', 'HR', 'Behavioral', 'Full Stack', 'Coding'];
@@ -32,6 +33,7 @@ const MockInterview = () => {
   const [submitting, setSubmitting] = useState(false);
   const [ending, setEnding] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [resume, setResume] = useState(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
   const timerRef = useRef(null);
@@ -39,6 +41,15 @@ const MockInterview = () => {
 
   const currentTurn = interview?.turns?.[interview.turns.length - 1];
   const pastTurns = interview?.turns?.slice(0, -1) || [];
+
+  useEffect(() => {
+    resumeAPI.getMine()
+      .then((response) => {
+        setResume(response.data.analysis);
+        setConfig((prev) => (prev.role ? prev : { ...prev, role: response.data.analysis.suggestedRole || '' }));
+      })
+      .catch(() => setResume(null));
+  }, []);
 
   useEffect(() => {
     if (!interview) return undefined;
@@ -142,56 +153,74 @@ const MockInterview = () => {
             </p>
           </motion.div>
 
+          {resume ? (
+            <div className="flex items-center gap-2 text-sm text-cyan-300 bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 mb-4">
+              <FiCheckCircle size={16} className="flex-shrink-0" />
+              <span>Personalized using your resume — questions will be grounded in your actual skills and projects.</span>
+            </div>
+          ) : (
+            <Link
+              to="/resume"
+              className="flex items-center gap-2 text-sm text-slate-200 bg-white/10 border border-white/20 hover:bg-white/15 rounded-lg px-4 py-2.5 mb-4 transition-smooth"
+            >
+              <FiFileText size={16} className="flex-shrink-0" />
+              <span>Upload your resume for a personalized interview instead of generic questions</span>
+              <FiArrowRight size={14} className="ml-auto flex-shrink-0" />
+            </Link>
+          )}
+
           <motion.form
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             onSubmit={handleStart}
-            className="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-5"
+            className="bg-white rounded-xl shadow-xl p-5 md:p-6 space-y-4"
           >
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Target Role *</label>
-              <div className="relative">
-                <FiBriefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  name="role"
-                  value={config.role}
-                  onChange={handleConfigChange}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
-                  placeholder="e.g., Full Stack Developer"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Years of Experience *</label>
-              <div className="relative">
-                <FiAward className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="number"
-                  name="experienceLevel"
-                  value={config.experienceLevel}
-                  onChange={handleConfigChange}
-                  min="0"
-                  max="50"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
-                  placeholder="e.g., 2"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Interview Type</label>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Target Role *</label>
                 <div className="relative">
-                  <FiLayers className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <FiBriefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <input
+                    type="text"
+                    name="role"
+                    value={config.role}
+                    onChange={handleConfigChange}
+                    className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
+                    placeholder="e.g., Full Stack Developer"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Years *</label>
+                <div className="relative">
+                  <FiAward className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <input
+                    type="number"
+                    name="experienceLevel"
+                    value={config.experienceLevel}
+                    onChange={handleConfigChange}
+                    min="0"
+                    max="50"
+                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
+                    placeholder="2"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Type</label>
+                <div className="relative">
+                  <FiLayers className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                   <select
                     name="interviewType"
                     value={config.interviewType}
                     onChange={handleConfigChange}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth appearance-none bg-white"
+                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth appearance-none bg-white"
                   >
                     {INTERVIEW_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
@@ -199,44 +228,44 @@ const MockInterview = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Difficulty</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Difficulty</label>
                 <div className="relative">
-                  <FiTrendingUp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <FiTrendingUp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                   <select
                     name="difficulty"
                     value={config.difficulty}
                     onChange={handleConfigChange}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth appearance-none bg-white"
+                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth appearance-none bg-white"
                   >
                     {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Number of Questions</label>
-              <div className="relative">
-                <FiHash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <select
-                  name="numQuestions"
-                  value={config.numQuestions}
-                  onChange={handleConfigChange}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth appearance-none bg-white"
-                >
-                  {QUESTION_COUNTS.map((n) => <option key={n} value={n}>{n} questions</option>)}
-                </select>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Questions</label>
+                <div className="relative">
+                  <FiHash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <select
+                    name="numQuestions"
+                    value={config.numQuestions}
+                    onChange={handleConfigChange}
+                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth appearance-none bg-white"
+                  >
+                    {QUESTION_COUNTS.map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={starting}
-              className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 text-sm rounded-lg hover:shadow-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {starting ? (
                 <>
-                  <FiLoader className="animate-spin" />
+                  <FiLoader className="animate-spin" size={16} />
                   <span>Starting Interview...</span>
                 </>
               ) : (

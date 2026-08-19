@@ -16,6 +16,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const isRetryableGeminiError = (error) => /503|overloaded|high demand|UNAVAILABLE/i.test(error.message || '');
 const isQuotaExceededError = (error) => /429|quota/i.test(error.message || '');
+const isTimeoutError = (error) => /abort|timeout/i.test(error.message || '') || error.name === 'AbortError';
 
 const generateWithRetry = async (model, prompt, retries = 2) => {
   for (let attempt = 0; ; attempt++) {
@@ -26,6 +27,9 @@ const generateWithRetry = async (model, prompt, retries = 2) => {
       if (isQuotaExceededError(error)) {
         throw new Error('The AI service has hit its usage limit for now. Please try again in a little while.');
       }
+      if (isTimeoutError(error)) {
+        throw new Error('The AI took too long to respond. Please try again.');
+      }
       if (attempt >= retries || !isRetryableGeminiError(error)) {
         throw error;
       }
@@ -33,6 +37,13 @@ const generateWithRetry = async (model, prompt, retries = 2) => {
     }
   }
 };
+
+const formatResumeContext = (resumeContext) => resumeContext
+  ? `Candidate resume - Skills: ${(resumeContext.technicalSkills || []).join(', ') || 'n/a'}. Projects: ${(resumeContext.projects || []).join(', ') || 'n/a'}. Best-fit role: ${resumeContext.suggestedRole || 'n/a'}.
+Ground your questions in THIS resume: ask about the specific skills and projects listed above instead of generic role trivia, whenever possible.`
+  : '';
+
+const QUESTION_STYLE_RULE = 'Keep it SHORT and natural: one focused question, a single sentence, phrased the way a real interviewer would actually say it out loud. Do not write long, multi-part, or compound questions.';
 
 const formatTurnsForPrompt = (turns) => {
   if (!turns || turns.length === 0) return '(This is the first question)';
@@ -153,7 +164,9 @@ Format the output in clear Markdown.`;
     if (!this.gemini) {
       throw new Error('Missing GEMINI_API_KEY in server environment');
     }
-    return this.gemini.getGenerativeModel({ model: 'gemini-3.6-flash' });
+    // Without an explicit timeout, a stalled request can hang for a minute or
+    // more before failing - capping it makes failures fast and predictable.
+    return this.gemini.getGenerativeModel({ model: 'gemini-3.6-flash' }, { timeout: 20000 });
   }
 
   async analyzeResume(resumeText) {
@@ -204,12 +217,9 @@ ${resumeText}
 
   async generateNextQuestion({ config, resumeContext, turns }) {
     const { role, experienceLevel, interviewType, difficulty, numQuestions } = config;
-    const resumeLine = resumeContext
-      ? `Candidate resume context - Skills: ${(resumeContext.technicalSkills || []).join(', ') || 'n/a'}. Projects: ${(resumeContext.projects || []).join(', ') || 'n/a'}. Best-fit role: ${resumeContext.suggestedRole || 'n/a'}.`
-      : '';
 
     const prompt = `You are conducting a live ${interviewType} interview for a ${role} candidate with ${experienceLevel} years of experience. Overall difficulty target: ${difficulty} (gradually escalate as the interview progresses).
-${resumeLine}
+${formatResumeContext(resumeContext)}
 
 Interview so far:
 ${formatTurnsForPrompt(turns)}
@@ -218,6 +228,7 @@ Decide the next question (this will be question ${turns.length + 1} of ${numQues
 - If the most recent answer's evaluation says it was weak/unclear, ask a clarifying FOLLOW-UP question that digs into that specific gap, referencing what they said.
 - Otherwise, ask a NEW question on a different topic than anything above, at a difficulty slightly higher than the previous question, staying relevant to the role and interview type.
 - Never repeat a question or topic already covered above.
+- ${QUESTION_STYLE_RULE}
 
 Return ONLY a valid JSON object with this exact shape: { "questionText": "<the question>", "isFollowUp": true|false }`;
 
@@ -278,16 +289,13 @@ Return ONLY a valid JSON object with this exact shape:
 
   async evaluateAndGenerateNext({ config, resumeContext, priorTurns, questionText, answerText, needsNextQuestion }) {
     const { role, experienceLevel, interviewType, difficulty, numQuestions } = config;
-    const resumeLine = resumeContext
-      ? `Candidate resume context - Skills: ${(resumeContext.technicalSkills || []).join(', ') || 'n/a'}. Projects: ${(resumeContext.projects || []).join(', ') || 'n/a'}. Best-fit role: ${resumeContext.suggestedRole || 'n/a'}.`
-      : '';
 
     const nextQuestionInstruction = needsNextQuestion
-      ? `Decide the next question (question ${priorTurns.length + 2} of ${numQuestions} total): if isWeak, ask a clarifying FOLLOW-UP question that digs into that specific gap, referencing what they said. Otherwise, ask a NEW question on a different topic than anything above, at a difficulty slightly higher than the previous question, staying relevant to the role and interview type. Never repeat a question or topic already covered.`
+      ? `Decide the next question (question ${priorTurns.length + 2} of ${numQuestions} total): if isWeak, ask a clarifying FOLLOW-UP question that digs into that specific gap, referencing what they said. Otherwise, ask a NEW question on a different topic than anything above, at a difficulty slightly higher than the previous question, staying relevant to the role and interview type. Never repeat a question or topic already covered. ${QUESTION_STYLE_RULE}`
       : 'This was the final question of the interview - do NOT generate a next question, set "nextQuestion" to null.';
 
     const prompt = `You are conducting a live ${interviewType} interview for a ${role} candidate with ${experienceLevel} years of experience. Overall difficulty target: ${difficulty} (gradually escalate as the interview progresses).
-${resumeLine}
+${formatResumeContext(resumeContext)}
 
 Interview so far:
 ${formatTurnsForPrompt(priorTurns)}

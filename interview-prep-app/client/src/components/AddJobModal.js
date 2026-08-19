@@ -50,134 +50,133 @@ const AddJobModal = ({ onClose, onSubmit, loading, initialData, title = 'Add New
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden animate-scale-in max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-scale-in max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-5 flex justify-between items-center sticky top-0 z-10">
-          <h2 className="text-2xl font-bold text-white font-display">
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-5 py-3.5 flex justify-between items-center sticky top-0 z-10">
+          <h2 className="text-lg font-bold text-white font-display">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="text-white hover:bg-white/20 rounded-full p-2 transition-smooth"
+            className="text-white hover:bg-white/20 rounded-full p-1.5 transition-smooth"
           >
-            <FiX size={24} />
+            <FiX size={20} />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Target Role */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Target Role *
-            </label>
-            <div className="relative">
-              <FiBriefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                name="targetRole"
-                value={formData.targetRole}
-                onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
-                placeholder="e.g., Frontend Developer, DevOps Engineer"
-                required
-              />
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div className="grid grid-cols-3 gap-3">
+            {/* Target Role */}
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Target Role *
+              </label>
+              <div className="relative">
+                <FiBriefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <input
+                  type="text"
+                  name="targetRole"
+                  value={formData.targetRole}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
+                  placeholder="e.g., Frontend Developer"
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Years of Experience */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Years of Experience *
-            </label>
-            <div className="relative">
-              <FiAward className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="number"
-                name="experience"
-                value={formData.experience}
-                onChange={handleChange}
-                min="0"
-                max="50"
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
-                placeholder="e.g., 3"
-                required
-              />
+            {/* Years of Experience */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Years *
+              </label>
+              <div className="relative">
+                <FiAward className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <input
+                  type="number"
+                  name="experience"
+                  value={formData.experience}
+                  onChange={handleChange}
+                  min="0"
+                  max="50"
+                  className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
+                  placeholder="3"
+                  required
+                />
+              </div>
             </div>
           </div>
 
           {/* Topics */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
               Topics (comma separated) *
             </label>
             <div className="relative">
-              <FiTag className="absolute left-3 top-3 text-gray-400" />
+              <FiTag className="absolute left-3 top-2.5 text-gray-400" size={16} />
               <textarea
                 name="topics"
                 value={formData.topics}
                 onChange={handleChange}
-                rows="3"
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-none"
-                placeholder="e.g., React, JavaScript, TypeScript, API Design, Testing"
+                rows="2"
+                className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-none"
+                placeholder="e.g., React, JavaScript, TypeScript"
                 required
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Enter skills and technologies separated by commas
-            </p>
           </div>
 
           {/* Description */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-semibold text-gray-700">
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-gray-700">
                 Description (Optional)
               </label>
               <button
                 type="button"
                 onClick={handleGenerateDescription}
                 disabled={generatingDescription}
-                className="flex items-center gap-1.5 text-xs font-medium text-cyan-600 hover:text-cyan-800 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1 text-xs font-medium text-cyan-600 hover:text-cyan-800 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {generatingDescription ? (
-                  <FiLoader className="animate-spin" size={12} />
+                  <FiLoader className="animate-spin" size={11} />
                 ) : (
-                  <FiZap size={12} />
+                  <FiZap size={11} />
                 )}
                 <span>{generatingDescription ? 'Generating...' : 'Generate with AI'}</span>
               </button>
             </div>
             <div className="relative">
-              <FiFileText className="absolute left-3 top-3 text-gray-400" />
+              <FiFileText className="absolute left-3 top-2.5 text-gray-400" size={16} />
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                rows="4"
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-none"
-                placeholder="Add additional context about the role or preparation focus..."
+                rows="2"
+                className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-none"
+                placeholder="Add additional context about the role..."
               />
             </div>
           </div>
 
           {/* Buttons */}
-          <div className="flex space-x-3 pt-4">
+          <div className="flex space-x-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-smooth"
+              className="flex-1 px-5 py-2.5 text-sm border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-smooth"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 text-sm rounded-lg hover:shadow-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {loading ? (
                 <>
-                  <FiLoader className="animate-spin" />
+                  <FiLoader className="animate-spin" size={16} />
                   <span>Creating...</span>
                 </>
               ) : (

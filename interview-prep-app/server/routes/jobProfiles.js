@@ -40,6 +40,25 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+// Generate an AI-assisted description before the profile is created
+router.post('/generate-description', auth, async (req, res) => {
+  try {
+    const { targetRole, experience, topics } = req.body;
+
+    if (!targetRole || !topics) {
+      return res.status(400).json({ message: 'Target role and topics are required' });
+    }
+
+    const topicsArray = Array.isArray(topics) ? topics : topics.split(',').map(t => t.trim()).filter(t => t);
+    const description = await aiService.generateJobDescription(targetRole, experience || 0, topicsArray);
+
+    res.json({ description });
+  } catch (error) {
+    console.error('Error generating description:', error);
+    res.status(500).json({ message: error.message || 'Failed to generate description. Please try again.' });
+  }
+});
+
 // Delete job profile
 router.delete('/:id', auth, async (req, res) => {
   try {

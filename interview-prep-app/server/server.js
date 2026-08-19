@@ -6,6 +6,8 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const jobProfileRoutes = require('./routes/jobProfiles');
 const questionRoutes = require('./routes/questions');
+const resumeRoutes = require('./routes/resume');
+const interviewRoutes = require('./routes/interviews');
 
 const app = express();
 
@@ -18,6 +20,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/profiles', jobProfileRoutes);
 app.use('/api/questions', questionRoutes);
+app.use('/api/resume', resumeRoutes);
+app.use('/api/interviews', interviewRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

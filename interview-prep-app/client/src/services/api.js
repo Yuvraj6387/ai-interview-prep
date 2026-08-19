@@ -42,11 +42,33 @@ const normalizeProfileId = (profileOrId) => {
 export const profileAPI = {
   getAll: () => api.get('/profiles'),
   create: (profileData) => api.post('/profiles', profileData),
+  generateDescription: (payload) => api.post('/profiles/generate-description', payload),
   delete: (id) => api.delete(`/profiles/${id}`),
   generateQuestions: (profileOrId) => {
     const id = normalizeProfileId(profileOrId);
     return api.post(`/profiles/${id}/generate-questions`);
   },
+};
+
+// Resume APIs
+export const resumeAPI = {
+  getMine: () => api.get('/resume'),
+  upload: (file) => {
+    const formData = new FormData();
+    formData.append('resume', file);
+    return api.post('/resume/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+};
+
+// Interview (adaptive mock interview) APIs
+export const interviewAPI = {
+  start: (config) => api.post('/interviews', config),
+  submitAnswer: (id, payload) => api.post(`/interviews/${id}/answer`, payload),
+  end: (id) => api.post(`/interviews/${id}/end`),
+  getAll: () => api.get('/interviews'),
+  getById: (id) => api.get(`/interviews/${id}`),
 };
 
 // Question APIs

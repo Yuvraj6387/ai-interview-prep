@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiBookmark } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import JobCard from '../components/JobCard';
 import AddJobModal from '../components/AddJobModal';
-import QuestionsView from './QuestionsView';
 import { profileAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
 
@@ -11,10 +11,10 @@ const Dashboard = () => {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState(null);
   const [showPinned, setShowPinned] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const loadProfiles = useCallback(async () => {
     try {
@@ -62,14 +62,9 @@ const Dashboard = () => {
     }
   };
 
-  if (selectedProfile) {
-    return (
-      <QuestionsView
-        profile={selectedProfile}
-        onBack={() => setSelectedProfile(null)}
-      />
-    );
-  }
+  const handleSelectProfile = (profile) => {
+    navigate(`/interview/${profile._id}`, { state: { profile } });
+  };
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -85,7 +80,7 @@ const Dashboard = () => {
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">
                 Interview Dashboard
               </h1>
-              <p className="text-purple-100">
+              <p className="text-slate-300">
                 Prepare for your dream job with AI-powered interview questions
               </p>
             </div>
@@ -101,7 +96,7 @@ const Dashboard = () => {
               
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center justify-center space-x-2 px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:shadow-xl transition-smooth w-full sm:w-auto"
+                className="flex items-center justify-center space-x-2 px-6 py-3 bg-white text-cyan-700 font-semibold rounded-lg hover:shadow-xl transition-smooth w-full sm:w-auto"
               >
                 <FiPlus size={20} />
                 <span>Add New</span>
@@ -124,8 +119,8 @@ const Dashboard = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="bg-white rounded-2xl shadow-xl p-12 text-center"
               >
-                <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <FiPlus size={40} className="text-purple-600" />
+                <div className="w-24 h-24 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FiPlus size={40} className="text-cyan-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-3 font-display">
                   No Job Profiles Yet
@@ -135,7 +130,7 @@ const Dashboard = () => {
                 </p>
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth"
+                  className="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth"
                 >
                   Create Your First Profile
                 </button>
@@ -147,7 +142,7 @@ const Dashboard = () => {
                   <JobCard
                     key={profile._id}
                     profile={profile}
-                    onSelect={setSelectedProfile}
+                    onSelect={handleSelectProfile}
                     onDelete={handleDeleteProfile}
                   />
                 ))}

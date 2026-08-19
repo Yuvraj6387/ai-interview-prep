@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FiArrowLeft, FiRefreshCw, FiLoader } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import QuestionCard from '../components/QuestionCard';
-import ExplanationPanel from '../components/ExplanationPanel';
 import { profileAPI, questionAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
 
@@ -10,7 +9,7 @@ const QuestionsView = ({ profile, onBack }) => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [expandedQuestionId, setExpandedQuestionId] = useState(null);
   const { showToast } = useToast();
 
   const generateQuestions = useCallback(async () => {
@@ -76,7 +75,7 @@ const QuestionsView = ({ profile, onBack }) => {
         >
           <button
             onClick={onBack}
-            className="flex items-center space-x-2 text-white hover:text-purple-100 mb-6 transition-smooth"
+            className="flex items-center space-x-2 text-white hover:text-cyan-300 mb-6 transition-smooth"
           >
             <FiArrowLeft size={20} />
             <span className="font-medium">Back to Dashboard</span>
@@ -92,7 +91,7 @@ const QuestionsView = ({ profile, onBack }) => {
                   {profile.topics.map((topic, index) => (
                     <span
                       key={index}
-                      className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium"
+                      className="bg-cyan-50 text-cyan-700 px-3 py-1 rounded-full text-sm font-medium"
                     >
                       {topic}
                     </span>
@@ -111,7 +110,7 @@ const QuestionsView = ({ profile, onBack }) => {
               <button
                 onClick={generateQuestions}
                 disabled={generating}
-                className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+                className="flex items-center justify-center space-x-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
               >
                 {generating ? (
                   <>
@@ -136,7 +135,7 @@ const QuestionsView = ({ profile, onBack }) => {
           </div>
         ) : generating ? (
           <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
-            <FiLoader className="animate-spin text-purple-600 mx-auto mb-4" size={48} />
+            <FiLoader className="animate-spin text-cyan-600 mx-auto mb-4" size={48} />
             <h3 className="text-xl font-bold text-gray-800 mb-2 font-display">
               Generating Interview Questions...
             </h3>
@@ -166,21 +165,16 @@ const QuestionsView = ({ profile, onBack }) => {
                 key={question._id}
                 question={question}
                 index={index}
-                onLearnMore={setSelectedQuestion}
+                isExpanded={expandedQuestionId === question._id}
+                onToggleExplanation={() =>
+                  setExpandedQuestionId((prev) => (prev === question._id ? null : question._id))
+                }
                 onTogglePin={handleTogglePin}
               />
             ))}
           </div>
         )}
       </div>
-
-      {/* Explanation Panel */}
-      {selectedQuestion && (
-        <ExplanationPanel
-          question={selectedQuestion}
-          onClose={() => setSelectedQuestion(null)}
-        />
-      )}
     </div>
   );
 };

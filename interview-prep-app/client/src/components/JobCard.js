@@ -22,11 +22,11 @@ const JobCard = ({ profile, onSelect, onDelete }) => {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       whileHover={{ y: -8 }}
-      className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer border-2 border-transparent hover:border-purple-300"
+      className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer border-2 border-transparent hover:border-cyan-300"
       onClick={() => onSelect(profile)}
     >
       {/* Gradient Header */}
-      <div className="h-2 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500"></div>
+      <div className="h-2 bg-gradient-to-r from-slate-700 via-slate-800 to-cyan-600"></div>
       
       <div className="p-6">
         {/* Title & Delete Button */}
@@ -81,7 +81,7 @@ const JobCard = ({ profile, onSelect, onDelete }) => {
             {profile.topics.slice(0, 3).map((topic, index) => (
               <span
                 key={index}
-                className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 px-3 py-1 rounded-full text-xs font-medium"
+                className="bg-cyan-50 text-cyan-700 px-3 py-1 rounded-full text-xs font-medium"
               >
                 {topic}
               </span>

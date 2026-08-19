@@ -1,16 +1,42 @@
 import React, { useState } from 'react';
-import { FiX, FiBriefcase, FiAward, FiTag, FiFileText, FiLoader } from 'react-icons/fi';
+import { FiX, FiBriefcase, FiAward, FiTag, FiFileText, FiLoader, FiZap } from 'react-icons/fi';
+import { profileAPI } from '../services/api';
+import { useToast } from './ToastProvider';
 
-const AddJobModal = ({ onClose, onSubmit, loading }) => {
+const AddJobModal = ({ onClose, onSubmit, loading, initialData, title = 'Add New Job Profile' }) => {
   const [formData, setFormData] = useState({
-    targetRole: '',
-    experience: '',
-    topics: '',
-    description: '',
+    targetRole: initialData?.targetRole || '',
+    experience: initialData?.experience || '',
+    topics: initialData?.topics || '',
+    description: initialData?.description || '',
   });
+  const [generatingDescription, setGeneratingDescription] = useState(false);
+  const { showToast } = useToast();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleGenerateDescription = async () => {
+    if (!formData.targetRole || !formData.topics) {
+      showToast('Fill in Target Role and Topics first', 'error');
+      return;
+    }
+
+    setGeneratingDescription(true);
+    try {
+      const response = await profileAPI.generateDescription({
+        targetRole: formData.targetRole,
+        experience: formData.experience,
+        topics: formData.topics,
+      });
+      setFormData((prev) => ({ ...prev, description: response.data.description }));
+    } catch (error) {
+      console.error('Error generating description:', error);
+      showToast('Failed to generate description. Please try again.', 'error');
+    } finally {
+      setGeneratingDescription(false);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -26,9 +52,9 @@ const AddJobModal = ({ onClose, onSubmit, loading }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden animate-scale-in max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-5 flex justify-between items-center sticky top-0">
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-5 flex justify-between items-center sticky top-0 z-10">
           <h2 className="text-2xl font-bold text-white font-display">
-            Add New Job Profile
+            {title}
           </h2>
           <button
             onClick={onClose}
@@ -52,7 +78,7 @@ const AddJobModal = ({ onClose, onSubmit, loading }) => {
                 name="targetRole"
                 value={formData.targetRole}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-smooth"
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
                 placeholder="e.g., Frontend Developer, DevOps Engineer"
                 required
               />
@@ -73,7 +99,7 @@ const AddJobModal = ({ onClose, onSubmit, loading }) => {
                 onChange={handleChange}
                 min="0"
                 max="50"
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-smooth"
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
                 placeholder="e.g., 3"
                 required
               />
@@ -92,7 +118,7 @@ const AddJobModal = ({ onClose, onSubmit, loading }) => {
                 value={formData.topics}
                 onChange={handleChange}
                 rows="3"
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-smooth resize-none"
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-none"
                 placeholder="e.g., React, JavaScript, TypeScript, API Design, Testing"
                 required
               />
@@ -104,9 +130,24 @@ const AddJobModal = ({ onClose, onSubmit, loading }) => {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Description (Optional)
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-semibold text-gray-700">
+                Description (Optional)
+              </label>
+              <button
+                type="button"
+                onClick={handleGenerateDescription}
+                disabled={generatingDescription}
+                className="flex items-center gap-1.5 text-xs font-medium text-cyan-600 hover:text-cyan-800 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {generatingDescription ? (
+                  <FiLoader className="animate-spin" size={12} />
+                ) : (
+                  <FiZap size={12} />
+                )}
+                <span>{generatingDescription ? 'Generating...' : 'Generate with AI'}</span>
+              </button>
+            </div>
             <div className="relative">
               <FiFileText className="absolute left-3 top-3 text-gray-400" />
               <textarea
@@ -114,7 +155,7 @@ const AddJobModal = ({ onClose, onSubmit, loading }) => {
                 value={formData.description}
                 onChange={handleChange}
                 rows="4"
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-smooth resize-none"
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-none"
                 placeholder="Add additional context about the role or preparation focus..."
               />
             </div>
@@ -132,7 +173,7 @@ const AddJobModal = ({ onClose, onSubmit, loading }) => {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold py-3 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {loading ? (
                 <>

@@ -8,6 +8,7 @@ const LoginModal = ({ onClose }) => {
   const { showToast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [slowLoading, setSlowLoading] = useState(false);
   const [error, setError] = useState('');
   const [profilePreview, setProfilePreview] = useState('');
   
@@ -39,6 +40,12 @@ const LoginModal = ({ onClose }) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    setSlowLoading(false);
+
+    // The backend runs on Render's free tier, which spins down when idle and
+    // can take 30-60s to wake up on the first request. Let the user know
+    // instead of leaving them staring at a spinner that looks stuck.
+    const slowLoadingTimer = setTimeout(() => setSlowLoading(true), 4000);
 
     try {
       if (isLogin) {
@@ -47,7 +54,6 @@ const LoginModal = ({ onClose }) => {
       } else {
         if (!formData.fullName) {
           setError('Please enter your full name');
-          setLoading(false);
           return;
         }
         await register({
@@ -64,7 +70,9 @@ const LoginModal = ({ onClose }) => {
       setError(message);
       showToast(message, 'error');
     } finally {
+      clearTimeout(slowLoadingTimer);
       setLoading(false);
+      setSlowLoading(false);
     }
   };
 
@@ -72,7 +80,7 @@ const LoginModal = ({ onClose }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-scale-in">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-white font-display">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h2>
@@ -104,7 +112,7 @@ const LoginModal = ({ onClose }) => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
                   placeholder="John Doe"
                   required={!isLogin}
                 />
@@ -123,7 +131,7 @@ const LoginModal = ({ onClose }) => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
                 placeholder="john@example.com"
                 required
               />
@@ -141,7 +149,7 @@ const LoginModal = ({ onClose }) => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
                 placeholder="••••••••"
                 required
               />
@@ -175,7 +183,7 @@ const LoginModal = ({ onClose }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold py-3 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             {loading ? (
               <>
@@ -187,6 +195,12 @@ const LoginModal = ({ onClose }) => {
             )}
           </button>
 
+          {slowLoading && (
+            <p className="text-center text-sm text-gray-500">
+              Waking up the server — this can take up to a minute on the first request. Hang tight!
+            </p>
+          )}
+
           <div className="text-center">
             <button
               type="button"
@@ -195,7 +209,7 @@ const LoginModal = ({ onClose }) => {
                 setError('');
                 setFormData({ email: '', password: '', fullName: '', profileImage: '' });
               }}
-              className="text-purple-600 hover:text-purple-800 font-medium text-sm transition-smooth"
+              className="text-cyan-600 hover:text-cyan-800 font-medium text-sm transition-smooth"
             >
               {isLogin
                 ? "Don't have an account? Sign up"

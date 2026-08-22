@@ -30,7 +30,7 @@ const MockInterview = () => {
   const [starting, setStarting] = useState(false);
   const [interview, setInterview] = useState(null);
   const [answerText, setAnswerText] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [submitAction, setSubmitAction] = useState(null); // null | 'answer' | 'skip'
   const [ending, setEnding] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [resume, setResume] = useState(null);
@@ -95,7 +95,7 @@ const MockInterview = () => {
       return;
     }
 
-    setSubmitting(true);
+    setSubmitAction(skip ? 'skip' : 'answer');
     try {
       const response = await interviewAPI.submitAnswer(
         interview._id,
@@ -115,7 +115,7 @@ const MockInterview = () => {
       const message = error.response?.data?.message || 'Failed to submit answer. Please try again.';
       showToast(message, 'error');
     } finally {
-      setSubmitting(false);
+      setSubmitAction(null);
     }
   };
 
@@ -366,35 +366,41 @@ const MockInterview = () => {
             rows="3"
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-none"
             placeholder="Type your answer..."
-            disabled={submitting || ending}
+            disabled={!!submitAction || ending}
           />
 
-          <div className="flex flex-col sm:flex-row gap-3 mt-3">
+          <div className="flex flex-col sm:flex-row gap-2 mt-3">
             <button
               onClick={() => handleSubmitAnswer(false)}
-              disabled={submitting || ending}
-              className="flex-1 flex items-center justify-center space-x-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!!submitAction || ending}
+              className="flex-1 flex items-center justify-center space-x-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm py-2 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? <FiLoader className="animate-spin" /> : <FiSend />}
-              <span>Submit Answer</span>
+              {submitAction === 'answer' ? <FiLoader className="animate-spin" size={14} /> : <FiSend size={14} />}
+              <span>{submitAction === 'answer' ? 'Evaluating...' : 'Submit Answer'}</span>
             </button>
             <button
               onClick={() => handleSubmitAnswer(true)}
-              disabled={submitting || ending}
-              className="flex items-center justify-center space-x-2 px-6 py-2.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!!submitAction || ending}
+              className="flex items-center justify-center space-x-1.5 px-4 py-2 border-2 border-gray-300 text-gray-700 font-semibold text-sm rounded-lg hover:bg-gray-50 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FiSkipForward />
-              <span>Skip</span>
+              {submitAction === 'skip' ? <FiLoader className="animate-spin" size={14} /> : <FiSkipForward size={14} />}
+              <span>{submitAction === 'skip' ? 'Skipping...' : 'Skip'}</span>
             </button>
             <button
               onClick={handleEndInterview}
-              disabled={submitting || ending}
-              className="flex items-center justify-center space-x-2 px-6 py-2.5 border-2 border-red-200 text-red-600 font-semibold rounded-lg hover:bg-red-50 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!!submitAction || ending}
+              className="flex items-center justify-center space-x-1.5 px-4 py-2 border-2 border-red-200 text-red-600 font-semibold text-sm rounded-lg hover:bg-red-50 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {ending ? <FiLoader className="animate-spin" /> : <FiXCircle />}
+              {ending ? <FiLoader className="animate-spin" size={14} /> : <FiXCircle size={14} />}
               <span>End Interview</span>
             </button>
           </div>
+
+          {(submitAction || ending) && (
+            <p className="text-xs text-gray-500 mt-2.5 text-center">
+              AI is thinking — this can take up to 30-40 seconds, please don't refresh.
+            </p>
+          )}
         </div>
       </div>
     </div>

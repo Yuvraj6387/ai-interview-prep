@@ -166,7 +166,9 @@ Format the output in clear Markdown.`;
     }
     // Without an explicit timeout, a stalled request can hang for a minute or
     // more before failing - capping it makes failures fast and predictable.
-    return this.gemini.getGenerativeModel({ model: 'gemini-3.6-flash' }, { timeout: 20000 });
+    // 45s (not 20s): real calls with a full interview-history prompt measured
+    // up to ~18.4s on a cold connection, leaving too little margin at 20s.
+    return this.gemini.getGenerativeModel({ model: 'gemini-3.6-flash' }, { timeout: 45000 });
   }
 
   async analyzeResume(resumeText) {

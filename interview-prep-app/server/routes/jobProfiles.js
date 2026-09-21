@@ -10,7 +10,9 @@ router.get('/', auth, async (req, res) => {
   try {
     const profiles = await JobProfile.find()
       .sort({ updatedAt: -1 })
-      .populate('userId', 'fullName profileImage');
+      .limit(60)
+      .populate('userId', 'fullName profileImage')
+      .lean();
     res.json(profiles);
   } catch (error) {
     console.error('Error fetching profiles:', error);

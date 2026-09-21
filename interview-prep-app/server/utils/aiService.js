@@ -12,30 +12,61 @@ const extractJson = (response) => {
   return JSON.parse(cleanResponse);
 };
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const isRetryableGeminiError = (error) => /503|overloaded|high demand|UNAVAILABLE/i.test(error.message || '');
+// Overloaded/unavailable from either provider - worth trying a different one.
+const isOverloadedError = (error) => /503|overloaded|high demand|UNAVAILABLE/i.test(error.message || '');
 const isQuotaExceededError = (error) => /429|quota/i.test(error.message || '');
 const isTimeoutError = (error) => /abort|timeout/i.test(error.message || '') || error.name === 'AbortError';
 
-const generateWithRetry = async (model, prompt, retries = 2) => {
-  for (let attempt = 0; ; attempt++) {
+// Every Gemini prompt in this file asks for a JSON object back, so we can ask the
+// API for JSON directly instead of parsing it out of prose or markdown fences.
+const JSON_GENERATION_CONFIG = {
+  responseMimeType: 'application/json',
+  maxOutputTokens: 4096,
+};
+
+// Tried in order, fastest first. The flash-lite tier answers these structured
+// prompts in ~3s, while the full flash tier burns ~2000 "thinking" tokens before
+// it starts writing (measured 41s on a resume) and is frequently 503 on the free
+// tier, so it is not in the chain at all.
+const GEMINI_JSON_MODELS = ['gemini-3.1-flash-lite', 'gemini-flash-lite-latest'];
+
+// Cap a single attempt so one stalled provider can't hold the request open, and
+// cap the whole chain so falling through every provider still returns in bounded
+// time. A healthy call lands in 2-9s, so 12s already means "this one is stuck".
+const ATTEMPT_TIMEOUT_MS = 12000;
+const TOTAL_DEADLINE_MS = 30000;
+
+const runJsonChain = async (providers) => {
+  const deadline = Date.now() + TOTAL_DEADLINE_MS;
+  let sawQuotaError = false;
+  let lastError;
+
+  for (const { label, run } of providers) {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) break;
+
     try {
-      const result = await model.generateContent(prompt);
-      return result.response.text();
+      return await run(Math.min(ATTEMPT_TIMEOUT_MS, remaining));
     } catch (error) {
+      lastError = error;
+
+      // Overloaded, rate-limited or stalled: the next provider has its own
+      // capacity and quota, so move on instead of waiting this one out.
       if (isQuotaExceededError(error)) {
-        throw new Error('The AI service has hit its usage limit for now. Please try again in a little while.');
-      }
-      if (isTimeoutError(error)) {
-        throw new Error('The AI took too long to respond. Please try again.');
-      }
-      if (attempt >= retries || !isRetryableGeminiError(error)) {
+        sawQuotaError = true;
+      } else if (!isOverloadedError(error) && !isTimeoutError(error)) {
         throw error;
       }
-      await sleep(1000 * (attempt + 1));
+      console.warn(`AI provider ${label} unavailable, falling back:`, error.message);
     }
   }
+
+  if (sawQuotaError) {
+    throw new Error('The AI service has hit its usage limit for now. Please try again in a little while.');
+  }
+  throw new Error(lastError && isTimeoutError(lastError)
+    ? 'The AI took too long to respond. Please try again.'
+    : 'The AI service is busy right now. Please try again in a moment.');
 };
 
 const formatResumeContext = (resumeContext) => resumeContext
@@ -72,13 +103,14 @@ class AIService {
     }
   }
 
-  async sendRequest(prompt) {
+  async sendRequest(prompt, { maxTokens = 512, jsonMode = false, timeout } = {}) {
     const response = await fetch(this.apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.apiKey}`,
       },
+      signal: timeout ? AbortSignal.timeout(timeout) : undefined,
       body: JSON.stringify({
         model: "openai/gpt-oss-120b",
         messages: [
@@ -88,7 +120,8 @@ class AIService {
           }
         ],
         temperature: 0.7,
-        max_tokens: 512
+        max_tokens: maxTokens,
+        ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
       }),
     });
 
@@ -160,15 +193,33 @@ Format the output in clear Markdown.`;
     }
   }
 
-  getGeminiModel() {
-    if (!this.gemini) {
-      throw new Error('Missing GEMINI_API_KEY in server environment');
+  generateJson(prompt) {
+    const providers = [];
+
+    if (this.gemini) {
+      for (const name of GEMINI_JSON_MODELS) {
+        providers.push({
+          label: `gemini/${name}`,
+          run: async (timeout) => {
+            const model = this.gemini.getGenerativeModel(
+              { model: name, generationConfig: JSON_GENERATION_CONFIG },
+              { timeout }
+            );
+            const result = await model.generateContent(prompt);
+            return result.response.text();
+          },
+        });
+      }
     }
-    // Without an explicit timeout, a stalled request can hang for a minute or
-    // more before failing - capping it makes failures fast and predictable.
-    // 45s (not 20s): real calls with a full interview-history prompt measured
-    // up to ~18.4s on a cold connection, leaving too little margin at 20s.
-    return this.gemini.getGenerativeModel({ model: 'gemini-3.6-flash' }, { timeout: 45000 });
+
+    // Different provider, different outage and quota: when Gemini is saturated
+    // this is what keeps the request succeeding instead of erroring out.
+    providers.push({
+      label: 'groq',
+      run: (timeout) => this.sendRequest(prompt, { maxTokens: 2048, jsonMode: true, timeout }),
+    });
+
+    return runJsonChain(providers);
   }
 
   async analyzeResume(resumeText) {
@@ -192,10 +243,8 @@ Resume text:
 ${resumeText}
 """`;
 
-    const model = this.getGeminiModel();
-
     try {
-      const response = await generateWithRetry(model, prompt);
+      const response = await this.generateJson(prompt);
       const analysis = extractJson(response);
 
       return {
@@ -234,10 +283,8 @@ Decide the next question (this will be question ${turns.length + 1} of ${numQues
 
 Return ONLY a valid JSON object with this exact shape: { "questionText": "<the question>", "isFollowUp": true|false }`;
 
-    const model = this.getGeminiModel();
-
     try {
-      const response = await generateWithRetry(model, prompt);
+      const response = await this.generateJson(prompt);
       const parsed = extractJson(response);
 
       return {
@@ -265,10 +312,8 @@ Give one short "feedback" sentence.
 Return ONLY a valid JSON object with this exact shape:
 { "technicalAccuracy": <0-100>, "communication": <0-100>, "relevance": <0-100>, "structure": <0-100>, "confidence": <0-100>, "problemSolving": <0-100>, "isWeak": true|false, "feedback": "<one short sentence>" }`;
 
-    const model = this.getGeminiModel();
-
     try {
-      const response = await generateWithRetry(model, prompt);
+      const response = await this.generateJson(prompt);
       const parsed = extractJson(response);
 
       const clamp = (n) => Math.max(0, Math.min(100, Number(n) || 0));
@@ -315,10 +360,8 @@ Do two things:
 Return ONLY a valid JSON object with this exact shape:
 { "evaluation": { "technicalAccuracy": <0-100>, "communication": <0-100>, "relevance": <0-100>, "structure": <0-100>, "confidence": <0-100>, "problemSolving": <0-100>, "isWeak": true|false, "feedback": "<one short sentence>" }, "nextQuestion": ${needsNextQuestion ? '{ "questionText": "<the question>", "isFollowUp": true|false }' : 'null'} }`;
 
-    const model = this.getGeminiModel();
-
     try {
-      const response = await generateWithRetry(model, prompt);
+      const response = await this.generateJson(prompt);
       const parsed = extractJson(response);
       const clamp = (n) => Math.max(0, Math.min(100, Number(n) || 0));
 
@@ -366,10 +409,8 @@ Based on the whole interview, provide:
 Return ONLY a valid JSON object with this exact shape:
 { "strengths": [...], "improvements": [...], "recommendedTopics": [...], "recommendedPractice": [...] }`;
 
-    const model = this.getGeminiModel();
-
     try {
-      const response = await generateWithRetry(model, prompt);
+      const response = await this.generateJson(prompt);
       const parsed = extractJson(response);
 
       return {

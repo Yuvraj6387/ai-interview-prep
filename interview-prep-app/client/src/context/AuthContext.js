@@ -3,6 +3,33 @@ import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
 
+const CACHED_USER_KEY = 'cachedUser';
+
+const readCachedUser = () => {
+  try {
+    const raw = localStorage.getItem(CACHED_USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    return null;
+  }
+};
+
+const writeCachedUser = (user) => {
+  try {
+    localStorage.setItem(CACHED_USER_KEY, JSON.stringify(user));
+  } catch (error) {
+    // Storage full or blocked - the app still works, it just re-fetches.
+  }
+};
+
+const clearSession = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem(CACHED_USER_KEY);
+};
+
+// Only trust the cached user if we still hold a token to go with it.
+const initialUser = () => (localStorage.getItem('token') ? readCachedUser() : null);
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -12,25 +39,36 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(initialUser);
+  // Only block the whole app on the very first sign-in on this device. After
+  // that we paint from the cached user straight away and confirm it in the
+  // background, instead of holding a full-screen spinner for a round trip to a
+  // free-tier backend that may still be waking up.
+  const [loading, setLoading] = useState(() => !!localStorage.getItem('token') && !readCachedUser());
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      loadUser();
-    } else {
+    if (!localStorage.getItem('token')) {
       setLoading(false);
+      return;
     }
+    loadUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadUser = async () => {
     try {
       const response = await authAPI.getCurrentUser();
+      writeCachedUser(response.data.user);
       setUser(response.data.user);
     } catch (error) {
-      console.error('Failed to load user:', error);
-      localStorage.removeItem('token');
+      // Only an actually rejected token should sign someone out. A timeout or a
+      // network blip used to drop them back to the landing page mid-session.
+      if (error.response?.status === 401) {
+        clearSession();
+        setUser(null);
+      } else {
+        console.error('Failed to refresh user:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -39,6 +77,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const response = await authAPI.login({ email, password });
     localStorage.setItem('token', response.data.token);
+    writeCachedUser(response.data.user);
     setUser(response.data.user);
     return response.data;
   };
@@ -46,12 +85,13 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     const response = await authAPI.register(userData);
     localStorage.setItem('token', response.data.token);
+    writeCachedUser(response.data.user);
     setUser(response.data.user);
     return response.data;
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    clearSession();
     setUser(null);
   };
 

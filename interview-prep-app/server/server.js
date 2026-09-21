@@ -32,25 +32,32 @@ app.get('/api/health', (req, res) => {
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
+      // Fail fast instead of letting a request hang on an unreachable cluster.
+      serverSelectionTimeoutMS: 8000,
+      // Keep sockets warm so the first request after an idle spell doesn't pay
+      // to re-establish a connection on top of everything else.
+      maxPoolSize: 10,
+      minPoolSize: 2
     });
     console.log('✅ MongoDB connected successfully');
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
+    // Don't exit: on a free plan a restart means another cold start for the
+    // next visitor. Mongoose keeps retrying in the background.
+    console.error('❌ MongoDB connection error:', error.message);
   }
 };
 
 // Start server
 const PORT = process.env.PORT || 5000;
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📡 API available at http://localhost:${PORT}/api`);
-  });
+// Listen first, connect after. The health check is what wakes a sleeping free
+// instance, and it shouldn't have to wait on a database handshake to answer.
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📡 API available at http://localhost:${PORT}/api`);
 });
+
+connectDB();
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {

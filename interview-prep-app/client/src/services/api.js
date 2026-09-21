@@ -25,6 +25,15 @@ api.interceptors.request.use(
   }
 );
 
+// The backend sleeps on its free plan and takes a while to wake up. Nudge it as
+// soon as the page loads so it wakes while the visitor is reading the landing
+// page, rather than after they click something and are left waiting. A signed-in
+// visitor already wakes it with /auth/me, so skip the extra request for them.
+export const warmUpServer = () => {
+  if (localStorage.getItem('token')) return;
+  api.get('/health').catch(() => {});
+};
+
 // Auth APIs
 export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),

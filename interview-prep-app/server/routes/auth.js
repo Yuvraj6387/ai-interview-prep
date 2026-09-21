@@ -91,12 +91,18 @@ router.post('/login', async (req, res) => {
 // Get current user
 router.get('/me', auth, async (req, res) => {
   try {
+    const user = await User.findById(req.userId).select('fullName email profileImage').lean();
+
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
     res.json({
       user: {
-        id: req.user._id,
-        fullName: req.user.fullName,
-        email: req.user.email,
-        profileImage: req.user.profileImage
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        profileImage: user.profileImage
       }
     });
   } catch (error) {

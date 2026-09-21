@@ -38,6 +38,8 @@ const jobProfileSchema = new mongoose.Schema({
   }
 });
 
+jobProfileSchema.index({ updatedAt: -1 });
+
 jobProfileSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();

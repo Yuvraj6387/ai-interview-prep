@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -11,11 +11,21 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import LoginModal from './components/LoginModal';
 import Dashboard from './pages/Dashboard';
-import ResumeAnalyzer from './pages/ResumeAnalyzer';
-import QuestionsView from './pages/QuestionsView';
-import MockInterview from './pages/MockInterview';
-import InterviewResult from './pages/InterviewResult';
-import Analytics from './pages/Analytics';
+
+// Split out of the main bundle: these pages pull in the heavy chart and
+// syntax-highlighting libraries, which the dashboard had to download and parse
+// before it could paint even though nothing on it uses them.
+const ResumeAnalyzer = lazy(() => import('./pages/ResumeAnalyzer'));
+const QuestionsView = lazy(() => import('./pages/QuestionsView'));
+const MockInterview = lazy(() => import('./pages/MockInterview'));
+const InterviewResult = lazy(() => import('./pages/InterviewResult'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+
+const RouteFallback = () => (
+  <div className="flex justify-center items-center py-20">
+    <div className="spinner"></div>
+  </div>
+);
 
 const InterviewRoute = () => {
   const { profileId } = useParams();
@@ -225,15 +235,17 @@ const AppContent = () => {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 min-w-0">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/resume" element={<ResumeAnalyzer />} />
-          <Route path="/mock-interview" element={<MockInterview />} />
-          <Route path="/interview-result/:interviewId" element={<InterviewResult />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/interview/:profileId" element={<InterviewRoute />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/resume" element={<ResumeAnalyzer />} />
+            <Route path="/mock-interview" element={<MockInterview />} />
+            <Route path="/interview-result/:interviewId" element={<InterviewResult />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/interview/:profileId" element={<InterviewRoute />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </div>
     </div>
   );

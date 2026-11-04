@@ -16,6 +16,9 @@ const extractJson = (response) => {
 const isOverloadedError = (error) => /503|overloaded|high demand|UNAVAILABLE/i.test(error.message || '');
 const isQuotaExceededError = (error) => /429|quota/i.test(error.message || '');
 const isTimeoutError = (error) => /abort|timeout/i.test(error.message || '') || error.name === 'AbortError';
+// Groq refused this particular request (output failed its JSON check, or the prompt
+// is over the free-tier token cap). Gemini has neither limit, so it can still answer.
+const isGroqRejectedError = (error) => /Groq API error: (400|413)/.test(error.message || '');
 
 // Every Gemini prompt in this file asks for a JSON object back, so we can ask the
 // API for JSON directly instead of parsing it out of prose or markdown fences.
@@ -54,7 +57,7 @@ const runJsonChain = async (providers) => {
       // capacity and quota, so move on instead of waiting this one out.
       if (isQuotaExceededError(error)) {
         sawQuotaError = true;
-      } else if (!isOverloadedError(error) && !isTimeoutError(error)) {
+      } else if (!isOverloadedError(error) && !isTimeoutError(error) && !isGroqRejectedError(error)) {
         throw error;
       }
       console.warn(`AI provider ${label} unavailable, falling back:`, error.message);
@@ -170,10 +173,11 @@ Include in your explanation:
 2. A clear, accurate answer
 3. An example if applicable
 4. Common pitfalls or mistakes candidates make
+Keep the whole explanation under 400 words. Do not repeat the question.
 Format the output in clear Markdown.`;
 
     try {
-      return await this.sendRequest(prompt);
+      return await this.sendRequest(prompt, { maxTokens: 2048 });
     } catch (error) {
       console.error('Error in generateExplanation:', error);
       throw error;
@@ -194,8 +198,15 @@ Format the output in clear Markdown.`;
   }
 
   generateJson(prompt) {
-    const providers = [];
+    // Groq goes first: it answers in 1-4s, while the Gemini free tier often stalls
+    // or returns 503, which cost 17-25s per request before falling through to Groq.
+    const providers = [{
+      label: 'groq',
+      run: (timeout) => this.sendRequest(prompt, { maxTokens: 2048, jsonMode: true, timeout }),
+    }];
 
+    // Different provider, different outage and quota: when Groq is saturated
+    // this is what keeps the request succeeding instead of erroring out.
     if (this.gemini) {
       for (const name of GEMINI_JSON_MODELS) {
         providers.push({
@@ -211,13 +222,6 @@ Format the output in clear Markdown.`;
         });
       }
     }
-
-    // Different provider, different outage and quota: when Gemini is saturated
-    // this is what keeps the request succeeding instead of erroring out.
-    providers.push({
-      label: 'groq',
-      run: (timeout) => this.sendRequest(prompt, { maxTokens: 2048, jsonMode: true, timeout }),
-    });
 
     return runJsonChain(providers);
   }

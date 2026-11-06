@@ -1,5 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  // hover: classes apply only on devices with a real pointer, so tapping a card
+  // on a phone doesn't leave it shifted/lifted.
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],

@@ -11,6 +11,7 @@ import { interviewAPI, resumeAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
 import InterviewIllustration from '../components/InterviewIllustration';
 import useSpeech from '../hooks/useSpeech';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const INTERVIEW_TYPES = ['Technical', 'HR', 'Behavioral', 'Full Stack', 'Coding'];
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
@@ -61,6 +62,7 @@ const MockInterview = () => {
   const [readAloud, setReadAloud] = useState(true);
   const [timerPaused, setTimerPaused] = useState(false);
   const [notes, setNotes] = useState('');
+  const [confirmEnd, setConfirmEnd] = useState(false);
   const { showToast } = useToast();
   const navigate = useNavigate();
   const timerRef = useRef(null);
@@ -69,7 +71,7 @@ const MockInterview = () => {
     onTranscript: setAnswerText,
     onError: (message) => showToast(message, 'error'),
   });
-  const { speak, stopSpeaking, stopListening } = voice;
+  const { speak, stopSpeaking, stopListening, unlockSpeech } = voice;
 
   const currentTurn = interview?.turns?.[interview.turns.length - 1];
   const pastTurns = interview?.turns?.slice(0, -1) || [];
@@ -81,7 +83,11 @@ const MockInterview = () => {
   }, [readAloud, currentQuestion, speak]);
 
   const toggleReadAloud = () => {
-    if (readAloud) stopSpeaking();
+    if (readAloud) {
+      stopSpeaking();
+    } else {
+      unlockSpeech();
+    }
     setReadAloud(!readAloud);
   };
 
@@ -124,6 +130,9 @@ const MockInterview = () => {
 
   const handleStart = async (e) => {
     e.preventDefault();
+    // Phones only allow speech that starts from a tap; unlock it now so the
+    // first question can be read aloud once it arrives.
+    if (readAloud) unlockSpeech();
     setStarting(true);
     try {
       const response = await interviewAPI.start({
@@ -153,6 +162,7 @@ const MockInterview = () => {
 
     stopListening();
     stopSpeaking();
+    if (readAloud) unlockSpeech();
     setSubmitAction(skip ? 'skip' : 'answer');
     try {
       const response = await interviewAPI.submitAnswer(
@@ -177,11 +187,10 @@ const MockInterview = () => {
     }
   };
 
-  const handleEndInterview = async () => {
-    if (!window.confirm('End this interview now? Your result will be based on the questions answered so far.')) {
-      return;
-    }
+  const handleEndInterview = () => setConfirmEnd(true);
 
+  const confirmEndInterview = async () => {
+    setConfirmEnd(false);
     stopListening();
     stopSpeaking();
     setEnding(true);
@@ -424,7 +433,7 @@ const MockInterview = () => {
                     <span>{readAloud ? (voice.speaking ? 'Speaking...' : 'Voice on') : 'Voice off'}</span>
                   </button>
                 )}
-                {/* The side panel (wide screens only) shows the timer there */}
+                {/* Quick glance on small screens, where the timer panel sits below the chat */}
                 <span className="xl:hidden flex items-center gap-1.5">
                   <FiClock size={14} />
                   {formatElapsed(elapsed)}
@@ -557,8 +566,8 @@ const MockInterview = () => {
           </div>
         </div>
 
-        {/* Side panel */}
-        <aside className="hidden xl:flex flex-col gap-4">
+        {/* Side panel: beside the chat on wide screens, below it on phones and tablets */}
+        <aside className="flex flex-col gap-4 md:grid md:grid-cols-2 xl:flex xl:flex-col">
           <div className={`${PANEL} p-5`}>
             <PanelTitle icon={FiClock}>Interview Timer</PanelTitle>
             <div className="flex items-center justify-between mt-3">
@@ -626,12 +635,13 @@ const MockInterview = () => {
             </div>
           </div>
 
-          <div className={`${PANEL} p-5`}>
+          {/* Already shown in the chat on small screens */}
+          <div className={`${PANEL} p-5 hidden xl:block`}>
             <PanelTitle icon={FiFileText}>Current Question</PanelTitle>
             <p className="text-sm text-gray-700 leading-relaxed mt-3 pl-3 border-l-2 border-cyan-500">{currentQuestion}</p>
           </div>
 
-          <div className={`${PANEL} p-5`}>
+          <div className={`${PANEL} p-5 md:col-span-2 xl:col-span-1`}>
             <PanelTitle icon={FiEdit3}>Quick Notes</PanelTitle>
             <textarea
               value={notes}
@@ -644,6 +654,16 @@ const MockInterview = () => {
           </div>
         </aside>
       </div>
+
+      <ConfirmDialog
+        open={confirmEnd}
+        title="Are you sure you want to quit the interview?"
+        message="Your result will be based on the questions answered so far."
+        confirmLabel="Yes, quit"
+        cancelLabel="Continue"
+        onConfirm={confirmEndInterview}
+        onCancel={() => setConfirmEnd(false)}
+      />
     </div>
   );
 };

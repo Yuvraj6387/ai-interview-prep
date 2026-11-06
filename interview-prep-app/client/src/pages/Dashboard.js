@@ -6,6 +6,7 @@ import JobCard from '../components/JobCard';
 import AddJobModal from '../components/AddJobModal';
 import { profileAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const Dashboard = () => {
   const [profiles, setProfiles] = useState([]);
@@ -13,6 +14,7 @@ const Dashboard = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showPinned, setShowPinned] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -47,11 +49,11 @@ const Dashboard = () => {
     }
   };
 
-  const handleDeleteProfile = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this job profile?')) {
-      return;
-    }
+  const handleDeleteProfile = (id) => setPendingDeleteId(id);
 
+  const confirmDeleteProfile = async () => {
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
     try {
       await profileAPI.delete(id);
       setProfiles(profiles.filter(p => p._id !== id));
@@ -160,6 +162,15 @@ const Dashboard = () => {
           loading={createLoading}
         />
       )}
+
+      <ConfirmDialog
+        open={!!pendingDeleteId}
+        title="Delete this job profile?"
+        message="Its saved questions will be removed too. This can't be undone."
+        confirmLabel="Delete"
+        onConfirm={confirmDeleteProfile}
+        onCancel={() => setPendingDeleteId(null)}
+      />
     </div>
   );
 };

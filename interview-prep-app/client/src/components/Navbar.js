@@ -8,16 +8,17 @@ const Navbar = ({ onMenuClick, showOnDesktop = false }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   if (isAuthenticated) {
-    // Nav lives in the sidebar; this bar only reveals it. On mobile the sidebar is
-    // an off-canvas drawer, and on desktop the bar shows once the sidebar is hidden.
+    // Stays pinned to the top of every page. Nav links live in the sidebar: an
+    // off-canvas drawer on mobile; on desktop the menu button shows only once
+    // the sidebar has been hidden.
     return (
-      <nav className={`${showOnDesktop ? '' : 'md:hidden'} bg-white shadow-lg sticky top-0 z-30`}>
+      <nav className="bg-white shadow-lg sticky top-0 z-30">
         <div className="flex items-center h-16 px-4 space-x-3">
           <button
             onClick={onMenuClick}
             title="Open menu"
             aria-label="Open menu"
-            className="text-gray-700 hover:text-cyan-600 transition-smooth p-1"
+            className={`${showOnDesktop ? '' : 'md:hidden'} text-gray-700 hover:text-cyan-600 transition-smooth p-1`}
           >
             <FiMenu size={24} />
           </button>

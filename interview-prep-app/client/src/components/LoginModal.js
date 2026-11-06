@@ -94,7 +94,7 @@ const LoginModal = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto py-6 modal-backdrop animate-fade-in">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden animate-scale-in">
         {/* Header */}
         <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-5 py-3.5 flex justify-between items-center">

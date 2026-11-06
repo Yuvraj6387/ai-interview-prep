@@ -11,11 +11,18 @@ const SpeechRecognition = typeof window !== 'undefined'
 
 const LANG = 'en-IN';
 
+// Phones report language tags as en_IN or en-in, so compare loosely. On-device
+// voices are preferred: network voices fail silently on flaky mobile data.
+const normLang = (lang = '') => lang.replace('_', '-').toLowerCase();
+
 const pickVoice = () => {
   const voices = window.speechSynthesis.getVoices();
-  return voices.find((v) => v.lang === LANG)
-    || voices.find((v) => v.lang === 'en-US')
-    || voices.find((v) => v.lang.startsWith('en'));
+  const english = voices.filter((v) => normLang(v.lang).startsWith('en'));
+  const local = english.filter((v) => v.localService);
+  const pool = local.length ? local : english;
+  return pool.find((v) => normLang(v.lang) === 'en-in')
+    || pool.find((v) => normLang(v.lang) === 'en-us')
+    || pool[0];
 };
 
 const useSpeech = ({ onTranscript, onError } = {}) => {
@@ -25,6 +32,10 @@ const useSpeech = ({ onTranscript, onError } = {}) => {
   const [speaking, setSpeaking] = useState(false);
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef(null);
+  // Chrome can garbage-collect an utterance mid-sentence (it just goes quiet)
+  // unless something keeps a reference to it.
+  const utteranceRef = useRef(null);
+  const unlockedRef = useRef(false);
   // Keep the latest callbacks without restarting recognition when they change.
   const callbacksRef = useRef({ onTranscript, onError });
   callbacksRef.current = { onTranscript, onError };
@@ -35,20 +46,57 @@ const useSpeech = ({ onTranscript, onError } = {}) => {
     setSpeaking(false);
   }, [speechSupported]);
 
+  // iOS Safari (and Android Chrome) only play speech that was first started by a
+  // tap. Questions arrive after an API call, outside any tap, so call this from
+  // a click handler: a silent utterance there unlocks speech for the page.
+  const unlockSpeech = useCallback(() => {
+    if (!speechSupported || unlockedRef.current) return;
+    const silent = new SpeechSynthesisUtterance(' ');
+    silent.volume = 0;
+    window.speechSynthesis.speak(silent);
+    unlockedRef.current = true;
+  }, [speechSupported]);
+
   const speak = useCallback((text) => {
     if (!speechSupported || !text) return;
-    window.speechSynthesis.cancel();
+    const synth = window.speechSynthesis;
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voice = pickVoice();
-    if (voice) utterance.voice = voice;
-    utterance.lang = voice?.lang || LANG;
-    utterance.rate = 0.95;
-    utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
+    const start = () => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      const voice = pickVoice();
+      if (voice) utterance.voice = voice;
+      utterance.lang = voice?.lang || LANG;
+      utterance.rate = 0.95;
+      utterance.onstart = () => setSpeaking(true);
+      utterance.onend = () => setSpeaking(false);
+      utterance.onerror = () => setSpeaking(false);
 
-    window.speechSynthesis.speak(utterance);
+      utteranceRef.current = utterance;
+      synth.speak(utterance);
+      // Android Chrome sometimes leaves the queue paused after a cancel.
+      synth.resume();
+      unlockedRef.current = true;
+    };
+
+    // Calling speak() right after cancel() makes Android Chrome drop the new
+    // utterance, so give the cancel a moment to settle first.
+    if (synth.speaking || synth.pending) {
+      synth.cancel();
+      setTimeout(start, 150);
+    } else {
+      start();
+    }
+  }, [speechSupported]);
+
+  // Voices load asynchronously on Android/Chrome; asking for them early and
+  // listening for the change makes pickVoice find one by the first question.
+  useEffect(() => {
+    if (!speechSupported) return undefined;
+    const synth = window.speechSynthesis;
+    synth.getVoices();
+    const noop = () => {};
+    synth.addEventListener?.('voiceschanged', noop);
+    return () => synth.removeEventListener?.('voiceschanged', noop);
   }, [speechSupported]);
 
   const stopListening = useCallback(() => {
@@ -108,6 +156,7 @@ const useSpeech = ({ onTranscript, onError } = {}) => {
     speaking,
     listening,
     speak,
+    unlockSpeech,
     stopSpeaking,
     startListening,
     stopListening,

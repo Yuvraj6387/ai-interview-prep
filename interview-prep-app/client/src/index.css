@@ -10,7 +10,15 @@
   box-sizing: border-box;
 }
 
+html,
 body {
+  /* Stops a stray wide element from letting the page slide sideways on phones.
+     clip (unlike hidden) keeps the sticky top bar working. */
+  overflow-x: clip;
+}
+
+body {
+  -webkit-text-size-adjust: 100%;
   font-family: 'Inter', sans-serif;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   min-height: 100vh;
@@ -20,6 +28,16 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Outfit', sans-serif;
+}
+
+/* iOS Safari zooms the whole page when a field under 16px gets focus, which
+   shifts every card on screen. 16px on phones keeps the page still. */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
 
 /* Custom scrollbar */
@@ -65,9 +83,12 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 0.3s ease;
 }
 
-.card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+/* Only real mouse hover: on touch screens a tap would leave the card lifted */
+@media (hover: hover) {
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
 }
 
 /* Button pulse effect */
@@ -80,8 +101,10 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-.btn-pulse:hover {
-  animation: pulse-glow 1.5s infinite;
+@media (hover: hover) {
+  .btn-pulse:hover {
+    animation: pulse-glow 1.5s infinite;
+  }
 }
 
 /* Loading spinner */

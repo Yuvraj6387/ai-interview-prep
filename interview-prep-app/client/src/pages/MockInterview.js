@@ -381,6 +381,54 @@ const MockInterview = () => {
     return turn.skipped ? 'skipped' : 'answered';
   };
 
+  // Shared by the side panel (wide screens) and the inline layout on phones/tablets.
+  const timerPanel = (
+    <div className={`${PANEL} p-4 sm:p-5`}>
+      <PanelTitle icon={FiClock}>Interview Timer</PanelTitle>
+      <div className="flex items-center justify-between mt-3">
+        <span className={`text-4xl font-bold font-display tabular-nums ${timerPaused ? 'text-gray-400' : 'text-gray-800'}`}>
+          {formatElapsed(elapsed)}
+        </span>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setTimerPaused(!timerPaused)}
+            title={timerPaused ? 'Resume timer' : 'Pause timer'}
+            aria-label={timerPaused ? 'Resume timer' : 'Pause timer'}
+            className="w-10 h-10 rounded-xl border-2 border-gray-200 text-gray-600 hover:border-cyan-500 hover:text-cyan-600 flex items-center justify-center transition-smooth"
+          >
+            {timerPaused ? <FiPlay size={16} /> : <FiPause size={16} />}
+          </button>
+          <button
+            type="button"
+            onClick={handleEndInterview}
+            disabled={busy}
+            title="End interview"
+            aria-label="End interview"
+            className="w-10 h-10 rounded-xl border-2 border-red-200 text-red-500 hover:bg-red-50 flex items-center justify-center transition-smooth disabled:opacity-50"
+          >
+            <FiSquare size={14} fill="currentColor" />
+          </button>
+        </div>
+      </div>
+      {timerPaused && <p className="text-[11px] text-gray-400 mt-1">Timer paused</p>}
+    </div>
+  );
+
+  const notesPanel = (
+    <div className={`${PANEL} p-4 sm:p-5`}>
+      <PanelTitle icon={FiEdit3}>Quick Notes</PanelTitle>
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        rows="5"
+        className="w-full mt-3 px-3 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 focus:bg-white resize-none transition-smooth"
+        placeholder="Jot down key points, approach, or keywords..."
+      />
+      <p className="text-[11px] text-gray-400 mt-1.5">Just for you during this interview — not saved.</p>
+    </div>
+  );
+
   const AIBubble = ({ turn }) => (
     <div className="flex items-start gap-3">
       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white flex-shrink-0 shadow-sm">
@@ -433,11 +481,6 @@ const MockInterview = () => {
                     <span>{readAloud ? (voice.speaking ? 'Speaking...' : 'Voice on') : 'Voice off'}</span>
                   </button>
                 )}
-                {/* Quick glance on small screens, where the timer panel sits below the chat */}
-                <span className="xl:hidden flex items-center gap-1.5">
-                  <FiClock size={14} />
-                  {formatElapsed(elapsed)}
-                </span>
               </div>
             </div>
             <div className="w-full bg-white/20 rounded-full h-2">
@@ -447,6 +490,9 @@ const MockInterview = () => {
               />
             </div>
           </div>
+
+          {/* Phones/tablets: timer above the chat, since there is no side panel */}
+          <div className="xl:hidden mb-4">{timerPanel}</div>
 
           {/* Chat thread */}
           <div className="space-y-4 mb-4">
@@ -564,40 +610,14 @@ const MockInterview = () => {
               </p>
             )}
           </div>
+
+          {/* Phones/tablets: notes right under the answer box */}
+          <div className="xl:hidden mt-4">{notesPanel}</div>
         </div>
 
-        {/* Side panel: beside the chat on wide screens, below it on phones and tablets */}
-        <aside className="flex flex-col gap-4 md:grid md:grid-cols-2 xl:flex xl:flex-col">
-          <div className={`${PANEL} p-5`}>
-            <PanelTitle icon={FiClock}>Interview Timer</PanelTitle>
-            <div className="flex items-center justify-between mt-3">
-              <span className={`text-4xl font-bold font-display tabular-nums ${timerPaused ? 'text-gray-400' : 'text-gray-800'}`}>
-                {formatElapsed(elapsed)}
-              </span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setTimerPaused(!timerPaused)}
-                  title={timerPaused ? 'Resume timer' : 'Pause timer'}
-                  aria-label={timerPaused ? 'Resume timer' : 'Pause timer'}
-                  className="w-10 h-10 rounded-xl border-2 border-gray-200 text-gray-600 hover:border-cyan-500 hover:text-cyan-600 flex items-center justify-center transition-smooth"
-                >
-                  {timerPaused ? <FiPlay size={16} /> : <FiPause size={16} />}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleEndInterview}
-                  disabled={busy}
-                  title="End interview"
-                  aria-label="End interview"
-                  className="w-10 h-10 rounded-xl border-2 border-red-200 text-red-500 hover:bg-red-50 flex items-center justify-center transition-smooth disabled:opacity-50"
-                >
-                  <FiSquare size={14} fill="currentColor" />
-                </button>
-              </div>
-            </div>
-            {timerPaused && <p className="text-[11px] text-gray-400 mt-1">Timer paused</p>}
-          </div>
+        {/* Side panel (wide screens); smaller screens show timer and notes inline above */}
+        <aside className="hidden xl:flex flex-col gap-4">
+          {timerPanel}
 
           <div className={`${PANEL} p-5`}>
             <div className="flex items-center justify-between">
@@ -635,23 +655,12 @@ const MockInterview = () => {
             </div>
           </div>
 
-          {/* Already shown in the chat on small screens */}
-          <div className={`${PANEL} p-5 hidden xl:block`}>
+          <div className={`${PANEL} p-5`}>
             <PanelTitle icon={FiFileText}>Current Question</PanelTitle>
             <p className="text-sm text-gray-700 leading-relaxed mt-3 pl-3 border-l-2 border-cyan-500">{currentQuestion}</p>
           </div>
 
-          <div className={`${PANEL} p-5 md:col-span-2 xl:col-span-1`}>
-            <PanelTitle icon={FiEdit3}>Quick Notes</PanelTitle>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows="5"
-              className="w-full mt-3 px-3 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 focus:bg-white resize-none transition-smooth"
-              placeholder="Jot down key points, approach, or keywords..."
-            />
-            <p className="text-[11px] text-gray-400 mt-1.5">Just for you during this interview — not saved.</p>
-          </div>
+          {notesPanel}
         </aside>
       </div>
 

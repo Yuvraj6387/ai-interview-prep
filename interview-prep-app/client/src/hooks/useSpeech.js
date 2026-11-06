@@ -18,7 +18,7 @@ const normLang = (lang = '') => lang.replace('_', '-').toLowerCase();
 // Browsers don't expose a voice's gender, only its name. These are the male
 // English voices shipped on Windows/Edge, Chrome, macOS and iOS, so the
 // interviewer sounds the same (male) on laptop and phone wherever possible.
-const MALE_VOICE = /\b(male|ravi|prabhat|rishi|david|mark|guy|daniel|aaron|arthur|fred|alex|tom|gordon|oliver|james|george|ryan)\b/i;
+const MALE_VOICE = /\b(male|ravi|prabhat|rishi|david|mark|guy|daniel|aaron|arthur|alex|tom|gordon|oliver|james|george|ryan)\b/i;
 const isMale = (v) => MALE_VOICE.test(v.name) && !/female/i.test(v.name);
 
 const pickVoice = () => {
@@ -46,12 +46,14 @@ const useSpeech = ({ onTranscript, onError } = {}) => {
   // unless something keeps a reference to it.
   const utteranceRef = useRef(null);
   const unlockedRef = useRef(false);
+  const watchdogRef = useRef(null);
   // Keep the latest callbacks without restarting recognition when they change.
   const callbacksRef = useRef({ onTranscript, onError });
   callbacksRef.current = { onTranscript, onError };
 
   const stopSpeaking = useCallback(() => {
     if (!speechSupported) return;
+    clearTimeout(watchdogRef.current);
     window.speechSynthesis.cancel();
     setSpeaking(false);
   }, [speechSupported]);
@@ -70,31 +72,52 @@ const useSpeech = ({ onTranscript, onError } = {}) => {
   const speak = useCallback((text) => {
     if (!speechSupported || !text) return;
     const synth = window.speechSynthesis;
+    clearTimeout(watchdogRef.current);
 
-    const start = () => {
+    // useVoice=false falls back to the device's default voice. iPhones list
+    // some voices (not downloaded, or novelty ones) that never make a sound,
+    // and Safari reports neither start nor error for them.
+    const start = (useVoice) => {
       const utterance = new SpeechSynthesisUtterance(text);
-      const voice = pickVoice();
+      const voice = useVoice ? pickVoice() : null;
       if (voice) utterance.voice = voice;
-      utterance.lang = voice?.lang || LANG;
+      utterance.lang = voice?.lang || 'en-US';
       utterance.rate = 0.95;
-      utterance.onstart = () => setSpeaking(true);
+      let started = false;
+      const retryWithDefault = () => {
+        if (started || utteranceRef.current !== utterance) return;
+        utteranceRef.current = null;
+        synth.cancel();
+        setTimeout(() => start(false), 150);
+      };
+
+      utterance.onstart = () => {
+        started = true;
+        clearTimeout(watchdogRef.current);
+        setSpeaking(true);
+      };
       utterance.onend = () => setSpeaking(false);
-      utterance.onerror = () => setSpeaking(false);
+      utterance.onerror = (event) => {
+        setSpeaking(false);
+        // interrupted/canceled just means we stopped it on purpose.
+        if (voice && event.error !== 'interrupted' && event.error !== 'canceled') retryWithDefault();
+      };
 
       utteranceRef.current = utterance;
       synth.speak(utterance);
       // Android Chrome sometimes leaves the queue paused after a cancel.
-      synth.resume();
+      if (synth.paused) synth.resume();
       unlockedRef.current = true;
+      if (voice) watchdogRef.current = setTimeout(retryWithDefault, 2000);
     };
 
     // Calling speak() right after cancel() makes Android Chrome drop the new
     // utterance, so give the cancel a moment to settle first.
     if (synth.speaking || synth.pending) {
       synth.cancel();
-      setTimeout(start, 150);
+      setTimeout(() => start(true), 150);
     } else {
-      start();
+      start(true);
     }
   }, [speechSupported]);
 
@@ -156,6 +179,7 @@ const useSpeech = ({ onTranscript, onError } = {}) => {
 
   // Leaving the page should not keep talking or keep the mic open.
   useEffect(() => () => {
+    clearTimeout(watchdogRef.current);
     if (speechSupported) window.speechSynthesis.cancel();
     recognitionRef.current?.abort();
   }, [speechSupported]);

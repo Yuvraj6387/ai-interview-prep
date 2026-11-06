@@ -186,7 +186,7 @@ const QuestionsView = ({ profile, onBack }) => {
               </h2>
               <p className="flex items-center gap-1.5 text-sm text-slate-300">
                 <FiBookOpen size={14} className="text-cyan-400" />
-                Click the book icon to see a model answer
+                Tap Answer to see a model answer
               </p>
             </div>
             

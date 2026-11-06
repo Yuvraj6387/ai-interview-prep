@@ -80,52 +80,50 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-4 border-l-4 border-cyan-600"
+      className="relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden"
     >
-      <div className="flex justify-between items-center space-x-4">
-        {/* Question Number & Text */}
-        <div className="flex-1">
-          <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-br from-slate-700 to-slate-900 text-white font-bold rounded-lg px-2.5 py-0.5 text-xs flex-shrink-0">
-              Q{index + 1}
-            </div>
-            <div className="flex-1">
-              <p className="text-gray-800 font-medium leading-snug">
-                {question.questionText}
-              </p>
-              {DIFFICULTY_STYLES[question.difficulty] && (
-                <span className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${DIFFICULTY_STYLES[question.difficulty]}`}>
-                  {question.difficulty}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* Number tab tucked into the top-left corner, difficulty opposite it */}
+      <div className="flex items-start justify-between">
+        <span className="bg-gradient-to-br from-slate-700 to-slate-900 text-white font-bold text-sm px-4 py-1.5 rounded-br-2xl">
+          Q{index + 1}
+        </span>
+        {DIFFICULTY_STYLES[question.difficulty] && (
+          <span className={`mt-3 mr-4 px-3 py-1 rounded-full text-xs font-semibold ${DIFFICULTY_STYLES[question.difficulty]}`}>
+            {question.difficulty}
+          </span>
+        )}
+      </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center space-x-2 flex-shrink-0">
+      <div className="px-4 sm:px-5 pb-4 pt-2">
+        <p className="text-gray-800 font-semibold text-base sm:text-lg leading-snug">
+          {question.questionText}
+        </p>
+
+        <div className="flex items-center justify-end gap-2 mt-4">
           <button
             onClick={() => onTogglePin(question._id)}
-            className={`p-2 rounded-lg transition-smooth ${
+            className={`w-10 h-10 flex items-center justify-center rounded-lg border-2 transition-smooth ${
               question.isPinned
-                ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-yellow-50 border-yellow-300 text-yellow-600 hover:bg-yellow-100'
+                : 'border-gray-200 text-gray-600 hover:bg-gray-50'
             }`}
             title={question.isPinned ? 'Unpin' : 'Pin'}
+            aria-label={question.isPinned ? 'Unpin question' : 'Pin question'}
           >
             <FiBookmark size={16} fill={question.isPinned ? 'currentColor' : 'none'} />
           </button>
 
           <button
             onClick={onToggleExplanation}
-            className={`flex items-center gap-1 p-2 rounded-lg transition-smooth ${
+            className={`h-10 flex items-center gap-2 px-4 rounded-lg text-sm font-semibold transition-smooth ${
               isExpanded
                 ? 'bg-cyan-600 text-white'
                 : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white hover:shadow-lg'
             }`}
-            title={isExpanded ? 'Hide explanation' : 'Learn More'}
+            title={isExpanded ? 'Hide answer' : 'See model answer'}
           >
             <FiBookOpen size={16} />
+            <span>{isExpanded ? 'Hide' : 'Answer'}</span>
             {isExpanded ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
           </button>
         </div>
@@ -140,7 +138,7 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mx-4 sm:mx-5 mb-4 pt-4 border-t border-gray-100">
               {loading && (
                 <div className="flex flex-col items-center py-6">
                   <FiLoader className="animate-spin mb-2 text-cyan-600" size={26} />

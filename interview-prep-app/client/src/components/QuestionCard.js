@@ -99,10 +99,10 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
           {question.questionText}
         </p>
 
-        <div className="flex items-center justify-end gap-2 mt-4">
+        <div className="flex items-center justify-end gap-2 mt-3">
           <button
             onClick={() => onTogglePin(question._id)}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg border-2 transition-smooth ${
+            className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-smooth ${
               question.isPinned
                 ? 'bg-yellow-50 border-yellow-300 text-yellow-600 hover:bg-yellow-100'
                 : 'border-gray-200 text-gray-600 hover:bg-gray-50'
@@ -110,21 +110,21 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
             title={question.isPinned ? 'Unpin' : 'Pin'}
             aria-label={question.isPinned ? 'Unpin question' : 'Pin question'}
           >
-            <FiBookmark size={16} fill={question.isPinned ? 'currentColor' : 'none'} />
+            <FiBookmark size={14} fill={question.isPinned ? 'currentColor' : 'none'} />
           </button>
 
           <button
             onClick={onToggleExplanation}
-            className={`h-10 flex items-center gap-2 px-4 rounded-lg text-sm font-semibold transition-smooth ${
+            className={`h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-semibold transition-smooth ${
               isExpanded
                 ? 'bg-cyan-600 text-white'
                 : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white hover:shadow-lg'
             }`}
             title={isExpanded ? 'Hide answer' : 'See model answer'}
           >
-            <FiBookOpen size={16} />
+            <FiBookOpen size={14} />
             <span>{isExpanded ? 'Hide' : 'Answer'}</span>
-            {isExpanded ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
+            {isExpanded ? <FiChevronUp size={12} /> : <FiChevronDown size={12} />}
           </button>
         </div>
       </div>

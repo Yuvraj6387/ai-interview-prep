@@ -121,6 +121,8 @@ const ResumeAnalyzer = () => {
     );
   }
 
+  const showScore = !analyzing && !!analysis;
+
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
@@ -137,13 +139,17 @@ const ResumeAnalyzer = () => {
           </p>
         </motion.div>
 
+        <div className={`grid gap-6 mb-6 ${showScore ? 'lg:grid-cols-2' : ''}`}>
         {/* Upload Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-6"
+          className="bg-white rounded-2xl shadow-xl p-6 flex flex-col justify-center"
         >
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+          {showScore && (
+            <p className="text-sm font-semibold text-gray-800 font-display mb-3">Upload a new version</p>
+          )}
+          <div className={`flex flex-col items-stretch gap-4 ${showScore ? '' : 'sm:flex-row sm:items-center'}`}>
             <label className="flex-1 min-w-0 flex items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl px-4 py-4 cursor-pointer hover:border-cyan-400 transition-smooth">
               <FiFile className="text-gray-400 flex-shrink-0" size={22} />
               <span className="text-sm text-gray-600 truncate">
@@ -175,6 +181,46 @@ const ResumeAnalyzer = () => {
             </button>
           </div>
         </motion.div>
+
+          {/* Score, next to the upload card on wide screens */}
+          {showScore && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl shadow-xl p-6 flex flex-col justify-center gap-4"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                    <FiAward size={24} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Resume Score</p>
+                    <p className="text-3xl font-bold text-gray-800 font-display">{analysis.score}%</p>
+                  </div>
+                </div>
+
+                {analysis.suggestedRole && (
+                  <div className="flex items-center gap-3 bg-cyan-50 px-4 py-2.5 rounded-xl">
+                    <FiTarget className="text-cyan-600 flex-shrink-0" size={20} />
+                    <div>
+                      <p className="text-xs text-gray-500">Suggested Role</p>
+                      <p className="text-sm font-semibold text-gray-800">{analysis.suggestedRole}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => setShowInterviewModal(true)}
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth"
+              >
+                <FiBriefcase />
+                <span>Generate Interview From Resume</span>
+              </button>
+            </motion.div>
+          )}
+        </div>
 
         {/* Analyzing state */}
         {analyzing && (
@@ -209,40 +255,6 @@ const ResumeAnalyzer = () => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            {/* Score */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-              {/* Wraps instead of squeezing: next to the sidebar a tablet has little width to spare */}
-              <div className="flex flex-wrap items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white shadow-lg">
-                    <FiAward size={32} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Resume Score</p>
-                    <p className="text-3xl font-bold text-gray-800 font-display">{analysis.score}%</p>
-                  </div>
-                </div>
-
-                {analysis.suggestedRole && (
-                  <div className="flex items-center gap-3 bg-cyan-50 px-4 py-3 rounded-xl">
-                    <FiTarget className="text-cyan-600" size={20} />
-                    <div>
-                      <p className="text-xs text-gray-500">Suggested Role</p>
-                      <p className="text-sm font-semibold text-gray-800">{analysis.suggestedRole}</p>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setShowInterviewModal(true)}
-                  className="flex items-center justify-center space-x-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth w-full sm:w-auto whitespace-nowrap"
-                >
-                  <FiBriefcase />
-                  <span>Generate Interview From Resume</span>
-                </button>
-              </div>
-            </div>
-
             {/* Skills */}
             <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
               <h3 className="text-lg font-bold text-gray-800 mb-4 font-display">Skills</h3>

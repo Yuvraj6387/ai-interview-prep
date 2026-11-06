@@ -26,7 +26,7 @@ const QuestionsView = ({ profile, onBack }) => {
       showToast('Questions regenerated successfully', 'success');
     } catch (error) {
       console.error('Error generating questions:', error);
-      showToast('Failed to generate questions. Please check your API key and try again.', 'error');
+      showToast(error.response?.data?.message || 'Failed to generate questions. Please try again.', 'error');
     } finally {
       setGenerating(false);
     }

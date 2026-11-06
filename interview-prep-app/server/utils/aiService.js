@@ -143,8 +143,10 @@ class AIService {
     const prompt = `Generate 5 interview questions for a ${targetRole} with ${experience} years of experience. Topics to cover: ${topicsList}. Return ONLY a valid JSON array of objects, each containing a "question" property. No other text or markdown formatting. Example: [{"question": "What is..."}]`;
     
     try {
-      const response = await this.sendRequest(prompt);
-      
+      // The model spends up to ~300 tokens reasoning before it writes the list,
+      // so 512 left too little room and could cut the JSON off mid-array.
+      const response = await this.sendRequest(prompt, { maxTokens: 1024 });
+
       // Extract just the JSON array from the response in case there is extra text
       const jsonStart = response.indexOf('[');
       const jsonEnd = response.lastIndexOf(']');

@@ -77,7 +77,14 @@ const formatResumeContext = (resumeContext) => resumeContext
 Ground your questions in THIS resume: ask about the specific skills and projects listed above instead of generic role trivia, whenever possible.`
   : '';
 
-const QUESTION_STYLE_RULE = 'Keep it SHORT and natural: one focused question, a single sentence, phrased the way a real interviewer would actually say it out loud. Do not write long, multi-part, or compound questions.';
+const formatJobContext = (jobContext) => jobContext
+  ? `Target job${jobContext.title ? ` - ${jobContext.title}` : ''}. Skills this job requires: ${(jobContext.skills || []).join(', ') || 'n/a'}. Topics its interview covers: ${(jobContext.topics || []).join(', ') || 'n/a'}.
+This interview is practice for THIS job: prioritise what it requires, especially skills the candidate may be missing.`
+  : '';
+
+const QUESTION_STYLE_RULE = 'Keep it SHORT and natural: one focused question, a single sentence, phrased the way a real interviewer would actually say it out loud. Write it as a direct question that ends with a question mark, not a command like "Explain..." or "Describe...". Do not write long, multi-part, or compound questions.';
+
+const QUESTION_DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 
 const formatTurnsForPrompt = (turns) => {
   if (!turns || turns.length === 0) return '(This is the first question)';
@@ -140,8 +147,16 @@ class AIService {
 
   async generateInterviewQuestions(targetRole, experience, topics) {
     const topicsList = Array.isArray(topics) ? topics.join(', ') : topics;
-    const prompt = `Generate 5 interview questions for a ${targetRole} with ${experience} years of experience. Topics to cover: ${topicsList}. Return ONLY a valid JSON array of objects, each containing a "question" property. No other text or markdown formatting. Example: [{"question": "What is..."}]`;
-    
+    const prompt = `You are a senior interviewer preparing questions for a real ${targetRole} interview. The candidate has ${experience} years of experience. Topics to cover: ${topicsList}.
+
+Write exactly 5 questions:
+- ${QUESTION_STYLE_RULE}
+- Keep each one under 25 words, in plain text with no markdown or backticks.
+- Spread them across the topics, and mix concepts, practical scenarios and one problem-solving question.
+- Order them from easiest to hardest: 2 Easy, 2 Medium, 1 Hard, pitched for this experience level.
+
+Return ONLY a valid JSON array of objects, each with a "question" and a "difficulty" ("Easy", "Medium" or "Hard"). No other text or markdown formatting. Example: [{"question": "How would you...?", "difficulty": "Easy"}]`;
+
     try {
       // The model spends up to ~300 tokens reasoning before it writes the list,
       // so 512 left too little room and could cut the JSON off mid-array.
@@ -150,14 +165,18 @@ class AIService {
       // Extract just the JSON array from the response in case there is extra text
       const jsonStart = response.indexOf('[');
       const jsonEnd = response.lastIndexOf(']');
-      
-      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd >= jsonStart) {
-        const jsonString = response.substring(jsonStart, jsonEnd + 1);
-        return JSON.parse(jsonString);
-      }
-      
-      const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
-      return JSON.parse(cleanResponse);
+
+      const questions = jsonStart !== -1 && jsonEnd !== -1 && jsonEnd >= jsonStart
+        ? JSON.parse(response.substring(jsonStart, jsonEnd + 1))
+        : JSON.parse(response.replace(/```json\n?|\n?```/g, '').trim());
+
+      return questions
+        .filter((q) => typeof q.question === 'string' && q.question.trim())
+        .map((q) => ({
+          // The model still slips in markdown code ticks now and then; the card shows plain text.
+          question: q.question.replace(/`/g, '').trim(),
+          difficulty: QUESTION_DIFFICULTIES.includes(q.difficulty) ? q.difficulty : undefined,
+        }));
     } catch (error) {
       console.error('Error in generateInterviewQuestions:', error);
       throw error;
@@ -272,11 +291,54 @@ ${resumeText}
     }
   }
 
-  async generateNextQuestion({ config, resumeContext, turns }) {
+  async matchResumeToJob(resumeText, jobDescription) {
+    const prompt = `Act as an expert technical recruiter. Compare this candidate's resume with the job description and return ONLY a valid JSON object (no markdown, no extra text) with this exact shape:
+{
+  "matchScore": <number 0-100, how well the resume fits this job>,
+  "jobTitle": "<the job title from the description, e.g. 'Frontend Developer'>",
+  "summary": "<2 short sentences on the overall fit>",
+  "matchedSkills": [<skills the job asks for that the resume clearly shows>],
+  "missingSkills": [<skills the job asks for that the resume lacks or shows only weakly>],
+  "suggestions": [<3-5 short, actionable ways to close the gaps or tailor the resume to this job>],
+  "interviewTopics": [<4-6 topics this job's interview is likely to cover, 1-3 words each>]
+}
+
+Resume:
+"""
+${resumeText}
+"""
+
+Job description:
+"""
+${jobDescription}
+"""`;
+
+    try {
+      const response = await this.generateJson(prompt);
+      const parsed = extractJson(response);
+      const list = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === 'string') : []);
+
+      return {
+        matchScore: Math.max(0, Math.min(100, Number(parsed.matchScore) || 0)),
+        jobTitle: typeof parsed.jobTitle === 'string' ? parsed.jobTitle : '',
+        summary: typeof parsed.summary === 'string' ? parsed.summary : '',
+        matchedSkills: list(parsed.matchedSkills),
+        missingSkills: list(parsed.missingSkills),
+        suggestions: list(parsed.suggestions),
+        interviewTopics: list(parsed.interviewTopics),
+      };
+    } catch (error) {
+      console.error('Error in matchResumeToJob:', error);
+      throw error;
+    }
+  }
+
+  async generateNextQuestion({ config, resumeContext, jobContext, turns }) {
     const { role, experienceLevel, interviewType, difficulty, numQuestions } = config;
 
     const prompt = `You are conducting a live ${interviewType} interview for a ${role} candidate with ${experienceLevel} years of experience. Overall difficulty target: ${difficulty} (gradually escalate as the interview progresses).
 ${formatResumeContext(resumeContext)}
+${formatJobContext(jobContext)}
 
 Interview so far:
 ${formatTurnsForPrompt(turns)}
@@ -340,7 +402,7 @@ Return ONLY a valid JSON object with this exact shape:
     }
   }
 
-  async evaluateAndGenerateNext({ config, resumeContext, priorTurns, questionText, answerText, needsNextQuestion }) {
+  async evaluateAndGenerateNext({ config, resumeContext, jobContext, priorTurns, questionText, answerText, needsNextQuestion }) {
     const { role, experienceLevel, interviewType, difficulty, numQuestions } = config;
 
     const nextQuestionInstruction = needsNextQuestion
@@ -349,6 +411,7 @@ Return ONLY a valid JSON object with this exact shape:
 
     const prompt = `You are conducting a live ${interviewType} interview for a ${role} candidate with ${experienceLevel} years of experience. Overall difficulty target: ${difficulty} (gradually escalate as the interview progresses).
 ${formatResumeContext(resumeContext)}
+${formatJobContext(jobContext)}
 
 Interview so far:
 ${formatTurnsForPrompt(priorTurns)}

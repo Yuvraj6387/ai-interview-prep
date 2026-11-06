@@ -42,6 +42,12 @@ const markdownComponents = {
   },
 };
 
+const DIFFICULTY_STYLES = {
+  Easy: 'bg-green-50 text-green-700',
+  Medium: 'bg-amber-50 text-amber-700',
+  Hard: 'bg-red-50 text-red-700',
+};
+
 const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, index }) => {
   const [explanation, setExplanation] = useState('');
   const [loading, setLoading] = useState(false);
@@ -83,9 +89,16 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
             <div className="bg-gradient-to-br from-slate-700 to-slate-900 text-white font-bold rounded-lg px-2.5 py-0.5 text-xs flex-shrink-0">
               Q{index + 1}
             </div>
-            <p className="text-gray-800 font-medium leading-snug flex-1">
-              {question.questionText}
-            </p>
+            <div className="flex-1">
+              <p className="text-gray-800 font-medium leading-snug">
+                {question.questionText}
+              </p>
+              {DIFFICULTY_STYLES[question.difficulty] && (
+                <span className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${DIFFICULTY_STYLES[question.difficulty]}`}>
+                  {question.difficulty}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

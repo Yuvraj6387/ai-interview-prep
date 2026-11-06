@@ -14,9 +14,15 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
+  // Accounts created with "Sign in with Google" have no password.
   password: {
     type: String,
-    required: true
+    required: function() { return !this.googleId; }
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
   },
   profileImage: {
     type: String,

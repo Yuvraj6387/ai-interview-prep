@@ -144,7 +144,7 @@ const ResumeAnalyzer = () => {
           className="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-6"
         >
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-            <label className="flex-1 flex items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl px-4 py-4 cursor-pointer hover:border-cyan-400 transition-smooth">
+            <label className="flex-1 min-w-0 flex items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl px-4 py-4 cursor-pointer hover:border-cyan-400 transition-smooth">
               <FiFile className="text-gray-400 flex-shrink-0" size={22} />
               <span className="text-sm text-gray-600 truncate">
                 {selectedFile ? selectedFile.name : 'Choose a PDF resume to upload'}
@@ -159,7 +159,7 @@ const ResumeAnalyzer = () => {
             <button
               onClick={handleAnalyze}
               disabled={!selectedFile || analyzing}
-              className="flex items-center justify-center space-x-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-shrink-0 whitespace-nowrap flex items-center justify-center space-x-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {analyzing ? (
                 <>
@@ -211,7 +211,8 @@ const ResumeAnalyzer = () => {
           >
             {/* Score */}
             <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+              {/* Wraps instead of squeezing: next to the sidebar a tablet has little width to spare */}
+              <div className="flex flex-wrap items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                   <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white shadow-lg">
                     <FiAward size={32} />
@@ -234,7 +235,7 @@ const ResumeAnalyzer = () => {
 
                 <button
                   onClick={() => setShowInterviewModal(true)}
-                  className="flex items-center justify-center space-x-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth w-full sm:w-auto"
+                  className="flex items-center justify-center space-x-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth w-full sm:w-auto whitespace-nowrap"
                 >
                   <FiBriefcase />
                   <span>Generate Interview From Resume</span>

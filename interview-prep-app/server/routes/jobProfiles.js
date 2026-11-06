@@ -105,7 +105,8 @@ router.post('/:id/generate-questions', auth, async (req, res) => {
       aiQuestions.map(q => ({
         jobProfileId: req.params.id,
         userId: req.userId,
-        questionText: q.question
+        questionText: q.question,
+        difficulty: q.difficulty
       }))
     );
 

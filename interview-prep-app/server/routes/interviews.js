@@ -36,6 +36,20 @@ const finishInterview = async (interview, turnsForReport) => {
   await interview.save();
 };
 
+// Keep only the fields the prompts use, capped, since this comes straight from the client.
+const sanitizeJobContext = (jobContext) => {
+  if (!jobContext || typeof jobContext !== 'object') return null;
+
+  const list = (value) => (Array.isArray(value)
+    ? value.filter((item) => typeof item === 'string').slice(0, 12).map((item) => item.slice(0, 60))
+    : []);
+  const title = typeof jobContext.title === 'string' ? jobContext.title.slice(0, 100) : '';
+  const skills = list(jobContext.skills);
+  const topics = list(jobContext.topics);
+
+  return title || skills.length || topics.length ? { title, skills, topics } : null;
+};
+
 // Start a new adaptive mock interview
 router.post('/', auth, async (req, res) => {
   try {
@@ -60,12 +74,15 @@ router.post('/', auth, async (req, res) => {
       numQuestions: Number(numQuestions),
     };
 
-    const firstQuestion = await aiService.generateNextQuestion({ config, resumeContext, turns: [] });
+    const jobContext = sanitizeJobContext(req.body.jobContext);
+
+    const firstQuestion = await aiService.generateNextQuestion({ config, resumeContext, jobContext, turns: [] });
 
     const interview = await Interview.create({
       userId: req.userId,
       config,
       resumeContext,
+      jobContext,
       turns: [{ questionText: firstQuestion.questionText, isFollowUp: firstQuestion.isFollowUp }],
       status: 'in_progress',
     });
@@ -108,6 +125,7 @@ router.post('/:id/answer', auth, async (req, res) => {
       const nextQuestion = await aiService.generateNextQuestion({
         config: interview.config,
         resumeContext: interview.resumeContext,
+        jobContext: interview.jobContext,
         turns: interview.turns,
       });
       interview.turns.push({ questionText: nextQuestion.questionText, isFollowUp: nextQuestion.isFollowUp });
@@ -129,6 +147,7 @@ router.post('/:id/answer', auth, async (req, res) => {
     const { evaluation, nextQuestion } = await aiService.evaluateAndGenerateNext({
       config: interview.config,
       resumeContext: interview.resumeContext,
+      jobContext: interview.jobContext,
       priorTurns: interview.turns.slice(0, -1),
       questionText: lastTurn.questionText,
       answerText,

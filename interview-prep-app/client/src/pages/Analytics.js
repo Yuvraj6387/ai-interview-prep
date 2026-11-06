@@ -6,17 +6,29 @@ import { FiTarget, FiAward, FiTrendingUp, FiTag, FiMic } from 'react-icons/fi';
 import { interviewAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
 
-const StatTile = ({ icon: Icon, label, value }) => (
-  <div className="bg-white rounded-xl shadow-md p-5 flex items-center space-x-4">
-    <div className="bg-gradient-to-br from-slate-700 to-slate-900 p-3 rounded-lg text-white flex-shrink-0">
-      <Icon size={20} />
+const StatTile = ({ icon: Icon, label, value, suffix, accent }) => (
+  <motion.div
+    whileHover={{ y: -4 }}
+    className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow p-5 flex items-center space-x-4 border-t-4 ${accent.border}`}
+  >
+    <div className={`${accent.tile} p-3 rounded-xl flex-shrink-0`}>
+      <Icon size={22} />
     </div>
     <div>
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-2xl font-bold text-gray-800 font-display">{value}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
+      <p className="text-3xl font-bold text-gray-800 font-display">
+        {value}
+        {suffix && <span className="text-sm font-medium text-gray-400 ml-1">{suffix}</span>}
+      </p>
     </div>
-  </div>
+  </motion.div>
 );
+
+const TILE_ACCENTS = {
+  cyan: { tile: 'bg-cyan-50 text-cyan-600', border: 'border-cyan-500' },
+  teal: { tile: 'bg-teal-50 text-teal-600', border: 'border-teal-500' },
+  amber: { tile: 'bg-amber-50 text-amber-600', border: 'border-amber-400' },
+};
 
 const Analytics = () => {
   const [interviews, setInterviews] = useState([]);
@@ -128,9 +140,9 @@ const Analytics = () => {
           <>
             {/* Stat tiles */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <StatTile icon={FiMic} label="Total Interviews" value={stats.total} />
-              <StatTile icon={FiTarget} label="Average Score" value={stats.average} />
-              <StatTile icon={FiAward} label="Best Score" value={stats.best} />
+              <StatTile icon={FiMic} label="Total Interviews" value={stats.total} accent={TILE_ACCENTS.cyan} />
+              <StatTile icon={FiTarget} label="Average Score" value={stats.average} suffix="/ 100" accent={TILE_ACCENTS.teal} />
+              <StatTile icon={FiAward} label="Best Score" value={stats.best} suffix="/ 100" accent={TILE_ACCENTS.amber} />
             </div>
 
             {/* Trend chart */}

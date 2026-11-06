@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FiArrowLeft, FiRefreshCw, FiLoader } from 'react-icons/fi';
+import { FiArrowLeft, FiRefreshCw, FiLoader, FiZap, FiHelpCircle, FiBookOpen } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import QuestionCard from '../components/QuestionCard';
 import { profileAPI, questionAPI } from '../services/api';
@@ -23,7 +23,8 @@ const QuestionsView = ({ profile, onBack }) => {
     try {
       const response = await profileAPI.generateQuestions(profileId);
       setQuestions(response.data);
-      showToast('Questions regenerated successfully', 'success');
+      setExpandedQuestionId(null);
+      showToast('New interview questions are ready', 'success');
     } catch (error) {
       console.error('Error generating questions:', error);
       showToast(error.response?.data?.message || 'Failed to generate questions. Please try again.', 'error');
@@ -107,15 +108,22 @@ const QuestionsView = ({ profile, onBack }) => {
                 </p>
               </div>
 
-              <button
+              <motion.button
                 onClick={generateQuestions}
                 disabled={generating}
-                className="flex items-center justify-center space-x-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+                whileHover={generating ? undefined : { y: -2 }}
+                whileTap={generating ? undefined : { scale: 0.98 }}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-600/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-smooth disabled:opacity-60 disabled:cursor-not-allowed w-full md:w-auto"
               >
                 {generating ? (
                   <>
                     <FiLoader className="animate-spin" />
                     <span>Generating...</span>
+                  </>
+                ) : questions.length === 0 ? (
+                  <>
+                    <FiZap />
+                    <span>Generate Questions</span>
                   </>
                 ) : (
                   <>
@@ -123,41 +131,63 @@ const QuestionsView = ({ profile, onBack }) => {
                     <span>Regenerate</span>
                   </>
                 )}
-              </button>
+              </motion.button>
             </div>
           </div>
         </motion.div>
 
         {/* Questions List */}
-        {loading ? (
+        {loading && !generating ? (
           <div className="flex justify-center items-center py-20">
             <div className="spinner"></div>
           </div>
         ) : generating ? (
-          <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
-            <FiLoader className="animate-spin text-cyan-600 mx-auto mb-4" size={48} />
-            <h3 className="text-xl font-bold text-gray-800 mb-2 font-display">
-              Generating Interview Questions...
-            </h3>
-            <p className="text-gray-600">
-              AI is creating personalized questions based on your profile
+          <div className="space-y-4">
+            <p className="flex items-center gap-2 text-slate-300 text-sm">
+              <FiLoader className="animate-spin text-cyan-400" />
+              AI is writing 5 interview questions for {profile.targetRole}, from easy to hard...
             </p>
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white rounded-xl shadow-md p-4 border-l-4 border-cyan-600 animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-5 rounded-lg bg-slate-200 flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 rounded bg-gray-200" style={{ width: `${85 - i * 8}%` }} />
+                    <div className="h-3 w-14 rounded-full bg-gray-100" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : questions.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+            <div className="w-20 h-20 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-5">
+              <FiHelpCircle size={36} className="text-cyan-600" />
+            </div>
             <h3 className="text-xl font-bold text-gray-800 mb-2 font-display">
               No Questions Yet
             </h3>
-            <p className="text-gray-600 mb-6">
-              Click the Regenerate button to create interview questions
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Generate 5 real interview questions for this role, from easy to hard, each with a model answer.
             </p>
+            <button
+              onClick={generateQuestions}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-600/30 transition-smooth"
+            >
+              <FiZap />
+              <span>Generate Questions</span>
+            </button>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1 mb-4">
               <h2 className="text-xl font-bold text-white font-display">
                 Interview Questions ({questions.length})
               </h2>
+              <p className="flex items-center gap-1.5 text-sm text-slate-300">
+                <FiBookOpen size={14} className="text-cyan-400" />
+                Click the book icon to see a model answer
+              </p>
             </div>
             
             {questions.map((question, index) => (

@@ -73,4 +73,27 @@ router.post('/upload', auth, (req, res) => {
   });
 });
 
+// Compare the saved resume against a pasted job description
+router.post('/match', auth, async (req, res) => {
+  try {
+    const jobDescription = (req.body.jobDescription || '').trim();
+
+    if (jobDescription.length < 100) {
+      return res.status(400).json({ message: 'Please paste the full job description (at least 100 characters).' });
+    }
+
+    const resume = await Resume.findOne({ userId: req.userId });
+    if (!resume) {
+      return res.status(404).json({ message: 'Upload your resume in Resume Analyzer first, then match it against a job.' });
+    }
+
+    // Both texts are trimmed so the prompt stays inside the AI free tier's per-request token limit.
+    const match = await aiService.matchResumeToJob(resume.extractedText.slice(0, 6000), jobDescription.slice(0, 5000));
+    res.json(match);
+  } catch (error) {
+    console.error('Error matching resume to job:', error);
+    res.status(500).json({ message: error.message || 'Failed to match your resume. Please try again.' });
+  }
+});
+
 module.exports = router;

@@ -64,6 +64,15 @@ const interviewSchema = new mongoose.Schema({
     },
     default: null
   },
+  // Set when the interview was started from the Job Matcher for a pasted job description.
+  jobContext: {
+    type: {
+      title: { type: String, trim: true },
+      skills: [{ type: String, trim: true }],
+      topics: [{ type: String, trim: true }]
+    },
+    default: null
+  },
   turns: [turnSchema],
   status: {
     type: String,

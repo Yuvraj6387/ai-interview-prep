@@ -10,6 +10,8 @@ import { ToastProvider } from './components/ToastProvider';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import LoginModal from './components/LoginModal';
+import GoogleSignInButton from './components/GoogleSignInButton';
+import { useToast } from './components/ToastProvider';
 import Dashboard from './pages/Dashboard';
 
 // Split out of the main bundle: these pages pull in the heavy chart and
@@ -20,6 +22,7 @@ const QuestionsView = lazy(() => import('./pages/QuestionsView'));
 const MockInterview = lazy(() => import('./pages/MockInterview'));
 const InterviewResult = lazy(() => import('./pages/InterviewResult'));
 const Analytics = lazy(() => import('./pages/Analytics'));
+const JobMatcher = lazy(() => import('./pages/JobMatcher'));
 
 const RouteFallback = () => (
   <div className="flex justify-center items-center py-20">
@@ -120,6 +123,17 @@ const InterviewPreviewCard = () => (
 
 const Landing = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const { googleLogin } = useAuth();
+  const { showToast } = useToast();
+
+  const handleGoogleCredential = async (credential) => {
+    try {
+      await googleLogin(credential);
+      showToast('Logged in with Google', 'success');
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Google sign-in failed. Please try again.', 'error');
+    }
+  };
 
   return (
     <div className="relative overflow-hidden">
@@ -148,15 +162,25 @@ const Landing = () => {
             Upload your resume, let AI score it and spot the gaps, then generate interview questions matched to exactly what's on it.
           </p>
 
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setShowLoginModal(true)}
-            className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold rounded-xl shadow-xl hover:shadow-2xl transition-smooth mb-8"
-          >
-            <span>Get Started Free</span>
-            <FiArrowRight />
-          </motion.button>
+          <div className="flex flex-wrap items-center gap-4 mb-8">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowLoginModal(true)}
+              className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold rounded-xl shadow-xl hover:shadow-2xl transition-smooth"
+            >
+              <span>Get Started Free</span>
+              <FiArrowRight />
+            </motion.button>
+            {/* Google keeps one sign-in callback per page, so hand it to the modal while that is open */}
+            {!showLoginModal && (
+              <GoogleSignInButton
+                width={250}
+                onCredential={handleGoogleCredential}
+                onError={(message) => showToast(message, 'error')}
+              />
+            )}
+          </div>
 
           <div className="space-y-2.5">
             {CHECKLIST.map((item) => (
@@ -212,6 +236,17 @@ const Landing = () => {
 const AppContent = () => {
   const { isAuthenticated, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+
+  // One menu button serves both layouts: it reopens the hidden desktop sidebar,
+  // or slides in the drawer on mobile.
+  const openSidebar = () => {
+    if (window.matchMedia('(min-width: 768px)').matches) {
+      setDesktopSidebarOpen(true);
+    } else {
+      setSidebarOpen(true);
+    }
+  };
 
   if (loading) {
     return (
@@ -232,13 +267,19 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        desktopOpen={desktopSidebarOpen}
+        onDesktopClose={() => setDesktopSidebarOpen(false)}
+      />
       <div className="flex-1 min-w-0">
-        <Navbar onMenuClick={() => setSidebarOpen(true)} />
+        <Navbar onMenuClick={openSidebar} showOnDesktop={!desktopSidebarOpen} />
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/resume" element={<ResumeAnalyzer />} />
+            <Route path="/job-match" element={<JobMatcher />} />
             <Route path="/mock-interview" element={<MockInterview />} />
             <Route path="/interview-result/:interviewId" element={<InterviewResult />} />
             <Route path="/analytics" element={<Analytics />} />

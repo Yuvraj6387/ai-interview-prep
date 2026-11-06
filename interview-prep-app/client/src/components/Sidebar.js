@@ -1,17 +1,18 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiGrid, FiFileText, FiMic, FiBarChart2, FiLogOut, FiUser, FiX } from 'react-icons/fi';
+import { FiGrid, FiFileText, FiTarget, FiMic, FiBarChart2, FiLogOut, FiUser, FiX, FiChevronsLeft } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: FiGrid },
   { to: '/resume', label: 'Resume Analyzer', icon: FiFileText },
+  { to: '/job-match', label: 'Job Matcher', icon: FiTarget },
   { to: '/mock-interview', label: 'Mock Interview', icon: FiMic },
   { to: '/analytics', label: 'Analytics', icon: FiBarChart2 },
 ];
 
-const SidebarContent = ({ onNavigate, onClose }) => {
+const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, closeLabel = 'Close menu' }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
 
@@ -20,8 +21,13 @@ const SidebarContent = ({ onNavigate, onClose }) => {
       <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
         <h1 className="text-lg font-bold gradient-text font-display truncate">⚡ InterviewPreparation.AI</h1>
         {onClose && (
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 flex-shrink-0">
-            <FiX size={22} />
+          <button
+            onClick={onClose}
+            title={closeLabel}
+            aria-label={closeLabel}
+            className="text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg p-1 flex-shrink-0 transition-smooth"
+          >
+            <CloseIcon size={22} />
           </button>
         )}
       </div>
@@ -77,13 +83,25 @@ const SidebarContent = ({ onNavigate, onClose }) => {
   );
 };
 
-const Sidebar = ({ isOpen, onClose }) => {
+const Sidebar = ({ isOpen, onClose, desktopOpen, onDesktopClose }) => {
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside className="hidden md:block w-64 flex-shrink-0 border-r border-gray-100 sticky top-0 h-screen">
-        <SidebarContent />
-      </aside>
+      {/* Desktop sidebar: slides shut to zero width; the navbar's menu button brings it back */}
+      <AnimatePresence initial={false}>
+        {desktopOpen && (
+          <motion.aside
+            initial={{ width: 0 }}
+            animate={{ width: 256 }}
+            exit={{ width: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="hidden md:block flex-shrink-0 overflow-hidden border-r border-gray-100 sticky top-0 h-screen"
+          >
+            <div className="w-64 h-full">
+              <SidebarContent onClose={onDesktopClose} closeIcon={FiChevronsLeft} closeLabel="Hide sidebar" />
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* Mobile drawer */}
       <AnimatePresence>

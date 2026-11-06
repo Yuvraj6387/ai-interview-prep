@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { FiX, FiMail, FiLock, FiUser, FiImage, FiLoader } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './ToastProvider';
+import GoogleSignInButton, { isGoogleSignInEnabled } from './GoogleSignInButton';
 
 const LoginModal = ({ onClose }) => {
-  const { login, register } = useAuth();
+  const { login, register, googleLogin } = useAuth();
   const { showToast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -76,6 +77,22 @@ const LoginModal = ({ onClose }) => {
     }
   };
 
+  const handleGoogleCredential = async (credential) => {
+    setError('');
+    setLoading(true);
+    try {
+      await googleLogin(credential);
+      showToast('Logged in with Google', 'success');
+      onClose();
+    } catch (err) {
+      const message = err.response?.data?.message || 'Google sign-in failed. Please try again.';
+      setError(message);
+      showToast(message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop animate-fade-in">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden animate-scale-in">
@@ -98,6 +115,24 @@ const LoginModal = ({ onClose }) => {
             <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-xs">
               {error}
             </div>
+          )}
+
+          {isGoogleSignInEnabled && (
+            <>
+              <div className="flex justify-center">
+                <GoogleSignInButton
+                  text={isLogin ? 'signin_with' : 'signup_with'}
+                  width={300}
+                  onCredential={handleGoogleCredential}
+                  onError={setError}
+                />
+              </div>
+              <div className="flex items-center gap-3 text-xs text-gray-400">
+                <span className="flex-1 h-px bg-gray-200" />
+                or with email
+                <span className="flex-1 h-px bg-gray-200" />
+              </div>
+            </>
           )}
 
           {!isLogin && (

@@ -90,6 +90,14 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
+  const googleLogin = async (credential) => {
+    const response = await authAPI.google(credential);
+    localStorage.setItem('token', response.data.token);
+    writeCachedUser(response.data.user);
+    setUser(response.data.user);
+    return response.data;
+  };
+
   const logout = () => {
     clearSession();
     setUser(null);
@@ -100,6 +108,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
+    googleLogin,
     logout,
     isAuthenticated: !!user,
   };

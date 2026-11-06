@@ -122,6 +122,9 @@ const ResumeAnalyzer = () => {
   }
 
   const showScore = !analyzing && !!analysis;
+  // The two side-by-side cards share a title, content height and button so they line up.
+  const CARD_TITLE = 'text-sm font-semibold text-gray-800 font-display mb-3';
+  const ACTION_BTN = 'flex items-center justify-center gap-2 px-6 h-12 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth';
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -144,13 +147,11 @@ const ResumeAnalyzer = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl shadow-xl p-6 flex flex-col justify-center"
+          className="bg-white rounded-2xl shadow-xl p-6 flex flex-col"
         >
-          {showScore && (
-            <p className="text-sm font-semibold text-gray-800 font-display mb-3">Upload a new version</p>
-          )}
-          <div className={`flex flex-col items-stretch gap-4 ${showScore ? '' : 'sm:flex-row sm:items-center'}`}>
-            <label className="flex-1 min-w-0 flex items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl px-4 py-4 cursor-pointer hover:border-cyan-400 transition-smooth">
+          {showScore && <p className={CARD_TITLE}>Upload a new version</p>}
+          <div className={`flex-1 flex flex-col items-stretch gap-4 ${showScore ? '' : 'sm:flex-row sm:items-center'}`}>
+            <label className={`min-w-0 flex items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl px-4 cursor-pointer hover:border-cyan-400 transition-smooth ${showScore ? 'min-h-[4.5rem]' : 'flex-1 py-4'}`}>
               <FiFile className="text-gray-400 flex-shrink-0" size={22} />
               <span className="text-sm text-gray-600 truncate">
                 {selectedFile ? selectedFile.name : 'Choose a PDF resume to upload'}
@@ -165,7 +166,7 @@ const ResumeAnalyzer = () => {
             <button
               onClick={handleAnalyze}
               disabled={!selectedFile || analyzing}
-              className="flex-shrink-0 whitespace-nowrap flex items-center justify-center space-x-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`${ACTION_BTN} flex-shrink-0 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${showScore ? 'mt-auto' : ''}`}
             >
               {analyzing ? (
                 <>
@@ -187,9 +188,10 @@ const ResumeAnalyzer = () => {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-xl p-6 flex flex-col justify-center gap-4"
+              className="bg-white rounded-2xl shadow-xl p-6 flex flex-col"
             >
-              <div className="flex flex-wrap items-center justify-between gap-4">
+              <p className={CARD_TITLE}>Your result</p>
+              <div className="min-h-[4.5rem] flex flex-wrap items-center justify-between gap-4 mb-4">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white shadow-lg flex-shrink-0">
                     <FiAward size={24} />
@@ -213,7 +215,7 @@ const ResumeAnalyzer = () => {
 
               <button
                 onClick={() => setShowInterviewModal(true)}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth"
+                className={`${ACTION_BTN} w-full mt-auto`}
               >
                 <FiBriefcase />
                 <span>Generate Interview From Resume</span>

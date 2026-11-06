@@ -8,23 +8,20 @@ const Navbar = ({ onMenuClick, showOnDesktop = false }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   if (isAuthenticated) {
-    // Stays pinned to the top of every page. Nav links live in the sidebar: an
-    // off-canvas drawer on mobile; on desktop the menu button shows only once
-    // the sidebar has been hidden.
+    // Just the menu button, pinned to the top. The brand lives in the sidebar:
+    // an off-canvas drawer on mobile; on desktop this bar shows only once the
+    // sidebar has been hidden.
     return (
-      <nav className="bg-white shadow-lg sticky top-0 z-30">
-        <div className="flex items-center h-16 px-4 space-x-3">
+      <nav className={`${showOnDesktop ? '' : 'md:hidden'} bg-white shadow-md sticky top-0 z-30`}>
+        <div className="flex items-center h-12 px-3">
           <button
             onClick={onMenuClick}
             title="Open menu"
             aria-label="Open menu"
-            className={`${showOnDesktop ? '' : 'md:hidden'} text-gray-700 hover:text-cyan-600 transition-smooth p-1`}
+            className="text-gray-700 hover:text-cyan-600 transition-smooth p-1.5"
           >
-            <FiMenu size={24} />
+            <FiMenu size={22} />
           </button>
-          <h1 className="text-lg font-bold gradient-text font-display truncate">
-            ⚡ InterviewPreparation.AI
-          </h1>
         </div>
       </nav>
     );

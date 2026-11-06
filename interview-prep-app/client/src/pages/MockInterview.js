@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FiBriefcase, FiAward, FiLayers, FiTrendingUp, FiHash, FiLoader,
+  FiChevronDown, FiBriefcase, FiAward, FiLayers, FiTrendingUp, FiHash, FiLoader,
   FiClock, FiSkipForward, FiXCircle, FiSend, FiMessageCircle, FiZap, FiUser,
   FiCheckCircle, FiFileText, FiArrowRight, FiPlay, FiMic, FiSquare, FiVolume2, FiVolumeX,
   FiPause, FiEdit3, FiCheck, FiTarget
@@ -63,6 +63,7 @@ const MockInterview = () => {
   const [timerPaused, setTimerPaused] = useState(false);
   const [notes, setNotes] = useState('');
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
   const { showToast } = useToast();
   const navigate = useNavigate();
   const timerRef = useRef(null);
@@ -421,7 +422,7 @@ const MockInterview = () => {
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
-        rows="5"
+        rows="4"
         className="w-full mt-3 px-3 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 focus:bg-white resize-none transition-smooth"
         placeholder="Jot down key points, approach, or keywords..."
       />
@@ -465,7 +466,21 @@ const MockInterview = () => {
           <div className="mb-6">
             <div className="flex justify-between items-center text-sm text-slate-300 mb-2">
               <span>Question {interview.turns.length} of {numQuestions}</span>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {/* Phones/tablets: a small timer pill here instead of the side panel */}
+                <button
+                  type="button"
+                  onClick={() => setTimerPaused(!timerPaused)}
+                  title={timerPaused ? 'Resume timer' : 'Pause timer'}
+                  aria-label={timerPaused ? 'Resume timer' : 'Pause timer'}
+                  className={`xl:hidden flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border tabular-nums transition-smooth ${
+                    timerPaused ? 'border-white/20 text-slate-400' : 'border-white/20 text-slate-200'
+                  }`}
+                >
+                  <FiClock size={13} />
+                  <span>{formatElapsed(elapsed)}</span>
+                  {timerPaused ? <FiPlay size={11} /> : <FiPause size={11} />}
+                </button>
                 {voice.speechSupported && (
                   <button
                     type="button"
@@ -490,9 +505,6 @@ const MockInterview = () => {
               />
             </div>
           </div>
-
-          {/* Phones/tablets: timer above the chat, since there is no side panel */}
-          <div className="xl:hidden mb-4">{timerPanel}</div>
 
           {/* Chat thread */}
           <div className="space-y-4 mb-4">
@@ -611,8 +623,20 @@ const MockInterview = () => {
             )}
           </div>
 
-          {/* Phones/tablets: notes right under the answer box */}
-          <div className="xl:hidden mt-4">{notesPanel}</div>
+          {/* Phones/tablets: notes tucked under the answer box, opened on demand */}
+          <div className="xl:hidden mt-4">
+            {notesOpen ? notesPanel : (
+              <button
+                type="button"
+                onClick={() => setNotesOpen(true)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/15 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-smooth"
+              >
+                <FiEdit3 size={14} />
+                <span>Quick Notes{notes.trim() ? ' (saved)' : ''}</span>
+                <FiChevronDown size={14} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Side panel (wide screens); smaller screens show timer and notes inline above */}

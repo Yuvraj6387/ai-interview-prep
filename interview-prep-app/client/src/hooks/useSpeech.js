@@ -15,12 +15,22 @@ const LANG = 'en-IN';
 // voices are preferred: network voices fail silently on flaky mobile data.
 const normLang = (lang = '') => lang.replace('_', '-').toLowerCase();
 
+// Browsers don't expose a voice's gender, only its name. These are the male
+// English voices shipped on Windows/Edge, Chrome, macOS and iOS, so the
+// interviewer sounds the same (male) on laptop and phone wherever possible.
+const MALE_VOICE = /\b(male|ravi|prabhat|rishi|david|mark|guy|daniel|aaron|arthur|fred|alex|tom|gordon|oliver|james|george|ryan)\b/i;
+const isMale = (v) => MALE_VOICE.test(v.name) && !/female/i.test(v.name);
+
 const pickVoice = () => {
   const voices = window.speechSynthesis.getVoices();
   const english = voices.filter((v) => normLang(v.lang).startsWith('en'));
   const local = english.filter((v) => v.localService);
   const pool = local.length ? local : english;
-  return pool.find((v) => normLang(v.lang) === 'en-in')
+  const male = english.filter(isMale);
+  return male.find((v) => normLang(v.lang) === 'en-in')
+    || male.find((v) => normLang(v.lang) === 'en-us' || normLang(v.lang) === 'en-gb')
+    || male[0]
+    || pool.find((v) => normLang(v.lang) === 'en-in')
     || pool.find((v) => normLang(v.lang) === 'en-us')
     || pool[0];
 };

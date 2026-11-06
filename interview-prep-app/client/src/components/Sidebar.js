@@ -12,18 +12,14 @@ const navItems = [
   { to: '/analytics', label: 'Analytics', icon: FiBarChart2 },
 ];
 
-const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, closeLabel = 'Close menu', showBrand = true }) => {
+const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, closeLabel = 'Close menu' }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
 
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="px-6 h-16 border-b border-gray-100 flex items-center justify-between">
-        {showBrand ? (
-          <h1 className="text-lg font-bold gradient-text font-display truncate">⚡ InterviewPreparation.AI</h1>
-        ) : (
-          <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Menu</span>
-        )}
+        <h1 className="text-lg font-bold gradient-text font-display truncate">⚡ InterviewPreparation.AI</h1>
         {onClose && (
           <button
             onClick={onClose}
@@ -101,8 +97,7 @@ const Sidebar = ({ isOpen, onClose, desktopOpen, onDesktopClose }) => {
             className="hidden md:block flex-shrink-0 overflow-hidden border-r border-gray-100 sticky top-0 h-screen"
           >
             <div className="w-64 h-full">
-              {/* The pinned top bar already shows the brand on desktop */}
-              <SidebarContent onClose={onDesktopClose} closeIcon={FiChevronsLeft} closeLabel="Hide sidebar" showBrand={false} />
+              <SidebarContent onClose={onDesktopClose} closeIcon={FiChevronsLeft} closeLabel="Hide sidebar" />
             </div>
           </motion.aside>
         )}

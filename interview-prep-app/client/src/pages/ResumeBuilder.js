@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -280,6 +279,7 @@ const Editor = ({ id }) => {
   const [mobileView, setMobileView] = useState('edit');
   const [generating, setGenerating] = useState(false);
   const [tailoredFor, setTailoredFor] = useState(null);
+  const [downloading, setDownloading] = useState(false);
   const tailor = useTailor();
   const skipNextSave = useRef(true);
   const latest = useRef({});
@@ -352,14 +352,20 @@ const Editor = ({ id }) => {
     }
   };
 
-  // The browser's own "Save as PDF" keeps the text selectable, which is what an
-  // ATS needs, and needs no PDF library. The page title becomes the file name.
-  const downloadPdf = () => {
+  // Builds a real PDF file in the browser and saves it as "First_Last_Resume.pdf".
+  // The PDF code is loaded only now, on click, because the library is large.
+  const downloadPdf = async () => {
     if (status !== 'saved') save();
-    const pageTitle = document.title;
-    document.title = [content.name, title].filter(Boolean).join(' - ') || 'Resume';
-    window.print();
-    document.title = pageTitle;
+    setDownloading(true);
+    try {
+      const { downloadResumePdf } = await import('../components/builder/ResumePdf');
+      await downloadResumePdf({ content, template, accentColor });
+    } catch (error) {
+      console.error('Error creating PDF:', error);
+      showToast('Could not create the PDF. Please try again.', 'error');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   if (!loaded) {
@@ -426,8 +432,9 @@ const Editor = ({ id }) => {
           >
             <FiTarget className="flex-shrink-0" /> <span>Tailor<span className="hidden sm:inline"> to a job</span></span>
           </button>
-          <button onClick={downloadPdf} className={`${PRIMARY} px-2 sm:px-4`}>
-            <FiDownload className="flex-shrink-0" /> <span><span className="hidden sm:inline">Download </span>PDF</span>
+          <button onClick={downloadPdf} disabled={downloading} className={`${PRIMARY} px-2 sm:px-4`}>
+            {downloading ? <FiLoader className="animate-spin flex-shrink-0" /> : <FiDownload className="flex-shrink-0" />}
+            <span><span className="hidden sm:inline">Download </span>PDF</span>
           </button>
         </div>
       </div>
@@ -476,11 +483,6 @@ const Editor = ({ id }) => {
         </div>
       </div>
 
-      {/* Only this copy is printed; index.css hides the rest of the app in print. */}
-      {createPortal(
-        <div className="resume-print-root"><ResumePreview content={content} template={template} accentColor={accentColor} /></div>,
-        document.body
-      )}
       {tailor.modal}
     </div>
   );

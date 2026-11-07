@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@react-pdf/renderer": "3.4.5",
     "axios": "^1.6.0",
     "framer-motion": "^10.16.0",
     "react": "^18.2.0",

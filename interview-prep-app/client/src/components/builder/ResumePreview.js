@@ -1,4 +1,5 @@
 import React from 'react';
+import { prepareResume, withLinks } from './resumeFormat';
 
 export const DEFAULT_ACCENT = '#0e7490';
 
@@ -61,9 +62,7 @@ export const TEMPLATES = {
   },
 };
 
-const clean = (items) => (items || []).map((i) => (typeof i === 'string' ? i.trim() : i)).filter(Boolean);
-const hasText = (obj, keys) => keys.some((k) => (obj[k] || '').trim());
-// Keeps an entry from being split across two PDF pages.
+// Keeps an entry from being split across two pages in the preview.
 const keepTogether = { breakInside: 'avoid' };
 
 const Section = ({ title, theme, accent, children }) => (
@@ -73,12 +72,16 @@ const Section = ({ title, theme, accent, children }) => (
   </section>
 );
 
-const Bullets = ({ items }) => {
-  const list = clean(items);
-  if (list.length === 0) return null;
+// Text where any URL inside it is a clickable link.
+const LinkedText = ({ text, accent }) => withLinks(text).map((part, i) => (part.href
+  ? <a key={i} href={part.href} target="_blank" rel="noreferrer" style={{ color: accent }} className="hover:underline break-all">{part.text}</a>
+  : <span key={i}>{part.text}</span>));
+
+const Bullets = ({ items, accent }) => {
+  if (!items.length) return null;
   return (
     <ul className="list-disc pl-4 mt-0.5 space-y-0.5">
-      {list.map((b, i) => <li key={i}>{b}</li>)}
+      {items.map((b, i) => <li key={i}><LinkedText text={b} accent={accent} /></li>)}
     </ul>
   );
 };
@@ -86,13 +89,9 @@ const Bullets = ({ items }) => {
 const ResumePreview = ({ content = {}, template = 'classic', accentColor = DEFAULT_ACCENT }) => {
   const theme = TEMPLATES[template] || TEMPLATES.classic;
   const accent = /^#[0-9a-fA-F]{6}$/.test(accentColor || '') ? accentColor : DEFAULT_ACCENT;
-  const contact = clean([content.email, content.phone, content.location, ...(content.links || [])]);
-  const experience = (content.experience || []).filter((e) => hasText(e, ['role', 'company']) || clean(e.bullets).length);
-  const projects = (content.projects || []).filter((p) => hasText(p, ['name', 'tech']) || clean(p.bullets).length);
-  const education = (content.education || []).filter((e) => hasText(e, ['degree', 'school']));
-  const skills = (content.skills || []).filter((s) => (s.items || '').trim());
-  const certifications = clean(content.certifications);
-  const isEmpty = !content.name && !experience.length && !projects.length && !education.length && !skills.length;
+  // Same tidy-up as the PDF, so what you see is what you download.
+  const r = prepareResume(content);
+  const isEmpty = !r.name && !r.experience.length && !r.projects.length && !r.education.length && !r.skills.length;
 
   if (isEmpty) {
     return (
@@ -102,79 +101,89 @@ const ResumePreview = ({ content = {}, template = 'classic', accentColor = DEFAU
     );
   }
 
+  const contactColor = theme.contact ? theme.contact(accent).color : '#4b5563';
+
   return (
-    <div className="bg-white text-gray-800 leading-snug p-8" style={{ fontFamily: theme.font, fontSize: theme.bodySize || 11 }}>
+    <div className="bg-white text-gray-800 leading-snug px-6 py-7" style={{ fontFamily: theme.font, fontSize: theme.bodySize || 11 }}>
       <header style={theme.header(accent)}>
-        <h1 style={{ fontFamily: 'inherit', lineHeight: 1.2, ...theme.name(accent) }}>{content.name || 'Your Name'}</h1>
-        {content.headline && <p style={theme.headline(accent)}>{content.headline}</p>}
-        {contact.length > 0 && (
-          <p style={{ fontSize: '0.95em', color: '#4b5563', marginTop: 2, ...(theme.contact ? theme.contact(accent) : {}) }}>
-            {contact.join('  |  ')}
+        <h1 style={{ fontFamily: 'inherit', lineHeight: 1.2, ...theme.name(accent) }}>{r.name || 'Your Name'}</h1>
+        {r.headline && <p style={theme.headline(accent)}>{r.headline}</p>}
+        {r.contact.length > 0 && (
+          <p style={{ fontSize: '0.95em', marginTop: 2, color: contactColor }}>
+            {r.contact.map((c, i) => (
+              <span key={i}>
+                {i > 0 && '  |  '}
+                {c.href
+                  ? <a href={c.href} target="_blank" rel="noreferrer" className="hover:underline" style={{ color: contactColor }}>{c.text}</a>
+                  : c.text}
+              </span>
+            ))}
           </p>
         )}
       </header>
 
-      {content.summary?.trim() && (
+      {r.summary && (
         <Section title="Summary" theme={theme} accent={accent}>
-          <p>{content.summary}</p>
+          <p>{r.summary}</p>
         </Section>
       )}
 
-      {experience.length > 0 && (
+      {r.experience.length > 0 && (
         <Section title="Experience" theme={theme} accent={accent}>
-          {experience.map((e, i) => (
+          {r.experience.map((e, i) => (
             <div key={i} className="mb-2" style={keepTogether}>
               <div className="flex justify-between gap-3">
                 <p><span className="font-bold">{e.role}</span>{e.company && <span>{e.role ? ' — ' : ''}{e.company}</span>}</p>
-                <p className="text-gray-600 whitespace-nowrap">{clean([e.start, e.end]).join(' – ')}</p>
+                <p className="text-gray-600 whitespace-nowrap">{e.dates}</p>
               </div>
               {e.location && <p className="text-gray-600">{e.location}</p>}
-              <Bullets items={e.bullets} />
+              <Bullets items={e.bullets} accent={accent} />
             </div>
           ))}
         </Section>
       )}
 
-      {projects.length > 0 && (
+      {r.projects.length > 0 && (
         <Section title="Projects" theme={theme} accent={accent}>
-          {projects.map((p, i) => (
+          {r.projects.map((p, i) => (
             <div key={i} className="mb-2" style={keepTogether}>
               <div className="flex justify-between gap-3">
                 <p><span className="font-bold">{p.name}</span>{p.tech && <span className="text-gray-600"> | {p.tech}</span>}</p>
-                {p.link && <p className="text-gray-600 whitespace-nowrap">{p.link}</p>}
+                {p.link && (p.linkHref
+                  ? <a href={p.linkHref} target="_blank" rel="noreferrer" className="whitespace-nowrap hover:underline" style={{ color: accent }}>{p.link}</a>
+                  : <p className="text-gray-600 whitespace-nowrap">{p.link}</p>)}
               </div>
-              <Bullets items={p.bullets} />
+              <Bullets items={p.bullets} accent={accent} />
             </div>
           ))}
         </Section>
       )}
 
-      {skills.length > 0 && (
+      {r.skills.length > 0 && (
         <Section title="Skills" theme={theme} accent={accent}>
-          {skills.map((s, i) => (
+          {r.skills.map((s, i) => (
             <p key={i}>{s.category && <span className="font-bold">{s.category}: </span>}{s.items}</p>
           ))}
         </Section>
       )}
 
-      {education.length > 0 && (
+      {r.education.length > 0 && (
         <Section title="Education" theme={theme} accent={accent}>
-          {education.map((e, i) => (
+          {r.education.map((e, i) => (
             <div key={i} className="mb-1.5" style={keepTogether}>
               <div className="flex justify-between gap-3">
                 <p className="font-bold">{e.degree}</p>
                 <p className="text-gray-600 whitespace-nowrap">{e.year}</p>
               </div>
-              {/* Skip the location when the school name already ends with it ("..., Meerut, Meerut") */}
-              <p>{clean([e.school, (e.school || '').toLowerCase().endsWith((e.location || '').toLowerCase().trim()) ? '' : e.location]).join(', ')}{e.details && <span className="text-gray-600"> — {e.details}</span>}</p>
+              <p>{e.place}{e.details && <span className="text-gray-600"> — {e.details}</span>}</p>
             </div>
           ))}
         </Section>
       )}
 
-      {certifications.length > 0 && (
+      {r.certifications.length > 0 && (
         <Section title="Certifications" theme={theme} accent={accent}>
-          <Bullets items={certifications} />
+          <Bullets items={r.certifications} accent={accent} />
         </Section>
       )}
     </div>

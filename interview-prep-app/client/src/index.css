@@ -137,36 +137,3 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateY(0);
   }
 }
-
-/* Resume Builder "Download PDF": the browser prints only the resume copy that
-   ResumeBuilder renders straight into <body>, never the app around it. */
-.resume-print-root {
-  display: none;
-}
-
-@media print {
-  @page {
-    size: A4;
-    margin: 12mm 14mm;
-  }
-
-  body {
-    background: #fff !important;
-    min-height: 0;
-  }
-
-  body > *:not(.resume-print-root) {
-    display: none !important;
-  }
-
-  .resume-print-root {
-    display: block;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  /* The page margin already gives the white space the on-screen preview pads in. */
-  .resume-print-root > div {
-    padding: 0 !important;
-  }
-}

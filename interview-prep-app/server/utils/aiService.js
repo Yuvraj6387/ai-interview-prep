@@ -38,9 +38,14 @@ const GEMINI_JSON_MODELS = ['gemini-3.1-flash-lite', 'gemini-flash-lite-latest']
 // time. A healthy call lands in 2-9s, so 12s already means "this one is stuck".
 const ATTEMPT_TIMEOUT_MS = 12000;
 const TOTAL_DEADLINE_MS = 30000;
+// Prompts that write a whole resume back (import, tailoring) take ~10s on a
+// good day, so they get a longer leash than the short scoring prompts.
+const LONG_ATTEMPT_TIMEOUT_MS = 25000;
+const LONG_TOTAL_DEADLINE_MS = 45000;
 
-const runJsonChain = async (providers) => {
-  const deadline = Date.now() + TOTAL_DEADLINE_MS;
+const runJsonChain = async (providers, { long = false } = {}) => {
+  const attemptTimeout = long ? LONG_ATTEMPT_TIMEOUT_MS : ATTEMPT_TIMEOUT_MS;
+  const deadline = Date.now() + (long ? LONG_TOTAL_DEADLINE_MS : TOTAL_DEADLINE_MS);
   let sawQuotaError = false;
   let lastError;
 
@@ -49,7 +54,7 @@ const runJsonChain = async (providers) => {
     if (remaining <= 0) break;
 
     try {
-      return await run(Math.min(ATTEMPT_TIMEOUT_MS, remaining));
+      return await run(Math.min(attemptTimeout, remaining));
     } catch (error) {
       lastError = error;
 
@@ -103,6 +108,9 @@ const formatTurnsForPrompt = (turns) => {
 // swapped for a <X> placeholder, so a made-up figure never reaches the resume.
 // Numbers inside names like "ES6" or "S3" are left alone.
 const STANDALONE_NUMBER = /(?<![A-Za-z0-9<])\d+(?:[.,]\d+)?(?![A-Za-z0-9>])/g;
+// "AWS (EC2, S3), Docker" -> ["AWS (EC2, S3)", "Docker"]: commas inside brackets don't split.
+const splitSkills = (items) => (items || '').split(/,(?![^(]*\))/).map((s) => s.trim()).filter(Boolean);
+
 const replaceInventedNumbers = (rewrite, original) => {
   const allowed = new Set(original.match(STANDALONE_NUMBER) || []);
   return rewrite.replace(STANDALONE_NUMBER, (num) => (allowed.has(num) ? num : '<X>'));
@@ -228,7 +236,7 @@ Format the output in clear Markdown.`;
     }
   }
 
-  generateJson(prompt, { maxTokens = 2048 } = {}) {
+  generateJson(prompt, { maxTokens = 2048, long = false } = {}) {
     // Groq goes first: it answers in 1-4s, while the Gemini free tier often stalls
     // or returns 503, which cost 17-25s per request before falling through to Groq.
     const providers = [{
@@ -254,7 +262,7 @@ Format the output in clear Markdown.`;
       }
     }
 
-    return runJsonChain(providers);
+    return runJsonChain(providers, { long });
   }
 
   async analyzeResume(resumeText) {
@@ -481,7 +489,7 @@ ${resumeText}
 
     try {
       // Long answer: the whole resume comes back as JSON.
-      const response = await this.generateJson(prompt, { maxTokens: 3500 });
+      const response = await this.generateJson(prompt, { maxTokens: 3500, long: true });
       const parsed = extractJson(response);
       const text = (value) => (typeof value === 'string' ? value.trim() : '');
       const list = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === 'string' && item.trim()) : []);
@@ -547,6 +555,121 @@ Return ONLY a valid JSON object: { "summary": "<the summary>" }`;
       return replaceInventedNumbers(summary, factsText);
     } catch (error) {
       console.error('Error in generateResumeSummary:', error);
+      throw error;
+    }
+  }
+
+  // Tailor a resume to one job description. The AI only returns the parts it is
+  // allowed to change (summary, bullet wording, skill and project order); this
+  // function copies them onto the original, so names, companies, dates and
+  // education can never be altered, and no new skill can be added.
+  async tailorResume(content, jobDescription) {
+    const experience = content.experience || [];
+    const projects = content.projects || [];
+    const skillGroups = content.skills || [];
+    const allSkills = skillGroups.flatMap((g) => splitSkills(g.items));
+
+    const resumeForPrompt = {
+      summary: content.summary || '',
+      experience: experience.map((e, i) => ({ index: i, role: e.role, company: e.company, bullets: (e.bullets || []).filter(Boolean) })),
+      projects: projects.map((p, i) => ({ index: i, name: p.name, tech: p.tech, bullets: (p.bullets || []).filter(Boolean) })),
+      skills: allSkills,
+    };
+    const resumeText = JSON.stringify(resumeForPrompt);
+    // What the number guard checks against: the candidate's real text only, not
+    // the index numbers added above for the prompt (those let "1+ years" slip by).
+    const originalText = [
+      content.summary, content.headline,
+      ...experience.flatMap((e) => [e.role, e.company, e.start, e.end, ...(e.bullets || [])]),
+      ...projects.flatMap((p) => [p.name, p.tech, ...(p.bullets || [])]),
+      ...allSkills,
+    ].filter(Boolean).join(' ');
+
+    const prompt = `You are an expert resume writer. Tailor this candidate's resume to the job description below, so it ranks well in an ATS for this job, WITHOUT inventing anything.
+
+Rules:
+- Rewrite the summary (2-3 sentences, max 60 words) to lead with what this job wants that the candidate truly has. Do NOT state years of experience unless the resume itself states them; an internship is not a year of experience.
+- Rephrase existing bullets to use the job's wording and keywords ONLY where the bullet already shows that skill. Keep every fact, tool and number exactly as it is. Never add tools, numbers, achievements or responsibilities the bullet does not already state. Keep each entry's bullet count the same.
+- "skillPriority": skills copied exactly from the candidate's skill list, most relevant to this job first. Do not add skills that are not in the list.
+- "projectOrder": project indexes, most relevant to this job first.
+- "missingSkills": important skills the job asks for that the resume does not show. These are NOT added to the resume; the candidate decides.
+
+Return ONLY a valid JSON object with this exact shape:
+{
+  "jobTitle": "<job title from the description>",
+  "company": "<company name if the description gives one, else \\"\\">",
+  "summary": "<new summary>",
+  "experience": [{ "index": <number>, "bullets": [<rewritten bullets>] }],
+  "projects": [{ "index": <number>, "bullets": [<rewritten bullets>] }],
+  "skillPriority": [<skills from the list>],
+  "projectOrder": [<indexes>],
+  "changes": [<3-5 short notes on what you changed and why>],
+  "missingSkills": [<skills>]
+}
+
+Candidate resume:
+${resumeText}
+
+Job description:
+"""
+${jobDescription}
+"""`;
+
+    try {
+      const response = await this.generateJson(prompt, { maxTokens: 3500, long: true });
+      const parsed = extractJson(response);
+      const text = (value) => (typeof value === 'string' ? value.trim() : '');
+      const list = (value) => (Array.isArray(value) ? value.filter((v) => typeof v === 'string' && v.trim()).map((v) => v.trim()) : []);
+      // Any number the AI wrote that isn't somewhere in the original becomes <X>.
+      const guard = (value) => replaceInventedNumbers(value, originalText);
+
+      const rewrittenBullets = (items, source) => {
+        const byIndex = new Map((Array.isArray(items) ? items : [])
+          .filter((item) => item && Number.isInteger(item.index))
+          .map((item) => [item.index, list(item.bullets).map(guard)]));
+        return source.map((entry, i) => {
+          const bullets = byIndex.get(i);
+          return { ...entry, bullets: bullets && bullets.length ? bullets : entry.bullets };
+        });
+      };
+
+      // Reorder skills inside each group, and the groups themselves, by the
+      // AI's priority list. Unknown skills in that list are simply ignored.
+      const rank = new Map(list(parsed.skillPriority).map((s, i) => [s.toLowerCase(), i]));
+      const rankOf = (skill) => (rank.has(skill.toLowerCase()) ? rank.get(skill.toLowerCase()) : Infinity);
+      const skills = skillGroups
+        .map((group) => {
+          const items = splitSkills(group.items).sort((a, b) => rankOf(a) - rankOf(b));
+          return { category: group.category, items: items.join(', '), best: Math.min(Infinity, ...items.map(rankOf)) };
+        })
+        .sort((a, b) => a.best - b.best)
+        .map(({ category, items }) => ({ category, items }));
+
+      // Projects in the suggested order; any the AI left out keep their place at the end.
+      const tailoredProjects = rewrittenBullets(parsed.projects, projects);
+      const order = [...new Set((Array.isArray(parsed.projectOrder) ? parsed.projectOrder : [])
+        .filter((i) => Number.isInteger(i) && i >= 0 && i < projects.length))];
+      projects.forEach((_, i) => { if (!order.includes(i)) order.push(i); });
+
+      const summary = guard(text(parsed.summary));
+
+      return {
+        content: {
+          ...content,
+          summary: summary || content.summary,
+          experience: rewrittenBullets(parsed.experience, experience),
+          projects: order.map((i) => tailoredProjects[i]),
+          skills,
+        },
+        tailoredFor: {
+          jobTitle: text(parsed.jobTitle),
+          company: text(parsed.company),
+          changes: list(parsed.changes),
+          missingSkills: list(parsed.missingSkills),
+        },
+      };
+    } catch (error) {
+      console.error('Error in tailorResume:', error);
       throw error;
     }
   }

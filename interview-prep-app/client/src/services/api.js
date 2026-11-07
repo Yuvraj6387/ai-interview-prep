@@ -85,6 +85,7 @@ export const builderAPI = {
   duplicate: (id) => api.post(`/builder/${id}/duplicate`),
   remove: (id) => api.delete(`/builder/${id}`),
   summary: (content, targetRole) => api.post('/builder/summary', { content, targetRole }),
+  tailor: (id, jobDescription) => api.post(`/builder/${id}/tailor`, { jobDescription }),
 };
 
 // Interview (adaptive mock interview) APIs

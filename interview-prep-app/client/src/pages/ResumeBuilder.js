@@ -5,11 +5,13 @@ import { motion } from 'framer-motion';
 import {
   FiZap, FiFilePlus, FiCopy, FiTrash2, FiEdit2, FiArrowLeft, FiDownload, FiLoader,
   FiUser, FiAlignLeft, FiBriefcase, FiFolder, FiBookOpen, FiTool, FiAward, FiCheck, FiAlertCircle,
+  FiTarget, FiX,
 } from 'react-icons/fi';
 import { builderAPI, resumeAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ResumePreview from '../components/builder/ResumePreview';
+import TailorModal from '../components/builder/TailorModal';
 import { SectionCard, ProfileFields, SummaryField, EntryList, LinesField } from '../components/builder/EditorSections';
 
 const BTN = 'flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed';
@@ -50,6 +52,74 @@ const EDUCATION_FIELDS = [
 
 const formatDate = (date) => new Date(date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
+/* ---------- Tailor to a job (used by the list and the editor) ---------- */
+
+const useTailor = () => {
+  const [target, setTarget] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+
+  const submit = async (jobDescription) => {
+    setLoading(true);
+    try {
+      const { data } = await builderAPI.tailor(target.id, jobDescription);
+      setTarget(null);
+      showToast('Tailored resume created', 'success');
+      navigate(`/resume-builder/${data._id}`);
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Failed to tailor your resume. Please try again.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const modal = (
+    <TailorModal open={!!target} resumeTitle={target?.title} loading={loading} onSubmit={submit} onClose={() => setTarget(null)} />
+  );
+  return { open: (id, title) => setTarget({ id, title }), modal };
+};
+
+const TailoredNotes = ({ notes, onDismiss }) => (
+  <div className="bg-white rounded-2xl shadow-xl p-4 md:p-5">
+    <div className="flex items-start gap-3">
+      <span className="w-7 h-7 rounded-lg bg-cyan-50 text-cyan-700 flex items-center justify-center flex-shrink-0"><FiTarget size={14} /></span>
+      <div className="flex-1 min-w-0">
+        <p className="font-bold text-gray-800 font-display">
+          Tailored for {[notes.jobTitle, notes.company].filter(Boolean).join(' at ') || 'this job'}
+        </p>
+        <p className="text-xs text-gray-500">Check the wording below before you send it. You can still edit anything.</p>
+      </div>
+      <button onClick={onDismiss} className="p-1 text-gray-400 hover:text-gray-600 rounded" aria-label="Hide"><FiX /></button>
+    </div>
+    <div className="grid md:grid-cols-2 gap-4 mt-3">
+      {notes.changes?.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-gray-700 mb-1.5">What changed</p>
+          <ul className="space-y-1">
+            {notes.changes.map((c) => (
+              <li key={c} className="flex gap-2 text-sm text-gray-600">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 mt-2 flex-shrink-0" />{c}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {notes.missingSkills?.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-gray-700 mb-1.5">Job wants these, not on your resume</p>
+          <div className="flex flex-wrap gap-1.5">
+            {notes.missingSkills.map((s) => (
+              <span key={s} className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">{s}</span>
+            ))}
+          </div>
+          <p className="text-[11px] text-gray-400 mt-1.5">Not added for you. Add one only if you really have it.</p>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 /* ---------- List of saved versions ---------- */
 
 const VersionList = () => {
@@ -59,6 +129,7 @@ const VersionList = () => {
   const [toDelete, setToDelete] = useState(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const tailor = useTailor();
 
   useEffect(() => {
     builderAPI.list().then((r) => setVersions(r.data)).catch(() => setVersions([]));
@@ -100,7 +171,7 @@ const VersionList = () => {
       <div className="grid md:grid-cols-2 gap-4">
         <div className="bg-gradient-to-br from-cyan-50 to-white rounded-2xl shadow-xl p-5 flex flex-col">
           <div className="flex items-center gap-3 mb-2">
-            <span className="w-10 h-10 rounded-xl bg-white shadow flex items-center justify-center text-cyan-600"><FiZap size={18} /></span>
+            <span className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-cyan-600"><FiZap size={14} /></span>
             <div>
               <p className="font-bold text-gray-800 font-display">Magic Import</p>
               <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">AI fast fill</p>
@@ -119,7 +190,7 @@ const VersionList = () => {
 
         <div className="bg-white rounded-2xl shadow-xl p-5 flex flex-col">
           <div className="flex items-center gap-3 mb-2">
-            <span className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700"><FiFilePlus size={18} /></span>
+            <span className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700"><FiFilePlus size={14} /></span>
             <p className="font-bold text-gray-800 font-display">Start from blank</p>
           </div>
           <p className="text-sm text-gray-600 mb-4 flex-1">Fill in each section yourself and watch the preview update as you type.</p>
@@ -150,6 +221,7 @@ const VersionList = () => {
                 <p className="text-xs text-gray-400 mt-1 mb-4">Edited {formatDate(v.updatedAt)}</p>
                 <div className="flex gap-2 mt-auto">
                   <button onClick={() => navigate(`/resume-builder/${v._id}`)} className={`${PRIMARY} flex-1`}><FiEdit2 /> Open</button>
+                  <button onClick={() => tailor.open(v._id, v.title)} title="Tailor to a job" className={`${SECONDARY} px-3`}><FiTarget /></button>
                   <button onClick={() => run(`dup-${v._id}`, () => builderAPI.duplicate(v._id), 'Copy created')} disabled={!!busy} title="Duplicate" className={`${SECONDARY} px-3`}>
                     {busy === `dup-${v._id}` ? <FiLoader className="animate-spin" /> : <FiCopy />}
                   </button>
@@ -169,6 +241,7 @@ const VersionList = () => {
         onConfirm={confirmDelete}
         onCancel={() => setToDelete(null)}
       />
+      {tailor.modal}
     </div>
   );
 };
@@ -195,6 +268,8 @@ const Editor = ({ id }) => {
   const [openSections, setOpenSections] = useState(['profile']);
   const [mobileView, setMobileView] = useState('edit');
   const [generating, setGenerating] = useState(false);
+  const [tailoredFor, setTailoredFor] = useState(null);
+  const tailor = useTailor();
   const skipNextSave = useRef(true);
   const latest = useRef({});
   const { showToast } = useToast();
@@ -209,6 +284,7 @@ const Editor = ({ id }) => {
         setTitle(data.title);
         setTemplate(data.template);
         setContent(data.content || {});
+        setTailoredFor(data.tailoredFor?.jobTitle || data.tailoredFor?.company ? data.tailoredFor : null);
         setLoaded(true);
       })
       .catch(() => {
@@ -311,7 +387,7 @@ const Editor = ({ id }) => {
       {/* Toolbar */}
       <div className="bg-white rounded-2xl shadow-xl p-3 md:p-4 flex flex-wrap items-center gap-3">
         <button onClick={() => navigate('/resume-builder')} title="All versions" className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-cyan-700 transition-smooth">
-          <FiArrowLeft size={18} />
+          <FiArrowLeft size={16} />
         </button>
         <input
           value={title}
@@ -331,8 +407,18 @@ const Editor = ({ id }) => {
           ))}
         </div>
         <SaveStatus status={status} />
-        <button onClick={downloadPdf} className={`${PRIMARY} ml-auto`}><FiDownload /> Download PDF</button>
+        <div className="flex gap-2 ml-auto">
+          <button
+            onClick={async () => { if (status !== 'saved') await save(); tailor.open(id, title); }}
+            className={SECONDARY}
+          >
+            <FiTarget /> Tailor to a job
+          </button>
+          <button onClick={downloadPdf} className={PRIMARY}><FiDownload /> Download PDF</button>
+        </div>
       </div>
+
+      {tailoredFor && <TailoredNotes notes={tailoredFor} onDismiss={() => setTailoredFor(null)} />}
 
       {/* Phones: one panel at a time */}
       <div className="lg:hidden flex gap-1 p-1 bg-white/10 border border-white/15 rounded-xl">
@@ -377,6 +463,7 @@ const Editor = ({ id }) => {
         <div className="resume-print-root"><ResumePreview content={content} template={template} /></div>,
         document.body
       )}
+      {tailor.modal}
     </div>
   );
 };

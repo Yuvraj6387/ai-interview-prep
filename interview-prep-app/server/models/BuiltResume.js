@@ -42,6 +42,13 @@ const builtResumeSchema = new mongoose.Schema({
     skills: [skillGroupSchema],
     certifications: [{ type: String, trim: true }],
   },
+  // Set on versions made by "Tailor to a job", so the editor can show what changed.
+  tailoredFor: {
+    jobTitle: str,
+    company: str,
+    changes: [{ type: String, trim: true }],
+    missingSkills: [{ type: String, trim: true }],
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('BuiltResume', builtResumeSchema);

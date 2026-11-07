@@ -15,8 +15,8 @@ export const SectionCard = ({ title, icon: Icon, tint, open, onToggle, children 
       onClick={onToggle}
       className="w-full flex items-center gap-3 px-4 py-3 text-left"
     >
-      <span className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tint}`}>
-        <Icon size={16} />
+      <span className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${tint}`}>
+        <Icon size={13} />
       </span>
       <span className="flex-1 text-sm font-semibold text-gray-800">{title}</span>
       <FiChevronDown className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />

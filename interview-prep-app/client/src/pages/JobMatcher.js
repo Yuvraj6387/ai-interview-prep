@@ -3,49 +3,25 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   FiTarget, FiLoader, FiCheckCircle, FiAlertTriangle, FiTrendingUp,
-  FiMic, FiFileText, FiArrowRight, FiTag
+  FiMic, FiFileText, FiArrowRight, FiTag, FiBriefcase, FiAward, FiClipboard,
+  FiBookOpen, FiCode, FiExternalLink
 } from 'react-icons/fi';
 import { resumeAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
+import ScoreRing, { ScoreBar } from '../components/ScoreRing';
+import SkillGapCard from '../components/SkillGapCard';
 
 const MIN_LENGTH = 100;
 const MAX_LENGTH = 5000;
 
-const scoreTone = (score) => {
-  if (score >= 75) return { ring: '#059669', text: 'text-emerald-600', label: 'Strong match' };
-  if (score >= 50) return { ring: '#d97706', text: 'text-amber-600', label: 'Partial match' };
-  return { ring: '#dc2626', text: 'text-red-600', label: 'Weak match' };
-};
+const matchLabel = (score) => (score >= 75 ? 'Strong match' : score >= 50 ? 'Partial match' : 'Weak match');
 
-const ScoreRing = ({ score }) => {
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  const tone = scoreTone(score);
-
-  return (
-    <div className="relative w-36 h-36 flex-shrink-0">
-      <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-        <circle cx="60" cy="60" r={radius} fill="none" stroke="#f1f5f9" strokeWidth="10" />
-        <circle
-          cx="60"
-          cy="60"
-          r={radius}
-          fill="none"
-          stroke={tone.ring}
-          strokeWidth="10"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - score / 100)}
-          style={{ transition: 'stroke-dashoffset 0.8s ease' }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold text-gray-800 font-display">{score}%</span>
-        <span className={`text-xs font-semibold ${tone.text}`}>{tone.label}</span>
-      </div>
-    </div>
-  );
-};
+const SECTION_ROWS = [
+  { key: 'keywords', label: 'Keywords match', icon: FiTag },
+  { key: 'jobTitle', label: 'Job title match', icon: FiBriefcase },
+  { key: 'qualifications', label: 'Qualifications match', icon: FiAward },
+  { key: 'responsibilities', label: 'Responsibilities match', icon: FiClipboard },
+];
 
 const SkillList = ({ title, icon: Icon, items, tone }) => (
   <div className="bg-white rounded-2xl shadow-xl p-6">
@@ -173,7 +149,7 @@ const JobMatcher = () => {
         {match && !matching && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
-              <ScoreRing score={match.matchScore} />
+              <ScoreRing score={match.matchScore} label={matchLabel(match.matchScore)} />
               <div className="flex-1 text-center md:text-left">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Resume match for</p>
                 <h2 className="text-2xl font-bold text-gray-800 font-display mb-2">{match.jobTitle || 'This job'}</h2>
@@ -188,10 +164,75 @@ const JobMatcher = () => {
               </div>
             </div>
 
+            {match.sectionScores && (
+              <div className="grid sm:grid-cols-2 gap-3">
+                {SECTION_ROWS.map(({ key, label, icon }) => (
+                  <ScoreBar key={key} label={label} icon={icon} score={match.sectionScores[key]} />
+                ))}
+              </div>
+            )}
+
             <div className="grid md:grid-cols-2 gap-6">
               <SkillList title="Skills you have" icon={FiCheckCircle} items={match.matchedSkills} tone="good" />
               <SkillList title="Skills to work on" icon={FiAlertTriangle} items={match.missingSkills} tone="warn" />
             </div>
+
+            {match.experienceGaps?.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-xl p-6">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                  <FiBriefcase size={16} className="text-amber-600" />
+                  Experience gaps
+                </h3>
+                <ul className="space-y-2">
+                  {match.experienceGaps.map((gap) => (
+                    <li key={gap} className="flex gap-2 text-sm text-gray-600">
+                      <FiAlertTriangle size={14} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                      {gap}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <SkillGapCard skills={match.skillGap} />
+
+            {match.learningPlan?.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                <h3 className="flex items-center gap-2 text-lg font-bold text-gray-800 font-display mb-1">
+                  <FiBookOpen className="text-cyan-600" />
+                  How to close your biggest gaps
+                </h3>
+                <p className="text-sm text-gray-500 mb-5">What to study, and a small project that proves the skill</p>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {match.learningPlan.map((plan) => (
+                    <div key={plan.skill} className="bg-cyan-50/60 border border-cyan-100 rounded-xl p-4 flex flex-col gap-3">
+                      <p className="font-semibold text-gray-800">{plan.skill}</p>
+                      {plan.topics.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {plan.topics.map((topic) => (
+                            <span key={topic} className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white text-cyan-700 border border-cyan-100">
+                              {topic}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {plan.project && (
+                        <p className="flex gap-2 text-sm text-gray-600">
+                          <FiCode size={14} className="text-cyan-600 mt-0.5 flex-shrink-0" />
+                          <span><span className="font-semibold text-gray-700">Build: </span>{plan.project}</span>
+                        </p>
+                      )}
+                      {plan.resource && (
+                        <p className="flex gap-2 text-sm text-gray-600">
+                          <FiExternalLink size={14} className="text-cyan-600 mt-0.5 flex-shrink-0" />
+                          <span><span className="font-semibold text-gray-700">Learn: </span>{plan.resource}</span>
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="grid md:grid-cols-2 gap-6">
               {match.suggestions.length > 0 && (

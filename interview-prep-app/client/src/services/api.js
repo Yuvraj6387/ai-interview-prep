@@ -71,6 +71,8 @@ export const resumeAPI = {
     });
   },
   match: (jobDescription) => api.post('/resume/match', { jobDescription }),
+  atsScan: (targetRole) => api.post('/resume/ats-scan', { targetRole }),
+  rewriteBullet: (bullet, targetRole) => api.post('/resume/rewrite-bullet', { bullet, targetRole }),
 };
 
 // Interview (adaptive mock interview) APIs

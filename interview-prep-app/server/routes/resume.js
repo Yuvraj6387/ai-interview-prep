@@ -5,6 +5,7 @@ const { PDFParse } = require('pdf-parse');
 const Resume = require('../models/Resume');
 const auth = require('../middleware/auth');
 const aiService = require('../utils/aiService');
+const { runAtsChecks } = require('../utils/atsChecks');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -93,6 +94,58 @@ router.post('/match', auth, async (req, res) => {
   } catch (error) {
     console.error('Error matching resume to job:', error);
     res.status(500).json({ message: error.message || 'Failed to match your resume. Please try again.' });
+  }
+});
+
+// ATS scan of the saved resume: rule-based format checks plus an AI review
+// of each section's content and the keywords an ATS would search for.
+router.post('/ats-scan', auth, async (req, res) => {
+  try {
+    const resume = await Resume.findOne({ userId: req.userId });
+    if (!resume) {
+      return res.status(404).json({ message: 'Upload your resume first, then run the ATS scan.' });
+    }
+
+    const targetRole = (req.body.targetRole || '').trim().slice(0, 80)
+      || resume.analysis?.suggestedRole
+      || 'Software Developer';
+
+    const format = runAtsChecks(resume.extractedText);
+    const review = await aiService.atsReview(resume.extractedText.slice(0, 6000), targetRole);
+
+    res.json({
+      targetRole,
+      // Half format (fixed rules), half content (AI), so each side is easy to explain.
+      atsScore: Math.round((format.formatScore + review.contentScore) / 2),
+      formatScore: format.formatScore,
+      contentScore: review.contentScore,
+      checks: format.checks,
+      wordCount: format.wordCount,
+      ...review,
+    });
+  } catch (error) {
+    console.error('Error running ATS scan:', error);
+    res.status(500).json({ message: error.message || 'Failed to scan your resume. Please try again.' });
+  }
+});
+
+// Rewrite one experience/project bullet in a few styles. Does not need a saved resume.
+router.post('/rewrite-bullet', auth, async (req, res) => {
+  try {
+    const bullet = (req.body.bullet || '').trim();
+    const targetRole = (req.body.targetRole || '').trim().slice(0, 80);
+
+    if (bullet.length < 10) {
+      return res.status(400).json({ message: 'Please enter a bullet point of at least 10 characters.' });
+    }
+    if (bullet.length > 500) {
+      return res.status(400).json({ message: 'Please rewrite one bullet at a time (500 characters max).' });
+    }
+
+    res.json(await aiService.rewriteBullet(bullet, targetRole));
+  } catch (error) {
+    console.error('Error rewriting bullet:', error);
+    res.status(500).json({ message: error.message || 'Failed to rewrite the bullet. Please try again.' });
   }
 });
 

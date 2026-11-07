@@ -98,6 +98,16 @@ const formatTurnsForPrompt = (turns) => {
   }).join('\n\n');
 };
 
+// The prompt tells the AI never to invent metrics, but models still slip one in
+// sometimes. Any number in the rewrite that was not in the original bullet is
+// swapped for a <X> placeholder, so a made-up figure never reaches the resume.
+// Numbers inside names like "ES6" or "S3" are left alone.
+const STANDALONE_NUMBER = /(?<![A-Za-z0-9<])\d+(?:[.,]\d+)?(?![A-Za-z0-9>])/g;
+const replaceInventedNumbers = (rewrite, original) => {
+  const allowed = new Set(original.match(STANDALONE_NUMBER) || []);
+  return rewrite.replace(STANDALONE_NUMBER, (num) => (allowed.has(num) ? num : '<X>'));
+};
+
 class AIService {
   constructor() {
     this.apiKey = process.env.GROQ_API_KEY;
@@ -218,12 +228,12 @@ Format the output in clear Markdown.`;
     }
   }
 
-  generateJson(prompt) {
+  generateJson(prompt, { maxTokens = 2048 } = {}) {
     // Groq goes first: it answers in 1-4s, while the Gemini free tier often stalls
     // or returns 503, which cost 17-25s per request before falling through to Groq.
     const providers = [{
       label: 'groq',
-      run: (timeout) => this.sendRequest(prompt, { maxTokens: 2048, jsonMode: true, timeout }),
+      run: (timeout) => this.sendRequest(prompt, { maxTokens, jsonMode: true, timeout }),
     }];
 
     // Different provider, different outage and quota: when Groq is saturated
@@ -297,9 +307,18 @@ ${resumeText}
   "matchScore": <number 0-100, how well the resume fits this job>,
   "jobTitle": "<the job title from the description, e.g. 'Frontend Developer'>",
   "summary": "<2 short sentences on the overall fit>",
+  "sectionScores": {
+    "keywords": <0-100, how many of the job's important keywords/tools appear in the resume>,
+    "jobTitle": <0-100, how close the candidate's titles/target role are to this job title>,
+    "qualifications": <0-100, how well education, certifications and required years of experience fit>,
+    "responsibilities": <0-100, how well past work/projects show the duties this job describes>
+  },
   "matchedSkills": [<skills the job asks for that the resume clearly shows>],
   "missingSkills": [<skills the job asks for that the resume lacks or shows only weakly>],
-  "suggestions": [<3-5 short, actionable ways to close the gaps or tailor the resume to this job>],
+  "experienceGaps": [<1-4 short gaps between the experience the job wants and what the resume shows, e.g. "Job wants 2+ years with Node.js; resume shows one internship". Empty array if none>],
+  "skillGap": [<the 5-6 most important skills for this job, each { "skill": "<1-3 words>", "current": <0-100, the level the resume shows>, "target": <0-100, the level the job needs> }>],
+  "learningPlan": [<for the 2-3 biggest missing skills, each { "skill": "<skill>", "topics": [<2-4 specific topics to study>], "project": "<one small portfolio project that would prove this skill>", "resource": "<one well-known free learning resource, e.g. the official docs or freeCodeCamp. Do not invent course names>" }>],
+  "suggestions": [<3-5 short, actionable ways to tailor the resume to this job. Never suggest inventing experience>],
   "interviewTopics": [<4-6 topics this job's interview is likely to cover, 1-3 words each>]
 }
 
@@ -314,21 +333,126 @@ ${jobDescription}
 """`;
 
     try {
-      const response = await this.generateJson(prompt);
+      // This answer is larger than the others, so give it more room. Prompt plus
+      // 3000 still stays under Groq's 8000 tokens-per-minute free-tier cap.
+      const response = await this.generateJson(prompt, { maxTokens: 3000 });
       const parsed = extractJson(response);
       const list = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === 'string') : []);
+      const clamp = (n) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+      const sections = parsed.sectionScores || {};
 
       return {
-        matchScore: Math.max(0, Math.min(100, Number(parsed.matchScore) || 0)),
+        matchScore: clamp(parsed.matchScore),
         jobTitle: typeof parsed.jobTitle === 'string' ? parsed.jobTitle : '',
         summary: typeof parsed.summary === 'string' ? parsed.summary : '',
+        sectionScores: {
+          keywords: clamp(sections.keywords),
+          jobTitle: clamp(sections.jobTitle),
+          qualifications: clamp(sections.qualifications),
+          responsibilities: clamp(sections.responsibilities),
+        },
         matchedSkills: list(parsed.matchedSkills),
         missingSkills: list(parsed.missingSkills),
+        experienceGaps: list(parsed.experienceGaps),
+        skillGap: (Array.isArray(parsed.skillGap) ? parsed.skillGap : [])
+          .filter((s) => s && typeof s.skill === 'string')
+          .slice(0, 6)
+          .map((s) => ({ skill: s.skill, current: clamp(s.current), target: clamp(s.target) })),
+        learningPlan: (Array.isArray(parsed.learningPlan) ? parsed.learningPlan : [])
+          .filter((p) => p && typeof p.skill === 'string')
+          .slice(0, 3)
+          .map((p) => ({
+            skill: p.skill,
+            topics: list(p.topics),
+            project: typeof p.project === 'string' ? p.project : '',
+            resource: typeof p.resource === 'string' ? p.resource : '',
+          })),
         suggestions: list(parsed.suggestions),
         interviewTopics: list(parsed.interviewTopics),
       };
     } catch (error) {
       console.error('Error in matchResumeToJob:', error);
+      throw error;
+    }
+  }
+
+  // The AI half of the ATS scan: judges the content of each section and lists
+  // keywords an ATS would search for. Formatting is checked by atsChecks.js instead.
+  async atsReview(resumeText, targetRole) {
+    const prompt = `Act as an ATS (applicant tracking system) expert and technical recruiter. Review this resume for a "${targetRole}" role and return ONLY a valid JSON object (no markdown, no extra text) with this exact shape:
+{
+  "contentScore": <0-100, how well the resume content would rank in an ATS search for this role>,
+  "missingKeywords": [<5-10 keywords/tools a recruiter would search for this role that are NOT in the resume, 1-3 words each>],
+  "presentKeywords": [<5-10 important keywords for this role that ARE in the resume>],
+  "sections": [<one entry for each of: Summary, Experience, Projects, Skills, Education. Each { "name": "<section>", "status": "good" | "improve" | "missing", "feedback": "<one short, specific sentence>" }>],
+  "topFixes": [<3 most important, specific changes to make first>]
+}
+Only judge what is actually written. Never suggest inventing experience, numbers or achievements.
+
+Resume:
+"""
+${resumeText}
+"""`;
+
+    try {
+      const response = await this.generateJson(prompt);
+      const parsed = extractJson(response);
+      const list = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === 'string') : []);
+      const STATUSES = ['good', 'improve', 'missing'];
+
+      return {
+        contentScore: Math.max(0, Math.min(100, Math.round(Number(parsed.contentScore) || 0))),
+        missingKeywords: list(parsed.missingKeywords),
+        presentKeywords: list(parsed.presentKeywords),
+        sections: (Array.isArray(parsed.sections) ? parsed.sections : [])
+          .filter((s) => s && typeof s.name === 'string')
+          .map((s) => ({
+            name: s.name,
+            status: STATUSES.includes(s.status) ? s.status : 'improve',
+            feedback: typeof s.feedback === 'string' ? s.feedback : '',
+          })),
+        topFixes: list(parsed.topFixes),
+      };
+    } catch (error) {
+      console.error('Error in atsReview:', error);
+      throw error;
+    }
+  }
+
+  async rewriteBullet(bullet, targetRole) {
+    const prompt = `You are an expert resume writer. Rewrite this resume bullet point${targetRole ? ` for a ${targetRole} role` : ''} in 3 different styles.
+
+Original bullet: "${bullet}"
+
+Rules:
+- Start every version with a strong action verb (e.g. Built, Developed, Optimized, Led, Integrated).
+- Keep each version to one sentence, under 30 words, plain text.
+- NEVER invent achievements, numbers or metrics that are not in the original. Only clarify and strengthen what is already there.
+- Only name tools, libraries, algorithms or techniques that appear in the original. If the original names none, write "<tool>" as a placeholder instead of guessing one, and say in the tips which detail to add.
+- If a number would make it stronger but the original has none, put a placeholder like <X> or <X%> for the candidate to fill in with their real figure.
+
+Return ONLY a valid JSON object with this exact shape:
+{ "variants": [
+  { "style": "Concise", "text": "<short and punchy>" },
+  { "style": "Impact-focused", "text": "<leads with the result or benefit>" },
+  { "style": "Technical", "text": "<highlights the tools and how it was built>" }
+], "tips": [<1-3 short tips to make this bullet stronger, e.g. what number to measure>] }`;
+
+    try {
+      const response = await this.generateJson(prompt, { maxTokens: 1024 });
+      const parsed = extractJson(response);
+
+      return {
+        variants: (Array.isArray(parsed.variants) ? parsed.variants : [])
+          .filter((v) => v && typeof v.text === 'string' && v.text.trim())
+          .map((v) => ({
+            style: typeof v.style === 'string' ? v.style : 'Rewrite',
+            text: replaceInventedNumbers(v.text.trim(), bullet),
+          })),
+        tips: Array.isArray(parsed.tips) ? parsed.tips.filter((t) => typeof t === 'string') : [],
+      };
+    } catch (error) {
+      console.error('Error in rewriteBullet:', error);
       throw error;
     }
   }

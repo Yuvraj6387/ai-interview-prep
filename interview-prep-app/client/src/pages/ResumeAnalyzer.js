@@ -3,11 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   FiUpload, FiFile, FiCheckCircle, FiAlertTriangle, FiLoader,
-  FiAward, FiTarget, FiBriefcase, FiBookOpen, FiTrendingUp, FiThumbsUp
+  FiAward, FiTarget, FiBriefcase, FiBookOpen, FiTrendingUp, FiThumbsUp,
+  FiBarChart2, FiShield, FiEdit3
 } from 'react-icons/fi';
 import { resumeAPI, profileAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
 import AddJobModal from '../components/AddJobModal';
+import AtsScanTab from '../components/resume/AtsScanTab';
+import BulletRewriterTab from '../components/resume/BulletRewriterTab';
+
+const TABS = [
+  { id: 'analysis', label: 'Analysis', icon: FiBarChart2 },
+  { id: 'ats', label: 'ATS Scan', icon: FiShield },
+  { id: 'rewriter', label: 'Bullet Rewriter', icon: FiEdit3 },
+];
 
 const SkillPill = ({ label, tone }) => (
   <span
@@ -49,6 +58,7 @@ const ResumeAnalyzer = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showInterviewModal, setShowInterviewModal] = useState(false);
   const [creatingInterview, setCreatingInterview] = useState(false);
+  const [activeTab, setActiveTab] = useState('analysis');
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -141,6 +151,27 @@ const ResumeAnalyzer = () => {
             Upload your resume and let AI find your strengths, gaps, and interview focus areas
           </p>
         </motion.div>
+
+        <div className="flex gap-1 p-1 mb-6 bg-white/10 border border-white/15 rounded-xl overflow-x-auto">
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-smooth ${
+                activeTab === id ? 'bg-white text-slate-900 shadow' : 'text-slate-200 hover:bg-white/10'
+              }`}
+            >
+              <Icon size={16} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'ats' && <AtsScanTab hasResume={!!analysis} suggestedRole={analysis?.suggestedRole} />}
+        {activeTab === 'rewriter' && <BulletRewriterTab suggestedRole={analysis?.suggestedRole} />}
+
+        {activeTab === 'analysis' && (
+        <>
 
         <div className={`grid gap-6 mb-6 ${showScore ? 'lg:grid-cols-2' : ''}`}>
         {/* Upload Card */}
@@ -308,6 +339,8 @@ const ResumeAnalyzer = () => {
               </div>
             )}
           </motion.div>
+        )}
+        </>
         )}
       </div>
 

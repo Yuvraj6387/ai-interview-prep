@@ -77,7 +77,7 @@ const BulletRewriterTab = ({ suggestedRole }) => {
           <button
             type="submit"
             disabled={rewriting}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-600/30 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg shadow-md shadow-cyan-600/20 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {rewriting ? <FiLoader className="animate-spin" /> : <FiEdit3 />}
             <span>{rewriting ? 'Rewriting...' : 'Rewrite Bullet'}</span>

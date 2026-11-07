@@ -13,7 +13,7 @@ const ScoreRing = ({ score, label }) => {
   const tone = scoreTone(score);
 
   return (
-    <div className="relative w-36 h-36 flex-shrink-0">
+    <div className="relative w-28 h-28 flex-shrink-0">
       <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
         <circle cx="60" cy="60" r={radius} fill="none" stroke="#f1f5f9" strokeWidth="10" />
         <circle
@@ -30,8 +30,8 @@ const ScoreRing = ({ score, label }) => {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold text-gray-800 font-display">{score}%</span>
-        <span className={`text-xs font-semibold ${tone.text}`}>{label || tone.label}</span>
+        <span className="text-2xl font-bold text-gray-800 font-display">{score}%</span>
+        <span className={`text-[11px] font-semibold ${tone.text}`}>{label || tone.label}</span>
       </div>
     </div>
   );

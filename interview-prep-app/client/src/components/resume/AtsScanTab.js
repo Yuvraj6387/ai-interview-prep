@@ -85,7 +85,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
           <button
             type="submit"
             disabled={scanning}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-600/30 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg shadow-md shadow-cyan-600/20 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {scanning ? <FiLoader className="animate-spin" /> : <FiShield />}
             <span>{scanning ? 'Scanning...' : 'Run ATS Scan'}</span>
@@ -98,11 +98,11 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
 
       {result && !scanning && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
+          <div className="bg-white rounded-2xl shadow-xl p-5 md:p-6 flex flex-col md:flex-row items-center gap-5">
             <ScoreRing score={result.atsScore} label="ATS score" />
             <div className="flex-1 w-full">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 text-center md:text-left">ATS scan for</p>
-              <h2 className="text-2xl font-bold text-gray-800 font-display mb-4 text-center md:text-left">{result.targetRole}</h2>
+              <h2 className="text-xl font-bold text-gray-800 font-display mb-3 text-center md:text-left">{result.targetRole}</h2>
               <div className="grid sm:grid-cols-2 gap-3">
                 <ScoreBar label="Format" icon={FiLayout} score={result.formatScore} />
                 <ScoreBar label="Content" icon={FiCpu} score={result.contentScore} />

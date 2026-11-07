@@ -75,6 +75,18 @@ export const resumeAPI = {
   rewriteBullet: (bullet, targetRole) => api.post('/resume/rewrite-bullet', { bullet, targetRole }),
 };
 
+// Resume Builder APIs (saved resume versions)
+export const builderAPI = {
+  list: () => api.get('/builder'),
+  create: () => api.post('/builder'),
+  importFromUpload: () => api.post('/builder/import'),
+  get: (id) => api.get(`/builder/${id}`),
+  save: (id, { title, template, content }) => api.put(`/builder/${id}`, { title, template, content }),
+  duplicate: (id) => api.post(`/builder/${id}/duplicate`),
+  remove: (id) => api.delete(`/builder/${id}`),
+  summary: (content, targetRole) => api.post('/builder/summary', { content, targetRole }),
+};
+
 // Interview (adaptive mock interview) APIs
 export const interviewAPI = {
   start: (config) => api.post('/interviews', config),

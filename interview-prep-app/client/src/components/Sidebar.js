@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiGrid, FiFileText, FiTarget, FiMic, FiBarChart2, FiLogOut, FiUser, FiX, FiChevronsLeft } from 'react-icons/fi';
+import { FiGrid, FiFileText, FiEdit, FiTarget, FiMic, FiBarChart2, FiLogOut, FiUser, FiX, FiChevronsLeft } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: FiGrid },
   { to: '/resume', label: 'Resume Analyzer', icon: FiFileText },
+  { to: '/resume-builder', label: 'Resume Builder', icon: FiEdit },
   { to: '/job-match', label: 'Job Matcher', icon: FiTarget },
   { to: '/mock-interview', label: 'Mock Interview', icon: FiMic },
   { to: '/analytics', label: 'Analytics', icon: FiBarChart2 },
@@ -34,7 +35,8 @@ const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, close
 
       <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map(({ to, label, icon: Icon }) => {
-          const isActive = location.pathname === to;
+          // The builder's editor lives at /resume-builder/:id, which should still light up its link.
+          const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(`${to}/`));
           return (
             <Link
               key={to}

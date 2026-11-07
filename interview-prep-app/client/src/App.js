@@ -23,6 +23,7 @@ const MockInterview = lazy(() => import('./pages/MockInterview'));
 const InterviewResult = lazy(() => import('./pages/InterviewResult'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const JobMatcher = lazy(() => import('./pages/JobMatcher'));
+const ResumeBuilder = lazy(() => import('./pages/ResumeBuilder'));
 
 const RouteFallback = () => (
   <div className="flex justify-center items-center py-20">
@@ -280,6 +281,8 @@ const AppContent = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/resume" element={<ResumeAnalyzer />} />
             <Route path="/job-match" element={<JobMatcher />} />
+            <Route path="/resume-builder" element={<ResumeBuilder />} />
+            <Route path="/resume-builder/:id" element={<ResumeBuilder />} />
             <Route path="/mock-interview" element={<MockInterview />} />
             <Route path="/interview-result/:interviewId" element={<InterviewResult />} />
             <Route path="/analytics" element={<Analytics />} />

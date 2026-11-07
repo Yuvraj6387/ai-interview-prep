@@ -138,7 +138,7 @@ const JobMatcher = () => {
             <button
               type="submit"
               disabled={matching || hasResume === false}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-600/30 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg shadow-md shadow-cyan-600/20 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {matching ? <FiLoader className="animate-spin" /> : <FiTarget />}
               <span>{matching ? 'Matching your resume...' : 'Check Match'}</span>
@@ -148,15 +148,15 @@ const JobMatcher = () => {
 
         {match && !matching && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
+            <div className="bg-white rounded-2xl shadow-xl p-5 md:p-6 flex flex-col md:flex-row items-center gap-5">
               <ScoreRing score={match.matchScore} label={matchLabel(match.matchScore)} />
               <div className="flex-1 text-center md:text-left">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Resume match for</p>
-                <h2 className="text-2xl font-bold text-gray-800 font-display mb-2">{match.jobTitle || 'This job'}</h2>
-                <p className="text-gray-600 text-sm leading-relaxed mb-4">{match.summary}</p>
+                <h2 className="text-xl font-bold text-gray-800 font-display mb-1">{match.jobTitle || 'This job'}</h2>
+                <p className="text-gray-600 text-sm leading-relaxed mb-3">{match.summary}</p>
                 <button
                   onClick={startInterview}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-600/30 transition-smooth"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg shadow-md shadow-cyan-600/20 transition-smooth"
                 >
                   <FiMic />
                   <span>Start Mock Interview for this Job</span>

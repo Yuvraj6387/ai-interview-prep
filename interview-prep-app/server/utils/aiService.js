@@ -457,6 +457,100 @@ Return ONLY a valid JSON object with this exact shape:
     }
   }
 
+  // Resume Builder "Magic import": copies the uploaded resume into editable
+  // sections. It only reorganises the text, it does not rewrite or add anything.
+  async parseResumeToSections(resumeText) {
+    const prompt = `Split this resume text into structured sections. Copy the candidate's own wording; do NOT rewrite, improve, summarise or add anything that is not in the text. Leave a field as "" or [] if the resume does not have it.
+
+Return ONLY a valid JSON object with this exact shape:
+{
+  "name": "", "headline": "<job title line under the name, if any>", "email": "", "phone": "", "location": "",
+  "links": [<LinkedIn/GitHub/portfolio URLs or labels>],
+  "summary": "<the summary/objective paragraph, if any>",
+  "experience": [{ "role": "", "company": "", "location": "", "start": "", "end": "", "bullets": [<one string per bullet>] }],
+  "projects": [{ "name": "", "tech": "<technologies, comma-separated>", "link": "", "bullets": [] }],
+  "education": [{ "degree": "", "school": "", "location": "", "year": "", "details": "<grade/CGPA etc.>" }],
+  "skills": [{ "category": "<e.g. Languages, Frontend>", "items": "<comma-separated skills>" }],
+  "certifications": [<one string each>]
+}
+
+Resume text:
+"""
+${resumeText}
+"""`;
+
+    try {
+      // Long answer: the whole resume comes back as JSON.
+      const response = await this.generateJson(prompt, { maxTokens: 3500 });
+      const parsed = extractJson(response);
+      const text = (value) => (typeof value === 'string' ? value.trim() : '');
+      const list = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === 'string' && item.trim()) : []);
+      const objects = (value) => (Array.isArray(value) ? value.filter((item) => item && typeof item === 'object') : []);
+
+      return {
+        name: text(parsed.name),
+        headline: text(parsed.headline),
+        email: text(parsed.email),
+        phone: text(parsed.phone),
+        location: text(parsed.location),
+        links: list(parsed.links),
+        summary: text(parsed.summary),
+        experience: objects(parsed.experience).map((e) => ({
+          role: text(e.role), company: text(e.company), location: text(e.location),
+          start: text(e.start), end: text(e.end), bullets: list(e.bullets),
+        })),
+        projects: objects(parsed.projects).map((p) => ({
+          name: text(p.name), tech: text(p.tech), link: text(p.link), bullets: list(p.bullets),
+        })),
+        education: objects(parsed.education).map((e) => ({
+          degree: text(e.degree), school: text(e.school), location: text(e.location),
+          year: text(e.year), details: text(e.details),
+        })),
+        skills: objects(parsed.skills).map((s) => ({ category: text(s.category), items: text(s.items) })),
+        certifications: list(parsed.certifications),
+      };
+    } catch (error) {
+      console.error('Error in parseResumeToSections:', error);
+      throw error;
+    }
+  }
+
+  async generateResumeSummary(content, targetRole) {
+    // Only the facts the summary may draw on, kept short to save tokens.
+    const facts = {
+      headline: content.headline || '',
+      experience: (content.experience || []).map((e) => `${e.role} at ${e.company} (${e.start}-${e.end}): ${(e.bullets || []).join(' ')}`),
+      projects: (content.projects || []).map((p) => `${p.name} [${p.tech}]: ${(p.bullets || []).join(' ')}`),
+      education: (content.education || []).map((e) => `${e.degree}, ${e.school} ${e.year}`),
+      skills: (content.skills || []).map((s) => `${s.category}: ${s.items}`),
+    };
+    const factsText = JSON.stringify(facts).slice(0, 5000);
+
+    const prompt = `Write a professional resume summary${targetRole ? ` for a ${targetRole} role` : ''} using ONLY the facts below.
+
+Facts:
+${factsText}
+
+Rules:
+- 2-3 sentences, 40-60 words, third person without pronouns (e.g. "Full stack developer who...").
+- Mention the strongest skills and what the candidate has actually built or done.
+- NEVER invent years of experience, numbers, companies, tools or achievements that are not in the facts.
+- Plain text, no buzzwords like "passionate" or "hardworking".
+
+Return ONLY a valid JSON object: { "summary": "<the summary>" }`;
+
+    try {
+      const response = await this.generateJson(prompt, { maxTokens: 1024 });
+      const parsed = extractJson(response);
+      const summary = typeof parsed.summary === 'string' ? parsed.summary.trim() : '';
+      // Same guard as the bullet rewriter: a number not in the facts becomes <X>.
+      return replaceInventedNumbers(summary, factsText);
+    } catch (error) {
+      console.error('Error in generateResumeSummary:', error);
+      throw error;
+    }
+  }
+
   async generateNextQuestion({ config, resumeContext, jobContext, turns }) {
     const { role, experienceLevel, interviewType, difficulty, numQuestions } = config;
 

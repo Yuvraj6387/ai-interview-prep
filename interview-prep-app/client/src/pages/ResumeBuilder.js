@@ -256,11 +256,16 @@ const SaveStatus = ({ status }) => {
   const states = {
     saved: { icon: FiCheck, text: 'Saved', className: 'text-emerald-600' },
     saving: { icon: FiLoader, text: 'Saving...', className: 'text-gray-500', spin: true },
-    unsaved: { icon: FiEdit2, text: 'Unsaved changes', className: 'text-gray-500' },
-    error: { icon: FiAlertCircle, text: 'Not saved, retrying on next edit', className: 'text-red-600' },
+    unsaved: { icon: FiEdit2, text: 'Unsaved', more: ' changes', className: 'text-gray-500' },
+    error: { icon: FiAlertCircle, text: 'Not saved', more: ', retrying on next edit', className: 'text-red-600' },
   };
-  const { icon: Icon, text, className, spin } = states[status];
-  return <span className={`flex items-center gap-1.5 text-xs font-medium ${className}`}><Icon className={spin ? 'animate-spin' : ''} />{text}</span>;
+  const { icon: Icon, text, more, className, spin } = states[status];
+  // Short text on phones so it fits next to the resume name.
+  return (
+    <span className={`flex items-center gap-1.5 text-xs font-medium whitespace-nowrap flex-shrink-0 ${className}`}>
+      <Icon className={spin ? 'animate-spin' : ''} />{text}{more && <span className="hidden sm:inline">{more}</span>}
+    </span>
+  );
 };
 
 const Editor = ({ id }) => {
@@ -392,32 +397,38 @@ const Editor = ({ id }) => {
   return (
     <div className="max-w-7xl mx-auto space-y-4">
       {/* Toolbar */}
-      <div className="bg-white rounded-2xl shadow-xl p-3 md:p-4 flex flex-wrap items-center gap-3">
-        <button onClick={() => navigate('/resume-builder')} title="All versions" className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-cyan-700 transition-smooth">
-          <FiArrowLeft size={16} />
-        </button>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value.slice(0, 60))}
-          aria-label="Version name"
-          className="flex-1 min-w-[10rem] px-3 py-2 text-sm font-semibold border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-        />
-        <button
-          onClick={() => setShowDesign((v) => !v)}
-          className={`${SECONDARY} ${showDesign ? '!border-cyan-500 !text-cyan-700 bg-cyan-50' : ''}`}
-        >
-          <span className="w-3 h-3 rounded-full" style={{ background: accentColor }} />
-          Design: {TEMPLATES[template]?.label}
-        </button>
-        <SaveStatus status={status} />
-        <div className="flex gap-2 ml-auto">
+      {/* Phones: name + status on one row, then three equal buttons.
+          Wider screens: everything on one line. */}
+      <div className="bg-white rounded-2xl shadow-xl p-3 md:p-4 flex flex-col lg:flex-row lg:items-center gap-3">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <button onClick={() => navigate('/resume-builder')} title="All versions" className="p-2 -ml-1 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-cyan-700 transition-smooth flex-shrink-0">
+            <FiArrowLeft size={16} />
+          </button>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value.slice(0, 60))}
+            aria-label="Version name"
+            className="flex-1 min-w-0 px-3 py-2 text-sm font-semibold border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+          />
+          <SaveStatus status={status} />
+        </div>
+        <div className="grid grid-cols-3 lg:flex gap-2">
+          <button
+            onClick={() => setShowDesign((v) => !v)}
+            className={`${SECONDARY} px-2 sm:px-4 ${showDesign ? '!border-cyan-500 !text-cyan-700 bg-cyan-50' : ''}`}
+          >
+            <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: accentColor }} />
+            <span className="whitespace-nowrap">Design<span className="hidden lg:inline">: {TEMPLATES[template]?.label}</span></span>
+          </button>
           <button
             onClick={async () => { if (status !== 'saved') await save(); tailor.open(id, title); }}
-            className={SECONDARY}
+            className={`${SECONDARY} px-2 sm:px-4`}
           >
-            <FiTarget /> Tailor to a job
+            <FiTarget className="flex-shrink-0" /> <span>Tailor<span className="hidden sm:inline"> to a job</span></span>
           </button>
-          <button onClick={downloadPdf} className={PRIMARY}><FiDownload /> Download PDF</button>
+          <button onClick={downloadPdf} className={`${PRIMARY} px-2 sm:px-4`}>
+            <FiDownload className="flex-shrink-0" /> <span><span className="hidden sm:inline">Download </span>PDF</span>
+          </button>
         </div>
       </div>
 

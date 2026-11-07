@@ -10,7 +10,8 @@ import {
 import { builderAPI, resumeAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
 import ConfirmDialog from '../components/ConfirmDialog';
-import ResumePreview from '../components/builder/ResumePreview';
+import ResumePreview, { DEFAULT_ACCENT, TEMPLATES } from '../components/builder/ResumePreview';
+import DesignPanel from '../components/builder/DesignPanel';
 import TailorModal from '../components/builder/TailorModal';
 import { SectionCard, ProfileFields, SummaryField, EntryList, LinesField } from '../components/builder/EditorSections';
 
@@ -215,7 +216,10 @@ const VersionList = () => {
               <div key={v._id} className="bg-white rounded-2xl shadow-xl p-5 flex flex-col">
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <p className="font-bold text-gray-800 truncate">{v.title}</p>
-                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-cyan-50 text-cyan-700 capitalize flex-shrink-0">{v.template}</span>
+                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 flex-shrink-0">
+                    <span className="w-2 h-2 rounded-full" style={{ background: v.accentColor || DEFAULT_ACCENT }} />
+                    {TEMPLATES[v.template]?.label || v.template}
+                  </span>
                 </div>
                 <p className="text-sm text-gray-500 truncate">{[v.content?.name, v.content?.headline].filter(Boolean).join(' · ') || 'Not filled in yet'}</p>
                 <p className="text-xs text-gray-400 mt-1 mb-4">Edited {formatDate(v.updatedAt)}</p>
@@ -263,6 +267,8 @@ const Editor = ({ id }) => {
   const [loaded, setLoaded] = useState(false);
   const [title, setTitle] = useState('');
   const [template, setTemplate] = useState('classic');
+  const [accentColor, setAccentColor] = useState(DEFAULT_ACCENT);
+  const [showDesign, setShowDesign] = useState(false);
   const [content, setContent] = useState({});
   const [status, setStatus] = useState('saved');
   const [openSections, setOpenSections] = useState(['profile']);
@@ -275,7 +281,7 @@ const Editor = ({ id }) => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  latest.current = { title, template, content };
+  latest.current = { title, template, accentColor, content };
 
   useEffect(() => {
     builderAPI.get(id)
@@ -283,6 +289,7 @@ const Editor = ({ id }) => {
         skipNextSave.current = true;
         setTitle(data.title);
         setTemplate(data.template);
+        setAccentColor(data.accentColor || DEFAULT_ACCENT);
         setContent(data.content || {});
         setTailoredFor(data.tailoredFor?.jobTitle || data.tailoredFor?.company ? data.tailoredFor : null);
         setLoaded(true);
@@ -314,7 +321,7 @@ const Editor = ({ id }) => {
     setStatus('unsaved');
     const timer = setTimeout(save, AUTOSAVE_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [title, template, content, loaded, save]);
+  }, [title, template, accentColor, content, loaded, save]);
 
   // Warn before closing the tab with edits that haven't reached the server yet.
   useEffect(() => {
@@ -395,17 +402,13 @@ const Editor = ({ id }) => {
           aria-label="Version name"
           className="flex-1 min-w-[10rem] px-3 py-2 text-sm font-semibold border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
         />
-        <div className="flex p-1 bg-gray-100 rounded-lg">
-          {['classic', 'modern'].map((t) => (
-            <button
-              key={t}
-              onClick={() => setTemplate(t)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md capitalize transition-smooth ${template === t ? 'bg-white text-cyan-700 shadow' : 'text-gray-500'}`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        <button
+          onClick={() => setShowDesign((v) => !v)}
+          className={`${SECONDARY} ${showDesign ? '!border-cyan-500 !text-cyan-700 bg-cyan-50' : ''}`}
+        >
+          <span className="w-3 h-3 rounded-full" style={{ background: accentColor }} />
+          Design: {TEMPLATES[template]?.label}
+        </button>
         <SaveStatus status={status} />
         <div className="flex gap-2 ml-auto">
           <button
@@ -417,6 +420,10 @@ const Editor = ({ id }) => {
           <button onClick={downloadPdf} className={PRIMARY}><FiDownload /> Download PDF</button>
         </div>
       </div>
+
+      {showDesign && (
+        <DesignPanel template={template} accentColor={accentColor} onTemplate={setTemplate} onColor={setAccentColor} />
+      )}
 
       {tailoredFor && <TailoredNotes notes={tailoredFor} onDismiss={() => setTailoredFor(null)} />}
 
@@ -452,7 +459,7 @@ const Editor = ({ id }) => {
           </div>
           <div className="lg:max-h-[calc(100vh-9rem)] overflow-y-auto bg-gray-100 p-3">
             <div className="shadow-md">
-              <ResumePreview content={content} template={template} />
+              <ResumePreview content={content} template={template} accentColor={accentColor} />
             </div>
           </div>
         </div>
@@ -460,7 +467,7 @@ const Editor = ({ id }) => {
 
       {/* Only this copy is printed; index.css hides the rest of the app in print. */}
       {createPortal(
-        <div className="resume-print-root"><ResumePreview content={content} template={template} /></div>,
+        <div className="resume-print-root"><ResumePreview content={content} template={template} accentColor={accentColor} /></div>,
         document.body
       )}
       {tailor.modal}

@@ -1,19 +1,63 @@
 import React from 'react';
 
-// Both templates are single-column with plain text headings, so an ATS reads
-// them top to bottom without trouble. They only differ in alignment and accent.
-const TEMPLATES = {
+export const DEFAULT_ACCENT = '#0e7490';
+
+// Every template is single-column with plain text headings, so an ATS reads
+// them top to bottom. They differ only in font, alignment and how the accent
+// colour is used. `a` is the chosen colour; `${a}55` is the same colour at
+// about one-third opacity (8-digit hex), used for lighter lines and tints.
+export const TEMPLATES = {
   classic: {
-    header: 'text-center',
-    name: 'text-[22px] font-bold uppercase tracking-wide text-gray-900',
-    headline: 'text-[12px] text-gray-700',
-    heading: 'text-[11px] font-bold uppercase tracking-wider text-gray-900 border-b border-gray-800 pb-0.5 mb-1.5',
+    label: 'Classic',
+    font: 'Arial, Helvetica, sans-serif',
+    header: () => ({ textAlign: 'center' }),
+    name: () => ({ fontSize: 22, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#111827' }),
+    headline: () => ({ fontSize: 12, color: '#374151' }),
+    heading: (a) => ({ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: a, borderBottom: `1px solid ${a}`, paddingBottom: 2, marginBottom: 6 }),
   },
   modern: {
-    header: 'text-left border-l-4 border-cyan-700 pl-3',
-    name: 'text-[22px] font-bold text-gray-900',
-    headline: 'text-[12px] font-semibold text-cyan-700',
-    heading: 'text-[11px] font-bold uppercase tracking-wider text-cyan-700 border-b border-cyan-200 pb-0.5 mb-1.5',
+    label: 'Modern',
+    font: 'Arial, Helvetica, sans-serif',
+    header: (a) => ({ textAlign: 'left', borderLeft: `4px solid ${a}`, paddingLeft: 12 }),
+    name: () => ({ fontSize: 22, fontWeight: 700, color: '#111827' }),
+    headline: (a) => ({ fontSize: 12, fontWeight: 600, color: a }),
+    heading: (a) => ({ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: a, borderBottom: `1px solid ${a}55`, paddingBottom: 2, marginBottom: 6 }),
+  },
+  minimal: {
+    label: 'Minimal',
+    font: 'Helvetica, Arial, sans-serif',
+    header: () => ({ textAlign: 'left' }),
+    name: (a) => ({ fontSize: 24, fontWeight: 300, color: a }),
+    headline: () => ({ fontSize: 12, color: '#6b7280' }),
+    heading: (a) => ({ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: a, marginBottom: 5 }),
+    sectionGap: 16,
+  },
+  elegant: {
+    label: 'Elegant',
+    font: 'Georgia, "Times New Roman", serif',
+    header: (a) => ({ textAlign: 'center', borderBottom: `2px double ${a}`, paddingBottom: 8 }),
+    name: () => ({ fontSize: 24, fontWeight: 400, letterSpacing: '0.03em', color: '#111827' }),
+    headline: (a) => ({ fontSize: 12, fontStyle: 'italic', color: a }),
+    heading: (a) => ({ fontSize: 12, fontWeight: 400, fontVariant: 'small-caps', letterSpacing: '0.06em', color: a, borderBottom: `1px solid ${a}55`, paddingBottom: 2, marginBottom: 6 }),
+  },
+  compact: {
+    label: 'Compact',
+    font: 'Arial, Helvetica, sans-serif',
+    bodySize: 10,
+    header: () => ({ textAlign: 'left' }),
+    name: () => ({ fontSize: 19, fontWeight: 700, color: '#111827' }),
+    headline: (a) => ({ fontSize: 11, fontWeight: 600, color: a }),
+    heading: (a) => ({ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: a, background: `${a}1a`, padding: '2px 6px', marginBottom: 4 }),
+    sectionGap: 8,
+  },
+  bold: {
+    label: 'Bold',
+    font: 'Arial, Helvetica, sans-serif',
+    header: (a) => ({ textAlign: 'left', background: a, color: '#fff', padding: '14px 16px', borderRadius: 4 }),
+    name: () => ({ fontSize: 23, fontWeight: 800, color: '#fff' }),
+    headline: () => ({ fontSize: 12, fontWeight: 600, color: '#ffffffdd' }),
+    contact: () => ({ color: '#ffffffcc' }),
+    heading: (a) => ({ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: a, borderBottom: `2px solid ${a}`, paddingBottom: 2, marginBottom: 6 }),
   },
 };
 
@@ -22,9 +66,9 @@ const hasText = (obj, keys) => keys.some((k) => (obj[k] || '').trim());
 // Keeps an entry from being split across two PDF pages.
 const keepTogether = { breakInside: 'avoid' };
 
-const Section = ({ title, style, children }) => (
-  <section className="mt-3">
-    <h2 className={style.heading}>{title}</h2>
+const Section = ({ title, theme, accent, children }) => (
+  <section style={{ marginTop: theme.sectionGap || 12 }}>
+    <h2 style={{ fontFamily: 'inherit', ...theme.heading(accent) }}>{title}</h2>
     {children}
   </section>
 );
@@ -39,8 +83,9 @@ const Bullets = ({ items }) => {
   );
 };
 
-const ResumePreview = ({ content = {}, template = 'classic' }) => {
-  const style = TEMPLATES[template] || TEMPLATES.classic;
+const ResumePreview = ({ content = {}, template = 'classic', accentColor = DEFAULT_ACCENT }) => {
+  const theme = TEMPLATES[template] || TEMPLATES.classic;
+  const accent = /^#[0-9a-fA-F]{6}$/.test(accentColor || '') ? accentColor : DEFAULT_ACCENT;
   const contact = clean([content.email, content.phone, content.location, ...(content.links || [])]);
   const experience = (content.experience || []).filter((e) => hasText(e, ['role', 'company']) || clean(e.bullets).length);
   const projects = (content.projects || []).filter((p) => hasText(p, ['name', 'tech']) || clean(p.bullets).length);
@@ -58,21 +103,25 @@ const ResumePreview = ({ content = {}, template = 'classic' }) => {
   }
 
   return (
-    <div className="bg-white text-gray-800 text-[11px] leading-snug p-8" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
-      <header className={style.header}>
-        <h1 className={style.name} style={{ fontFamily: 'inherit' }}>{content.name || 'Your Name'}</h1>
-        {content.headline && <p className={style.headline}>{content.headline}</p>}
-        {contact.length > 0 && <p className="text-[10.5px] text-gray-600 mt-0.5">{contact.join('  |  ')}</p>}
+    <div className="bg-white text-gray-800 leading-snug p-8" style={{ fontFamily: theme.font, fontSize: theme.bodySize || 11 }}>
+      <header style={theme.header(accent)}>
+        <h1 style={{ fontFamily: 'inherit', lineHeight: 1.2, ...theme.name(accent) }}>{content.name || 'Your Name'}</h1>
+        {content.headline && <p style={theme.headline(accent)}>{content.headline}</p>}
+        {contact.length > 0 && (
+          <p style={{ fontSize: '0.95em', color: '#4b5563', marginTop: 2, ...(theme.contact ? theme.contact(accent) : {}) }}>
+            {contact.join('  |  ')}
+          </p>
+        )}
       </header>
 
       {content.summary?.trim() && (
-        <Section title="Summary" style={style}>
+        <Section title="Summary" theme={theme} accent={accent}>
           <p>{content.summary}</p>
         </Section>
       )}
 
       {experience.length > 0 && (
-        <Section title="Experience" style={style}>
+        <Section title="Experience" theme={theme} accent={accent}>
           {experience.map((e, i) => (
             <div key={i} className="mb-2" style={keepTogether}>
               <div className="flex justify-between gap-3">
@@ -87,7 +136,7 @@ const ResumePreview = ({ content = {}, template = 'classic' }) => {
       )}
 
       {projects.length > 0 && (
-        <Section title="Projects" style={style}>
+        <Section title="Projects" theme={theme} accent={accent}>
           {projects.map((p, i) => (
             <div key={i} className="mb-2" style={keepTogether}>
               <div className="flex justify-between gap-3">
@@ -101,7 +150,7 @@ const ResumePreview = ({ content = {}, template = 'classic' }) => {
       )}
 
       {skills.length > 0 && (
-        <Section title="Skills" style={style}>
+        <Section title="Skills" theme={theme} accent={accent}>
           {skills.map((s, i) => (
             <p key={i}>{s.category && <span className="font-bold">{s.category}: </span>}{s.items}</p>
           ))}
@@ -109,7 +158,7 @@ const ResumePreview = ({ content = {}, template = 'classic' }) => {
       )}
 
       {education.length > 0 && (
-        <Section title="Education" style={style}>
+        <Section title="Education" theme={theme} accent={accent}>
           {education.map((e, i) => (
             <div key={i} className="mb-1.5" style={keepTogether}>
               <div className="flex justify-between gap-3">
@@ -124,7 +173,7 @@ const ResumePreview = ({ content = {}, template = 'classic' }) => {
       )}
 
       {certifications.length > 0 && (
-        <Section title="Certifications" style={style}>
+        <Section title="Certifications" theme={theme} accent={accent}>
           <Bullets items={certifications} />
         </Section>
       )}

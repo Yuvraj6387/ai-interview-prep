@@ -5,6 +5,9 @@ const mongoose = require('mongoose');
 // which only holds the single uploaded PDF and its analysis.
 const str = { type: String, trim: true, default: '' };
 
+// Every template is single-column with real text, so all of them stay ATS-friendly.
+const TEMPLATES = ['classic', 'modern', 'minimal', 'elegant', 'compact', 'bold'];
+
 const experienceSchema = new mongoose.Schema({
   role: str, company: str, location: str, start: str, end: str,
   bullets: [{ type: String, trim: true }],
@@ -27,7 +30,9 @@ const skillGroupSchema = new mongoose.Schema({
 const builtResumeSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   title: { type: String, trim: true, default: 'My Resume', maxlength: 60 },
-  template: { type: String, enum: ['classic', 'modern'], default: 'classic' },
+  template: { type: String, enum: TEMPLATES, default: 'classic' },
+  // Colour for the name, headings and lines, as a hex code like "#0e7490".
+  accentColor: { type: String, match: /^#[0-9a-fA-F]{6}$/, default: '#0e7490' },
   content: {
     name: str,
     headline: str,
@@ -52,3 +57,4 @@ const builtResumeSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model('BuiltResume', builtResumeSchema);
+module.exports.TEMPLATES = TEMPLATES;

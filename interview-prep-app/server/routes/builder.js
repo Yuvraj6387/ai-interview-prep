@@ -22,7 +22,7 @@ const versionLimitMessage = `You can keep up to ${MAX_VERSIONS} resume versions.
 router.get('/', auth, async (req, res) => {
   try {
     const versions = await BuiltResume.find({ userId: req.userId })
-      .select('title template updatedAt content.name content.headline')
+      .select('title template accentColor updatedAt content.name content.headline')
       .sort({ updatedAt: -1 });
     res.json(versions);
   } catch (error) {
@@ -104,9 +104,10 @@ router.put('/:id', auth, async (req, res) => {
     const version = await findOwned(req);
     if (!version) return res.status(404).json({ message: 'Resume not found' });
 
-    const { title, template, content } = req.body;
+    const { title, template, accentColor, content } = req.body;
     if (typeof title === 'string') version.title = title.slice(0, 60) || 'My Resume';
-    if (['classic', 'modern'].includes(template)) version.template = template;
+    if (BuiltResume.TEMPLATES.includes(template)) version.template = template;
+    if (/^#[0-9a-fA-F]{6}$/.test(accentColor || '')) version.accentColor = accentColor;
     if (content && typeof content === 'object') version.content = content;
 
     await version.save();
@@ -130,6 +131,7 @@ router.post('/:id/duplicate', auth, async (req, res) => {
       userId: req.userId,
       title: `${original.title} (copy)`.slice(0, 60),
       template: original.template,
+      accentColor: original.accentColor,
       content: original.content.toObject(),
     });
     res.status(201).json(copy);
@@ -167,6 +169,7 @@ router.post('/:id/tailor', auth, async (req, res) => {
       userId: req.userId,
       title: `Tailored: ${label}`.slice(0, 60),
       template: original.template,
+      accentColor: original.accentColor,
       content,
       tailoredFor,
     });

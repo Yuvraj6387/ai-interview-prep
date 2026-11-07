@@ -15,6 +15,10 @@ const extractJson = (response) => {
 // Overloaded/unavailable from either provider - worth trying a different one.
 const isOverloadedError = (error) => /503|overloaded|high demand|UNAVAILABLE/i.test(error.message || '');
 const isQuotaExceededError = (error) => /429|quota/i.test(error.message || '');
+// The connection itself dropped (seen as "fetch failed" / ECONNRESET). The
+// other provider is a different server, so it is worth trying.
+const isNetworkError = (error) => /fetch failed|ECONNRESET|ETIMEDOUT|ENOTFOUND|socket hang up/i
+  .test(`${error.message || ''} ${error.cause?.code || ''} ${error.cause?.message || ''}`);
 const isTimeoutError = (error) => /abort|timeout/i.test(error.message || '') || error.name === 'AbortError';
 // Groq refused this particular request (output failed its JSON check, or the prompt
 // is over the free-tier token cap). Gemini has neither limit, so it can still answer.
@@ -62,7 +66,7 @@ const runJsonChain = async (providers, { long = false } = {}) => {
       // capacity and quota, so move on instead of waiting this one out.
       if (isQuotaExceededError(error)) {
         sawQuotaError = true;
-      } else if (!isOverloadedError(error) && !isTimeoutError(error) && !isGroqRejectedError(error)) {
+      } else if (!isOverloadedError(error) && !isTimeoutError(error) && !isGroqRejectedError(error) && !isNetworkError(error)) {
         throw error;
       }
       console.warn(`AI provider ${label} unavailable, falling back:`, error.message);

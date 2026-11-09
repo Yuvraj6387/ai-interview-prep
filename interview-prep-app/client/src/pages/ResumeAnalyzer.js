@@ -134,7 +134,7 @@ const ResumeAnalyzer = () => {
   const showScore = !analyzing && !!analysis;
   // The two side-by-side cards share a title, content height and button so they line up.
   const CARD_TITLE = 'text-sm font-semibold text-gray-800 font-display mb-3';
-  const ACTION_BTN = 'flex items-center justify-center gap-2 px-6 h-12 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth';
+  const ACTION_BTN = 'btn-primary px-6';
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -178,7 +178,7 @@ const ResumeAnalyzer = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl shadow-xl p-6 flex flex-col"
+          className="card p-5 flex flex-col"
         >
           {showScore && <p className={CARD_TITLE}>Upload a new version</p>}
           <div className={`flex-1 flex flex-col items-stretch gap-4 ${showScore ? '' : 'sm:flex-row sm:items-center'}`}>
@@ -219,7 +219,7 @@ const ResumeAnalyzer = () => {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-xl p-6 flex flex-col"
+              className="card p-5 flex flex-col"
             >
               <p className={CARD_TITLE}>Your result</p>
               <div className="min-h-[4.5rem] flex flex-wrap items-center justify-between gap-4 mb-4">
@@ -257,7 +257,7 @@ const ResumeAnalyzer = () => {
 
         {/* Analyzing state */}
         {analyzing && (
-          <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+          <div className="card p-8 md:p-10 text-center">
             <FiLoader className="animate-spin text-cyan-600 mx-auto mb-4" size={48} />
             <h3 className="text-xl font-bold text-gray-800 mb-2 font-display">
               AI is analyzing your resume...
@@ -268,7 +268,7 @@ const ResumeAnalyzer = () => {
 
         {/* Empty state */}
         {!analyzing && !analysis && (
-          <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+          <div className="card p-8 md:p-10 text-center">
             <div className="w-24 h-24 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <FiFile size={40} className="text-cyan-600" />
             </div>
@@ -289,7 +289,7 @@ const ResumeAnalyzer = () => {
             className="space-y-6"
           >
             {/* Skills */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+            <div className="card p-5 md:p-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4 font-display">Skills</h3>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
@@ -318,7 +318,7 @@ const ResumeAnalyzer = () => {
             </div>
 
             {/* Details */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 grid md:grid-cols-2 gap-6">
+            <div className="card p-5 md:p-6 grid md:grid-cols-2 gap-6">
               <ListSection title="Projects" icon={FiBookOpen} items={analysis.projects} />
               <ListSection title="Experience" icon={FiBriefcase} items={analysis.experience} />
               <ListSection title="Education" icon={FiAward} items={analysis.education} />
@@ -326,7 +326,7 @@ const ResumeAnalyzer = () => {
             </div>
 
             {analysis.improvements?.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+              <div className="card p-5 md:p-6">
                 <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                   <FiTrendingUp size={16} className="text-cyan-600" />
                   Improvement Suggestions

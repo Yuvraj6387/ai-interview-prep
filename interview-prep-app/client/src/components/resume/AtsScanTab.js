@@ -15,7 +15,7 @@ const STATUS_STYLE = {
 };
 
 const KeywordCard = ({ title, icon: Icon, items, tone }) => (
-  <div className="bg-white rounded-2xl shadow-xl p-6">
+  <div className="card p-5">
     <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
       <Icon size={16} className={tone === 'good' ? 'text-emerald-600' : 'text-amber-600'} />
       {title}
@@ -62,7 +62,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
 
   if (!hasResume) {
     return (
-      <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+      <div className="card p-8 md:p-10 text-center">
         <FiShield size={40} className="text-cyan-600 mx-auto mb-4" />
         <h3 className="text-xl font-bold text-gray-800 mb-2 font-display">Upload your resume first</h3>
         <p className="text-gray-600">The ATS scan checks the resume you upload in the Analysis tab.</p>
@@ -72,7 +72,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleScan} className="bg-white rounded-2xl shadow-xl p-5 md:p-6">
+      <form onSubmit={handleScan} className="card p-5">
         <label className="block text-sm font-semibold text-gray-700 mb-2">Target role</label>
         <div className="flex flex-col sm:flex-row gap-3">
           <input
@@ -85,7 +85,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
           <button
             type="submit"
             disabled={scanning}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg shadow-md shadow-cyan-600/20 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary"
           >
             {scanning ? <FiLoader className="animate-spin" /> : <FiShield />}
             <span>{scanning ? 'Scanning...' : 'Run ATS Scan'}</span>
@@ -98,7 +98,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
 
       {result && !scanning && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="bg-white rounded-2xl shadow-xl p-5 md:p-6 flex flex-col md:flex-row items-center gap-5">
+          <div className="card p-5 flex flex-col md:flex-row items-center gap-5">
             <ScoreRing score={result.atsScore} label="ATS score" />
             <div className="flex-1 w-full">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 text-center md:text-left">ATS scan for</p>
@@ -110,7 +110,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl p-6">
+          <div className="card p-5">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-4">
               <FiLayout size={16} className="text-cyan-600" />
               Formatting checks
@@ -137,7 +137,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
           </div>
 
           {result.sections.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-xl p-6">
+            <div className="card p-5">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-4">
                 <FiList size={16} className="text-cyan-600" />
                 Section-wise feedback
@@ -160,7 +160,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
           )}
 
           {result.topFixes.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-xl p-6">
+            <div className="card p-5">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                 <FiTrendingUp size={16} className="text-cyan-600" />
                 Fix these first

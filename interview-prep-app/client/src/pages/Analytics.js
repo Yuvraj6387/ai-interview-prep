@@ -120,7 +120,7 @@ const Analytics = () => {
         </motion.div>
 
         {interviews.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+          <div className="card p-8 md:p-10 text-center">
             <div className="w-24 h-24 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <FiTrendingUp size={40} className="text-cyan-600" />
             </div>
@@ -130,7 +130,7 @@ const Analytics = () => {
             </p>
             <button
               onClick={() => navigate('/mock-interview')}
-              className="flex items-center justify-center space-x-2 px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth mx-auto"
+              className="btn-primary mx-auto"
             >
               <FiMic />
               <span>Start Mock Interview</span>
@@ -146,7 +146,7 @@ const Analytics = () => {
             </div>
 
             {/* Trend chart */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+            <div className="card p-5 md:p-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4 font-display">Score Trend</h3>
               <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer>
@@ -163,7 +163,7 @@ const Analytics = () => {
 
             {/* Weak topics & strong areas */}
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+              <div className="card p-5 md:p-6">
                 <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                   <FiTag size={16} className="text-cyan-600" />
                   Weak Topics To Focus On
@@ -178,7 +178,7 @@ const Analytics = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+              <div className="card p-5 md:p-6">
                 <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                   <FiAward size={16} className="text-cyan-600" />
                   Strongest Areas
@@ -195,7 +195,7 @@ const Analytics = () => {
             </div>
 
             {/* History */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+            <div className="card p-5 md:p-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4 font-display">Interview History</h3>
               <div className="space-y-2">
                 {[...interviews]

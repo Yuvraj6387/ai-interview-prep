@@ -216,7 +216,7 @@ const LoginModal = ({ onClose }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 text-sm rounded-lg hover:shadow-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            className="w-full btn-primary"
           >
             {loading ? (
               <>

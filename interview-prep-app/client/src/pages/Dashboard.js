@@ -98,7 +98,7 @@ const Dashboard = () => {
               
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg shadow-lg shadow-cyan-500/20 transition-smooth"
+                className="btn-primary"
               >
                 <FiPlus size={16} />
                 <span>Add New</span>
@@ -119,7 +119,7 @@ const Dashboard = () => {
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white rounded-2xl shadow-xl p-12 text-center"
+                className="card p-8 md:p-10 text-center"
               >
                 <div className="w-24 h-24 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-6">
                   <FiPlus size={40} className="text-cyan-600" />
@@ -132,7 +132,7 @@ const Dashboard = () => {
                 </p>
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg hover:shadow-xl transition-smooth"
+                  className="btn-primary"
                 >
                   Create Your First Profile
                 </button>

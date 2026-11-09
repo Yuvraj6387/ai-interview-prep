@@ -263,7 +263,7 @@ const MockInterview = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             onSubmit={handleStart}
-            className="bg-white rounded-xl shadow-xl p-5 md:p-6 space-y-4"
+            className="card p-5 space-y-4"
           >
             <div className="grid grid-cols-3 gap-3">
               <div className="col-span-2">
@@ -353,7 +353,7 @@ const MockInterview = () => {
               disabled={starting}
               whileHover={starting ? undefined : { y: -2 }}
               whileTap={starting ? undefined : { scale: 0.98 }}
-              className="group w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 text-base rounded-xl shadow-lg shadow-cyan-600/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-smooth disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="group btn-primary w-full sm:w-auto sm:min-w-[240px] sm:flex sm:mx-auto"
             >
               {starting ? (
                 <>
@@ -592,7 +592,7 @@ const MockInterview = () => {
               <button
                 onClick={() => handleSubmitAnswer(false)}
                 disabled={busy}
-                className="flex-[2] whitespace-nowrap flex items-center justify-center space-x-1.5 px-4 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm py-2 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-[2] whitespace-nowrap flex items-center justify-center space-x-1.5 px-4 bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white font-semibold text-sm py-2 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitAction === 'answer' ? <FiLoader className="animate-spin" size={14} /> : <FiSend size={14} />}
                 <span>{submitAction === 'answer' ? 'Evaluating...' : 'Submit Answer'}</span>

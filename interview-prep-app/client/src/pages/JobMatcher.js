@@ -24,7 +24,7 @@ const SECTION_ROWS = [
 ];
 
 const SkillList = ({ title, icon: Icon, items, tone }) => (
-  <div className="bg-white rounded-2xl shadow-xl p-6">
+  <div className="card p-5">
     <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
       <Icon size={16} className={tone === 'good' ? 'text-emerald-600' : 'text-amber-600'} />
       {title}
@@ -120,7 +120,7 @@ const JobMatcher = () => {
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           onSubmit={handleMatch}
-          className="bg-white rounded-2xl shadow-xl p-5 md:p-6"
+          className="card p-5"
         >
           <label className="block text-sm font-semibold text-gray-700 mb-2">Job Description</label>
           <textarea
@@ -138,7 +138,7 @@ const JobMatcher = () => {
             <button
               type="submit"
               disabled={matching || hasResume === false}
-              className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg shadow-md shadow-cyan-600/20 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary"
             >
               {matching ? <FiLoader className="animate-spin" /> : <FiTarget />}
               <span>{matching ? 'Matching your resume...' : 'Check Match'}</span>
@@ -148,7 +148,7 @@ const JobMatcher = () => {
 
         {match && !matching && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-xl p-5 md:p-6 flex flex-col md:flex-row items-center gap-5">
+            <div className="card p-5 flex flex-col md:flex-row items-center gap-5">
               <ScoreRing score={match.matchScore} label={matchLabel(match.matchScore)} />
               <div className="flex-1 text-center md:text-left">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Resume match for</p>
@@ -156,7 +156,7 @@ const JobMatcher = () => {
                 <p className="text-gray-600 text-sm leading-relaxed mb-3">{match.summary}</p>
                 <button
                   onClick={startInterview}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg shadow-md shadow-cyan-600/20 transition-smooth"
+                  className="btn-primary"
                 >
                   <FiMic />
                   <span>Start Mock Interview for this Job</span>
@@ -178,7 +178,7 @@ const JobMatcher = () => {
             </div>
 
             {match.experienceGaps?.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-xl p-6">
+              <div className="card p-5">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                   <FiBriefcase size={16} className="text-amber-600" />
                   Experience gaps
@@ -197,7 +197,7 @@ const JobMatcher = () => {
             <SkillGapCard skills={match.skillGap} />
 
             {match.learningPlan?.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+              <div className="card p-5 md:p-6">
                 <h3 className="flex items-center gap-2 text-lg font-bold text-gray-800 font-display mb-1">
                   <FiBookOpen className="text-cyan-600" />
                   How to close your biggest gaps
@@ -236,7 +236,7 @@ const JobMatcher = () => {
 
             <div className="grid md:grid-cols-2 gap-6">
               {match.suggestions.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-xl p-6">
+                <div className="card p-5">
                   <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                     <FiTrendingUp size={16} className="text-cyan-600" />
                     How to close the gap
@@ -252,7 +252,7 @@ const JobMatcher = () => {
                 </div>
               )}
               {match.interviewTopics.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-xl p-6">
+                <div className="card p-5">
                   <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                     <FiTag size={16} className="text-cyan-600" />
                     Likely interview topics

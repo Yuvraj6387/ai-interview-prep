@@ -15,7 +15,7 @@ import TailorModal from '../components/builder/TailorModal';
 import { SectionCard, ProfileFields, SummaryField, EntryList, LinesField } from '../components/builder/EditorSections';
 
 const BTN = 'flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed';
-const PRIMARY = `${BTN} bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-600/20`;
+const PRIMARY = `${BTN} bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white shadow-md shadow-cyan-600/25`;
 const SECONDARY = `${BTN} border border-gray-200 text-gray-700 hover:border-cyan-400 hover:text-cyan-700`;
 
 // Saves this long after the last keystroke, so typing doesn't fire a request per letter.
@@ -81,7 +81,7 @@ const useTailor = () => {
 };
 
 const TailoredNotes = ({ notes, onDismiss }) => (
-  <div className="bg-white rounded-2xl shadow-xl p-4 md:p-5">
+  <div className="card p-4 md:p-5">
     <div className="flex items-start gap-3">
       <span className="w-7 h-7 rounded-lg bg-cyan-50 text-cyan-700 flex items-center justify-center flex-shrink-0"><FiTarget size={14} /></span>
       <div className="flex-1 min-w-0">
@@ -169,7 +169,7 @@ const VersionList = () => {
       </motion.div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-gradient-to-br from-cyan-50 to-white rounded-2xl shadow-xl p-5 flex flex-col">
+        <div className="card bg-gradient-to-br from-cyan-50 to-white p-5 flex flex-col">
           <div className="flex items-center gap-3 mb-2">
             <span className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-cyan-600"><FiZap size={14} /></span>
             <div>
@@ -188,7 +188,7 @@ const VersionList = () => {
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-5 flex flex-col">
+        <div className="card p-5 flex flex-col">
           <div className="flex items-center gap-3 mb-2">
             <span className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700"><FiFilePlus size={14} /></span>
             <p className="font-bold text-gray-800 font-display">Start from blank</p>
@@ -212,7 +212,7 @@ const VersionList = () => {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {versions.map((v) => (
-              <div key={v._id} className="bg-white rounded-2xl shadow-xl p-5 flex flex-col">
+              <div key={v._id} className="card p-5 flex flex-col">
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <p className="font-bold text-gray-800 truncate">{v.title}</p>
                   <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 flex-shrink-0">
@@ -405,7 +405,7 @@ const Editor = ({ id }) => {
       {/* Toolbar */}
       {/* Phones: name + status on one row, then three equal buttons.
           Wider screens: everything on one line. */}
-      <div className="bg-white rounded-2xl shadow-xl p-3 md:p-4 flex flex-col lg:flex-row lg:items-center gap-3">
+      <div className="card p-3 md:p-4 flex flex-col lg:flex-row lg:items-center gap-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <button onClick={() => navigate('/resume-builder')} title="All versions" className="p-2 -ml-1 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-cyan-700 transition-smooth flex-shrink-0">
             <FiArrowLeft size={16} />
@@ -456,7 +456,7 @@ const Editor = ({ id }) => {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4 items-start">
-        <div className={`bg-white rounded-2xl shadow-xl p-4 md:p-5 space-y-3 ${mobileView === 'edit' ? '' : 'hidden lg:block'}`}>
+        <div className={`card p-4 md:p-5 space-y-3 ${mobileView === 'edit' ? '' : 'hidden lg:block'}`}>
           <h2 className="flex items-center gap-2 font-bold text-gray-800 font-display">
             <span className="w-1.5 h-5 rounded-full bg-cyan-600" /> Editor
           </h2>
@@ -468,7 +468,7 @@ const Editor = ({ id }) => {
           ))}
         </div>
 
-        <div className={`lg:sticky lg:top-4 bg-white rounded-2xl shadow-xl overflow-hidden ${mobileView === 'preview' ? '' : 'hidden lg:block'}`}>
+        <div className={`lg:sticky lg:top-4 card overflow-hidden ${mobileView === 'preview' ? '' : 'hidden lg:block'}`}>
           <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-gray-100">
             <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />

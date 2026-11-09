@@ -82,7 +82,7 @@ const QuestionsView = ({ profile, onBack }) => {
             <span className="font-medium">Back to Dashboard</span>
           </button>
 
-          <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+          <div className="card p-5 md:p-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
               <div className="flex-1 mb-4 md:mb-0 w-full">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 font-display leading-tight">
@@ -113,7 +113,7 @@ const QuestionsView = ({ profile, onBack }) => {
                 disabled={generating}
                 whileHover={generating ? undefined : { y: -2 }}
                 whileTap={generating ? undefined : { scale: 0.98 }}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-600/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-smooth disabled:opacity-60 disabled:cursor-not-allowed w-full md:w-auto"
+                className="btn-primary w-full md:w-auto"
               >
                 {generating ? (
                   <>
@@ -160,7 +160,7 @@ const QuestionsView = ({ profile, onBack }) => {
             ))}
           </div>
         ) : questions.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+          <div className="card p-8 md:p-10 text-center">
             <div className="w-20 h-20 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-5">
               <FiHelpCircle size={36} className="text-cyan-600" />
             </div>
@@ -172,7 +172,7 @@ const QuestionsView = ({ profile, onBack }) => {
             </p>
             <button
               onClick={generateQuestions}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-600/30 transition-smooth"
+              className="btn-primary"
             >
               <FiZap />
               <span>Generate Questions</span>

@@ -39,7 +39,7 @@ const Card = ({ title, icon: Icon, children, className = '' }) => (
   <motion.div
     initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`bg-white rounded-2xl shadow-xl p-6 ${className}`}
+    className={`card p-5 ${className}`}
   >
     {title && (
       <h3 className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-4 font-display">
@@ -146,7 +146,7 @@ const InterviewResult = () => {
   if (!interview || !interview.result) {
     return (
       <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-12 text-center">
+        <div className="max-w-3xl mx-auto card p-8 md:p-10 text-center">
           <h3 className="text-xl font-bold text-gray-800 mb-2 font-display">Result Not Available</h3>
           <p className="text-gray-600">This interview doesn't have a result yet.</p>
         </div>
@@ -324,24 +324,24 @@ const InterviewResult = () => {
         </Card>
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row sm:justify-center gap-3">
           <button
             onClick={() => navigate('/mock-interview')}
-            className="flex-1 flex items-center justify-center space-x-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 rounded-lg hover:shadow-xl transition-smooth"
+            className="btn-primary"
           >
             <FiRefreshCw />
             <span>Practice Again</span>
           </button>
           <button
             onClick={() => navigate('/analytics')}
-            className="flex-1 flex items-center justify-center space-x-2 bg-white text-cyan-700 font-semibold py-3 rounded-lg border-2 border-cyan-200 hover:bg-cyan-50 transition-smooth"
+            className="btn-secondary"
           >
             <FiBarChart2 />
             <span>View Analytics</span>
           </button>
           <button
             onClick={() => navigate('/roadmap')}
-            className="flex-1 flex items-center justify-center space-x-2 bg-white text-cyan-700 font-semibold py-3 rounded-lg border-2 border-cyan-200 hover:bg-cyan-50 transition-smooth"
+            className="btn-secondary"
           >
             <FiMap />
             <span>Learning Roadmap</span>

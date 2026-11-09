@@ -78,6 +78,46 @@ h1, h2, h3, h4, h5, h6 {
   background-clip: text;
 }
 
+/* Shared look for every white box and button in the app, so they all match.
+   Change the style here and every page follows. */
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl border border-slate-200/70 shadow-lg shadow-slate-900/10 transition-[box-shadow,border-color] duration-300;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-xl
+      bg-gradient-to-r from-cyan-600 to-sky-600 shadow-md shadow-cyan-600/25 transition-all duration-200
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-cyan-700 rounded-xl
+      bg-white border border-cyan-200 shadow-sm transition-all duration-200
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+}
+
+/* Hover effects only for a real mouse: on phones a tap would leave them stuck on */
+@media (hover: hover) {
+  .card:hover {
+    @apply shadow-xl shadow-cyan-900/10 border-cyan-100;
+  }
+
+  .btn-primary:not(:disabled):hover {
+    @apply from-cyan-500 to-sky-500 shadow-lg shadow-cyan-500/30 -translate-y-0.5;
+  }
+
+  .btn-secondary:not(:disabled):hover {
+    @apply bg-cyan-50 border-cyan-300 shadow-md -translate-y-0.5;
+  }
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+  transform: translateY(0) scale(0.98);
+}
+
 /* Card hover effect */
 .card-hover {
   transition: all 0.3s ease;

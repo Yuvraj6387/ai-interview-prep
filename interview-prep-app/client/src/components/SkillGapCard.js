@@ -31,7 +31,7 @@ const SkillGapCard = ({ skills }) => {
   const strengths = skills.filter((s) => s.current >= s.target).length;
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+    <div className="card p-5 md:p-6">
       <h3 className="flex items-center gap-2 text-lg font-bold text-gray-800 font-display">
         <FiCrosshair className="text-cyan-600" />
         Skill Gap Analysis

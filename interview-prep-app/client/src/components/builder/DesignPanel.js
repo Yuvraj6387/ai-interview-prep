@@ -49,7 +49,7 @@ const DesignPanel = ({ template, accentColor, onTemplate, onColor }) => {
   const isPreset = COLORS.some((c) => c.value.toLowerCase() === accentColor.toLowerCase());
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-4 md:p-5 space-y-4">
+    <div className="card p-4 md:p-5 space-y-4">
       <div>
         <p className="text-xs font-semibold text-gray-700 mb-2">Template</p>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">

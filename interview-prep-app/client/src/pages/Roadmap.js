@@ -36,7 +36,7 @@ const PHASE_STYLE = {
 const PHASE_DIFFICULTY = { Easy: 'Easy', Medium: 'Medium', Strong: 'Hard' };
 
 const Card = ({ children, className = '' }) => (
-  <div className={`bg-white rounded-2xl shadow-xl p-6 md:p-8 ${className}`}>{children}</div>
+  <div className={`card p-5 md:p-6 ${className}`}>{children}</div>
 );
 
 const OptionButton = ({ active, onClick, title, hint }) => (
@@ -121,7 +121,7 @@ const PlanForm = ({ onCreate, creating }) => {
         <button
           type="submit"
           disabled={creating || goal.trim().length < 3}
-          className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg hover:shadow-xl transition-smooth"
+          className="btn-primary w-full sm:w-auto"
         >
           {creating ? <FiLoader className="animate-spin" /> : <FiMap />}
           <span>{creating ? 'Building your plan...' : `Generate ${duration}-Day Plan`}</span>

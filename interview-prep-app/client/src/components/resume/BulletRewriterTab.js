@@ -56,7 +56,7 @@ const BulletRewriterTab = ({ suggestedRole }) => {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleRewrite} className="bg-white rounded-2xl shadow-xl p-5 md:p-6">
+      <form onSubmit={handleRewrite} className="card p-5">
         <label className="block text-sm font-semibold text-gray-700 mb-2">Experience or project bullet</label>
         <textarea
           value={bullet}
@@ -77,7 +77,7 @@ const BulletRewriterTab = ({ suggestedRole }) => {
           <button
             type="submit"
             disabled={rewriting}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg shadow-md shadow-cyan-600/20 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary"
           >
             {rewriting ? <FiLoader className="animate-spin" /> : <FiEdit3 />}
             <span>{rewriting ? 'Rewriting...' : 'Rewrite Bullet'}</span>
@@ -91,14 +91,14 @@ const BulletRewriterTab = ({ suggestedRole }) => {
 
       {result && !rewriting && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="bg-white rounded-2xl shadow-xl p-6">
+          <div className="card p-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Before</p>
             <p className="text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2 line-through decoration-red-300">{result.original}</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-4">
             {result.variants.map((variant, i) => (
-              <div key={variant.style} className="bg-white rounded-2xl shadow-xl p-5 flex flex-col">
+              <div key={variant.style} className="card p-5 flex flex-col">
                 <span className="self-start px-3 py-1 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-700 mb-3">
                   {variant.style}
                 </span>
@@ -117,7 +117,7 @@ const BulletRewriterTab = ({ suggestedRole }) => {
           </div>
 
           {result.tips.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-xl p-6">
+            <div className="card p-5">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                 <FiTrendingUp size={16} className="text-cyan-600" />
                 Make it even stronger

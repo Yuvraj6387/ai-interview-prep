@@ -54,7 +54,7 @@ const TailorModal = ({ open, resumeTitle, loading, onSubmit, onClose }) => {
           <button
             type="submit"
             disabled={tooShort || loading}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-600/20 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary"
           >
             {loading ? <FiLoader className="animate-spin" /> : <FiTarget />}
             {loading ? 'Tailoring... (about 10s)' : 'Create tailored resume'}

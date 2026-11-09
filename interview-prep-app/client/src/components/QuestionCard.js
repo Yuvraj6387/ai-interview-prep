@@ -42,6 +42,9 @@ const markdownComponents = {
   },
 };
 
+// Difficulty, pin and answer all use this same small pill.
+const PILL = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-smooth';
+
 const DIFFICULTY_STYLES = {
   Easy: 'bg-green-50 text-green-700',
   Medium: 'bg-amber-50 text-amber-700',
@@ -85,60 +88,52 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
         question.isPinned ? 'ring-2 ring-amber-300' : ''
       }`}
     >
-      {/* Number tab tucked into the top-left corner, difficulty opposite it */}
-      <div className="flex items-start justify-between">
-        <span className="flex items-center gap-2">
-          <span className="bg-gradient-to-br from-slate-700 to-slate-900 text-white font-bold text-xs px-3 py-1 rounded-br-xl">
-            Q{index + 1}
-          </span>
-          {question.isPinned && (
-            <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-600">
-              <FiBookmark size={11} fill="currentColor" /> Pinned
+      {/* Top row: number tab on the left; difficulty, pin and answer as matching pills on the right */}
+      <div className="flex items-start justify-between gap-2">
+        <span className="bg-gradient-to-br from-slate-700 to-slate-900 text-white font-bold text-xs px-3 py-1 rounded-br-xl">
+          Q{index + 1}
+        </span>
+
+        <div className="flex flex-wrap items-center justify-end gap-1.5 mt-1.5 mr-3">
+          {DIFFICULTY_STYLES[question.difficulty] && (
+            <span className={`${PILL} ${DIFFICULTY_STYLES[question.difficulty]}`}>
+              {question.difficulty}
             </span>
           )}
-        </span>
-        {DIFFICULTY_STYLES[question.difficulty] && (
-          <span className={`mt-1.5 mr-3 px-2 py-0.5 rounded-full text-[10px] font-semibold ${DIFFICULTY_STYLES[question.difficulty]}`}>
-            {question.difficulty}
-          </span>
-        )}
-      </div>
 
-      {/* Question and buttons share one row on wider screens, which keeps the card short */}
-      <div className="px-4 pb-2.5 pt-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-        <p className="flex-1 text-gray-800 font-semibold text-sm sm:text-[15px] leading-snug">
-          {question.questionText}
-        </p>
-
-        <div className="flex items-center justify-end gap-1.5 flex-shrink-0">
           <button
             onClick={() => onTogglePin(question._id)}
-            className={`w-7 h-7 flex items-center justify-center rounded-md border transition-smooth ${
+            className={`${PILL} ${
               question.isPinned
-                ? 'bg-yellow-50 border-yellow-300 text-yellow-600 hover:bg-yellow-100'
-                : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
-            title={question.isPinned ? 'Unpin' : 'Pin'}
+            title={question.isPinned ? 'Unpin' : 'Pin to top'}
             aria-label={question.isPinned ? 'Unpin question' : 'Pin question'}
           >
-            <FiBookmark size={12} fill={question.isPinned ? 'currentColor' : 'none'} />
+            <FiBookmark size={10} fill={question.isPinned ? 'currentColor' : 'none'} />
+            {question.isPinned ? 'Pinned' : 'Pin'}
           </button>
 
           <button
             onClick={onToggleExplanation}
-            className={`h-7 flex items-center gap-1 px-2.5 rounded-md text-[11px] font-semibold transition-smooth ${
+            className={`${PILL} ${
               isExpanded
-                ? 'bg-cyan-600 text-white'
-                : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white hover:shadow-lg'
+                ? 'bg-cyan-600 text-white hover:bg-cyan-500'
+                : 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100'
             }`}
             title={isExpanded ? 'Hide answer' : 'See model answer'}
           >
-            <FiBookOpen size={12} />
-            <span>{isExpanded ? 'Hide' : 'Answer'}</span>
-            {isExpanded ? <FiChevronUp size={11} /> : <FiChevronDown size={11} />}
+            <FiBookOpen size={10} />
+            {isExpanded ? 'Hide' : 'Answer'}
+            {isExpanded ? <FiChevronUp size={10} /> : <FiChevronDown size={10} />}
           </button>
         </div>
       </div>
+
+      <p className="px-4 pb-3 pt-1 text-gray-800 font-semibold text-sm sm:text-[15px] leading-snug">
+        {question.questionText}
+      </p>
 
       <AnimatePresence initial={false}>
         {isExpanded && (

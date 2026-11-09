@@ -9,7 +9,8 @@ const aiService = require('../utils/aiService');
 router.get('/profile/:profileId', auth, async (req, res) => {
   try {
     const questions = await Question.find({
-      jobProfileId: req.params.profileId
+      jobProfileId: req.params.profileId,
+      userId: req.userId
     }).sort({ createdAt: 1 });
     
     res.json(questions);
@@ -58,7 +59,7 @@ router.patch('/:id/pin', auth, async (req, res) => {
 // Get explanation for a question
 router.post('/:id/explanation', auth, async (req, res) => {
   try {
-    const question = await Question.findOne({ _id: req.params.id });
+    const question = await Question.findOne({ _id: req.params.id, userId: req.userId });
     
     if (!question) {
       return res.status(404).json({ message: 'Question not found' });

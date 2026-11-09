@@ -5,10 +5,10 @@ const Question = require('../models/Question');
 const auth = require('../middleware/auth');
 const aiService = require('../utils/aiService');
 
-// Get all job profiles from the community
+// Get the logged-in user's own job profiles
 router.get('/', auth, async (req, res) => {
   try {
-    const profiles = await JobProfile.find()
+    const profiles = await JobProfile.find({ userId: req.userId })
       .sort({ updatedAt: -1 })
       .limit(60)
       .populate('userId', 'fullName profileImage')
@@ -64,16 +64,17 @@ router.post('/generate-description', auth, async (req, res) => {
 // Delete job profile
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const profile = await JobProfile.findOne({ _id: req.params.id });
+    // Only the owner can delete a profile.
+    const profile = await JobProfile.findOne({ _id: req.params.id, userId: req.userId });
     
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
     }
 
     // Delete all associated questions
-    await Question.deleteMany({ jobProfileId: req.params.id });
+    await Question.deleteMany({ jobProfileId: profile._id, userId: req.userId });
     
-    await JobProfile.findByIdAndDelete(req.params.id);
+    await JobProfile.deleteOne({ _id: profile._id });
     res.json({ message: 'Profile deleted successfully' });
   } catch (error) {
     console.error('Error deleting profile:', error);

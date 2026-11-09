@@ -5,9 +5,6 @@ import { motion } from 'framer-motion';
 
 const JobCard = ({ profile, onSelect, onDelete }) => {
 
-  const owner = profile.userId && typeof profile.userId === 'object' ? profile.userId : null;
-  const isOwner = true; // Allow any user to delete any job profile
-
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
@@ -35,37 +32,20 @@ const JobCard = ({ profile, onSelect, onDelete }) => {
             <h3 className="text-xl font-bold text-gray-800 font-display">
               {profile.targetRole}
             </h3>
-            {owner && (
-              <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-                <div className="w-7 h-7 rounded-full overflow-hidden bg-slate-100">
-                  {owner.profileImage ? (
-                    <img
-                      src={owner.profileImage}
-                      alt={owner.fullName}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-slate-300 flex items-center justify-center text-xs text-slate-600">
-                      {owner.fullName?.charAt(0) || 'U'}
-                    </div>
-                  )}
-                </div>
-                <span>Created by {owner.fullName || 'Unknown user'}</span>
-              </div>
-            )}
           </div>
 
-          {isOwner && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(profile._id);
-              }}
-              className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-smooth"
-            >
-              <FiTrash2 size={18} />
-            </button>
-          )}
+          {/* The dashboard only lists the user's own profiles, so they can always delete. */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(profile._id);
+            }}
+            title="Delete profile"
+            aria-label="Delete profile"
+            className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-smooth"
+          >
+            <FiTrash2 size={18} />
+          </button>
         </div>
 
         {/* Description */}

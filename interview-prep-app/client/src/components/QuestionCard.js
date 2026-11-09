@@ -77,29 +77,39 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
 
   return (
     <motion.div
+      layout
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className="relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden"
+      transition={{ delay: index * 0.05, layout: { duration: 0.35 } }}
+      className={`relative bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden ${
+        question.isPinned ? 'ring-2 ring-amber-300' : ''
+      }`}
     >
       {/* Number tab tucked into the top-left corner, difficulty opposite it */}
       <div className="flex items-start justify-between">
-        <span className="bg-gradient-to-br from-slate-700 to-slate-900 text-white font-bold text-sm px-4 py-1.5 rounded-br-2xl">
-          Q{index + 1}
+        <span className="flex items-center gap-2">
+          <span className="bg-gradient-to-br from-slate-700 to-slate-900 text-white font-bold text-xs px-3 py-1 rounded-br-xl">
+            Q{index + 1}
+          </span>
+          {question.isPinned && (
+            <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-600">
+              <FiBookmark size={11} fill="currentColor" /> Pinned
+            </span>
+          )}
         </span>
         {DIFFICULTY_STYLES[question.difficulty] && (
-          <span className={`mt-3 mr-4 px-3 py-1 rounded-full text-xs font-semibold ${DIFFICULTY_STYLES[question.difficulty]}`}>
+          <span className={`mt-2 mr-3 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${DIFFICULTY_STYLES[question.difficulty]}`}>
             {question.difficulty}
           </span>
         )}
       </div>
 
-      <div className="px-4 sm:px-5 pb-4 pt-2">
-        <p className="text-gray-800 font-semibold text-base sm:text-lg leading-snug">
+      <div className="px-4 pb-3 pt-1.5">
+        <p className="text-gray-800 font-semibold text-sm sm:text-base leading-snug">
           {question.questionText}
         </p>
 
-        <div className="flex items-center justify-end gap-2 mt-3">
+        <div className="flex items-center justify-end gap-2 mt-2">
           <button
             onClick={() => onTogglePin(question._id)}
             className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-smooth ${
@@ -138,7 +148,7 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <div className="mx-4 sm:mx-5 mb-4 pt-4 border-t border-gray-100">
+            <div className="mx-4 mb-4 pt-3 border-t border-gray-100">
               {loading && (
                 <div className="flex flex-col items-center py-6">
                   <FiLoader className="animate-spin mb-2 text-cyan-600" size={26} />

@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fi';
 import { resumeAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
+import { JobMatcherArt, PAGE_ART_CLASS } from '../components/PageIllustrations';
 import ScoreRing, { ScoreBar } from '../components/ScoreRing';
 import SkillGapCard from '../components/SkillGapCard';
 
@@ -96,8 +97,9 @@ const JobMatcher = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="relative min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      <JobMatcherArt className={PAGE_ART_CLASS} />
+      <div className="relative max-w-4xl mx-auto space-y-6">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">Job Matcher</h1>
           <p className="text-slate-300">

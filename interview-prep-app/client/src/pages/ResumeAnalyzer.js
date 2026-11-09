@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fi';
 import { resumeAPI, profileAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
+import { ResumeAnalyzerArt, PAGE_ART_CLASS } from '../components/PageIllustrations';
 import AddJobModal from '../components/AddJobModal';
 import AtsScanTab from '../components/resume/AtsScanTab';
 import BulletRewriterTab from '../components/resume/BulletRewriterTab';
@@ -137,8 +138,9 @@ const ResumeAnalyzer = () => {
   const ACTION_BTN = 'btn-primary px-6';
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
+    <div className="relative min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      <ResumeAnalyzerArt className={PAGE_ART_CLASS} />
+      <div className="relative max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

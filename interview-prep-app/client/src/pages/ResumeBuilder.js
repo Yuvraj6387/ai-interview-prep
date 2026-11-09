@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fi';
 import { builderAPI, resumeAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
+import { ResumeBuilderArt, PAGE_ART_CLASS } from '../components/PageIllustrations';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ResumePreview, { DEFAULT_ACCENT, TEMPLATES } from '../components/builder/ResumePreview';
 import DesignPanel from '../components/builder/DesignPanel';
@@ -162,7 +163,7 @@ const VersionList = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="relative max-w-5xl mx-auto space-y-6">
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">Resume Builder</h1>
         <p className="text-slate-300">Build an ATS-friendly resume, keep a version for each kind of job, and download it as a PDF</p>
@@ -491,7 +492,9 @@ const Editor = ({ id }) => {
 const ResumeBuilder = () => {
   const { id } = useParams();
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      {/* Only on the versions list: the editor fills the whole width. */}
+      {!id && <ResumeBuilderArt className={PAGE_ART_CLASS} />}
       {id ? <Editor key={id} id={id} /> : <VersionList />}
     </div>
   );

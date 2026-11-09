@@ -54,6 +54,12 @@ const QuestionsView = ({ profile, onBack }) => {
     loadQuestions();
   }, [loadQuestions]);
 
+  // Pinned questions go to the top. Each keeps its original Q number, and the
+  // sort is stable, so the rest stay in their easy-to-hard order.
+  const orderedQuestions = questions
+    .map((question, i) => ({ question, number: i + 1 }))
+    .sort((a, b) => Number(b.question.isPinned) - Number(a.question.isPinned));
+
   const handleTogglePin = async (questionId) => {
     try {
       const response = await questionAPI.togglePin(questionId);
@@ -72,7 +78,7 @@ const QuestionsView = ({ profile, onBack }) => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6"
         >
           <button
             onClick={onBack}
@@ -82,28 +88,23 @@ const QuestionsView = ({ profile, onBack }) => {
             <span className="font-medium">Back to Dashboard</span>
           </button>
 
-          <div className="card p-5 md:p-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-              <div className="flex-1 mb-4 md:mb-0 w-full">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 font-display leading-tight">
+          <div className="card p-4 md:p-5">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+              <div className="flex-1 w-full">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-2 font-display leading-tight">
                   {profile.targetRole}
                 </h1>
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="flex flex-wrap gap-1.5 mb-2">
                   {profile.topics.map((topic, index) => (
                     <span
                       key={index}
-                      className="bg-cyan-50 text-cyan-700 px-3 py-1 rounded-full text-sm font-medium"
+                      className="bg-cyan-50 text-cyan-700 px-2.5 py-0.5 rounded-full text-xs font-medium"
                     >
                       {topic}
                     </span>
                   ))}
                 </div>
-                {profile.userId && profile.userId.fullName && (
-                  <p className="text-sm text-gray-500 mb-2">
-                    Created by {profile.userId.fullName}
-                  </p>
-                )}
-                <p className="text-gray-600">
+                <p className="text-sm text-gray-600">
                   {profile.experience} {profile.experience === 1 ? 'year' : 'years'} experience
                 </p>
               </div>
@@ -179,22 +180,22 @@ const QuestionsView = ({ profile, onBack }) => {
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1 mb-4">
-              <h2 className="text-xl font-bold text-white font-display">
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1 mb-3">
+              <h2 className="text-lg font-bold text-white font-display">
                 Interview Questions ({questions.length})
               </h2>
-              <p className="flex items-center gap-1.5 text-sm text-slate-300">
+              <p className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-300">
                 <FiBookOpen size={14} className="text-cyan-400" />
-                Tap Answer to see a model answer
+                Pin a question to keep it on top · Tap Answer for a model answer
               </p>
             </div>
             
-            {questions.map((question, index) => (
+            {orderedQuestions.map(({ question, number }) => (
               <QuestionCard
                 key={question._id}
                 question={question}
-                index={index}
+                index={number - 1}
                 isExpanded={expandedQuestionId === question._id}
                 onToggleExplanation={() =>
                   setExpandedQuestionId((prev) => (prev === question._id ? null : question._id))

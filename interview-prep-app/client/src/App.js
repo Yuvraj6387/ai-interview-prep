@@ -1,5 +1,5 @@
 import React, { useState, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   FiFileText, FiMic, FiBarChart2, FiBookOpen, FiArrowRight,
@@ -25,6 +25,9 @@ const Analytics = lazy(() => import('./pages/Analytics'));
 const JobMatcher = lazy(() => import('./pages/JobMatcher'));
 const ResumeBuilder = lazy(() => import('./pages/ResumeBuilder'));
 const Roadmap = lazy(() => import('./pages/Roadmap'));
+const Notes = lazy(() => import('./pages/Notes'));
+const NoteView = lazy(() => import('./pages/NoteView'));
+const NoteEditor = lazy(() => import('./pages/NoteEditor'));
 
 const RouteFallback = () => (
   <div className="flex justify-center items-center py-20">
@@ -184,6 +187,11 @@ const Landing = () => {
             )}
           </div>
 
+          <Link to="/notes" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-300 hover:text-cyan-200 mb-6">
+            <FiBookOpen size={15} /> Browse interview notes from the community
+            <FiArrowRight size={14} />
+          </Link>
+
           <div className="space-y-2.5">
             {CHECKLIST.map((item) => (
               <div key={item} className="flex items-center gap-2.5 text-sm text-slate-300">
@@ -249,11 +257,19 @@ const AppContent = () => {
     );
   }
 
+  // Logged-out visitors get the landing page, plus read-only access to the
+  // public notes so a shared note link works without an account.
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen">
         <Navbar />
-        <Landing />
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/notes" element={<Notes />} />
+            <Route path="/notes/:id" element={<NoteView />} />
+            <Route path="*" element={<Landing />} />
+          </Routes>
+        </Suspense>
       </div>
     );
   }
@@ -274,6 +290,10 @@ const AppContent = () => {
             <Route path="/interview-result/:interviewId" element={<InterviewResult />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/roadmap" element={<Roadmap />} />
+            <Route path="/notes" element={<Notes />} />
+            <Route path="/notes/new" element={<NoteEditor />} />
+            <Route path="/notes/:id" element={<NoteView />} />
+            <Route path="/notes/:id/edit" element={<NoteEditor />} />
             <Route path="/interview/:profileId" element={<InterviewRoute />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

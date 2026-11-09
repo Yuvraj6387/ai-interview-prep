@@ -105,6 +105,15 @@ export const roadmapAPI = {
   remove: () => api.delete('/roadmap'),
 };
 
+export const notesAPI = {
+  list: (search = '') => api.get('/notes', { params: search ? { search } : {} }),
+  mine: () => api.get('/notes/mine'),
+  get: (id) => api.get(`/notes/${id}`),
+  create: (note) => api.post('/notes', note),
+  update: (id, note) => api.put(`/notes/${id}`, note),
+  remove: (id) => api.delete(`/notes/${id}`),
+};
+
 // Question APIs
 export const questionAPI = {
   getByProfile: (profileId) => api.get(`/questions/profile/${profileId}`),

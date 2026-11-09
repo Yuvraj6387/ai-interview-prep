@@ -49,7 +49,8 @@ const MockInterview = () => {
     role: location.state?.jobContext?.title || '',
     experienceLevel: '',
     interviewType: 'Technical',
-    difficulty: 'Medium',
+    // A roadmap "Practice" link passes the difficulty of that day's phase.
+    difficulty: location.state?.difficulty || 'Medium',
     numQuestions: 5,
   });
   const [starting, setStarting] = useState(false);
@@ -227,8 +228,8 @@ const MockInterview = () => {
           {jobContext && (
             <div className="flex items-center gap-2 text-sm text-cyan-300 bg-cyan-500/10 border border-cyan-400/30 rounded-lg px-4 py-2.5 mb-4">
               <FiTarget size={16} className="flex-shrink-0" />
-              {location.state?.source === 'roadmap' ? (
-                <span>Practice from your study plan — questions will focus on {(jobContext.topics || []).join(', ') || 'your weak topics'}.</span>
+              {location.state?.source ? (
+                <span>Focused practice — questions will focus on {(jobContext.topics || []).join(', ') || 'your chosen topic'}.</span>
               ) : (
                 <span>Interview for the job you matched{jobContext.title ? `: ${jobContext.title}` : ''} — questions will focus on what it requires.</span>
               )}

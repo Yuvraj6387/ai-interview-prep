@@ -61,7 +61,7 @@ flowchart TB
         JM["Job Matcher<br/>match score · skill-gap radar"]
         MI["Mock Interview<br/>voice + text"]
         AN["Analytics"]
-        RM["Learning Roadmap<br/>weak areas · 7/30-day plan · progress"]
+        RM["Learning Roadmap<br/>goal → Easy/Medium/Strong plan · progress"]
     end
     Pages --> APIjs["services/api.js<br/>one axios instance,<br/>adds the JWT to every request"]
     MI --> Speech["hooks/useSpeech.js<br/>browser Web Speech API"]
@@ -109,11 +109,11 @@ erDiagram
     JOB_PROFILE { string targetRole number experience string_list topics }
     QUESTION { string questionText string difficulty bool isPinned string explanation }
     INTERVIEW { object config list turns string status object result }
-    ROADMAP { number duration string_list weakTopics list weakSkills number baselineScore list days }
+    ROADMAP { string goal string level number duration list days }
 ```
 
 - **Resume** = the one PDF a user uploaded: its text and the AI analysis.
-- **Roadmap** = the user's current study plan. Weak topics and skills are found by plain counting over the last 10 interviews (no AI). The AI only writes the day-by-day plan. Each task and question has a `done` flag, and improvement compares scores from interviews taken after the plan started with the stored baseline.
+- **Roadmap** = the user's current study plan, built only from what they typed: a goal, their level and 7/14/30 days. Code splits the days into Easy, Medium and Strong phases (a beginner gets a longer Easy phase, an advanced user a longer Strong one). The AI only fills in each day's topic, tasks and practice questions. Each task and question has a `done` flag for progress.
 - **BuiltResume** = a resume made in the builder. There can be many versions (one per job type), each with its own template and color.
 
 ## 4. How the AI layer works

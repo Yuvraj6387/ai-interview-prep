@@ -97,10 +97,10 @@ export const interviewAPI = {
   getById: (id) => api.get(`/interviews/${id}`),
 };
 
-// Learning roadmap (study plan built from interview results)
+// Learning roadmap (study plan built from the user's own goal)
 export const roadmapAPI = {
   get: () => api.get('/roadmap'),
-  create: (duration) => api.post('/roadmap', { duration }),
+  create: ({ goal, level, duration }) => api.post('/roadmap', { goal, level, duration }),
   toggleItem: (day, kind, index, done) => api.patch('/roadmap/item', { day, kind, index, done }),
   remove: () => api.delete('/roadmap'),
 };

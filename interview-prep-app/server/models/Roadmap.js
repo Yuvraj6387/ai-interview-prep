@@ -7,18 +7,15 @@ const itemSchema = new mongoose.Schema({
 
 const daySchema = new mongoose.Schema({
   day: { type: Number, required: true },
+  phase: { type: String, enum: ['Easy', 'Medium', 'Strong'], required: true },
   topic: { type: String, required: true, trim: true },
   goal: { type: String, default: '', trim: true },
   tasks: [itemSchema],
   questions: [itemSchema]
 }, { _id: false });
 
-const scoreSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  score: { type: Number, min: 0, max: 100, default: 0 }
-}, { _id: false });
-
-// One active study plan per user. Making a new plan replaces the old one.
+// One active study plan per user, built from what they said they want to
+// prepare for. Making a new plan replaces the old one.
 const roadmapSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -26,13 +23,9 @@ const roadmapSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  role: { type: String, default: '', trim: true },
-  duration: { type: Number, enum: [7, 30], required: true },
-  weakTopics: [{ type: String, trim: true }],
-  // Skill dimensions that were below the bar when the plan was made, with their
-  // score at that time, so progress can be shown as "48 -> 63".
-  weakSkills: [scoreSchema],
-  baselineScore: { type: Number, min: 0, max: 100, default: 0 },
+  goal: { type: String, required: true, trim: true },
+  level: { type: String, enum: ['Beginner', 'Intermediate', 'Advanced'], required: true },
+  duration: { type: Number, enum: [7, 14, 30], required: true },
   days: [daySchema],
   startedAt: { type: Date, default: Date.now }
 });

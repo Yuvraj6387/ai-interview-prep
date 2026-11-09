@@ -840,29 +840,31 @@ Return ONLY a valid JSON object with this exact shape:
     }
   }
 
-  async generateStudyPlan({ role, duration, weakTopics, weakSkills, weakAnswers }) {
-    const skillsLine = weakSkills.length
-      ? weakSkills.map((s) => `${s.label} (${s.score}/100)`).join(', ')
-      : 'none below the bar';
-    const answersBlock = weakAnswers.length
-      ? weakAnswers.map((a, i) => `${i + 1}. Q: ${a.question}\n   Feedback: ${a.feedback || 'weak answer'}`).join('\n')
-      : '(none)';
+  async generateStudyPlan({ goal, level, duration, phases }) {
+    const phaseGuide = {
+      Easy: 'fundamentals and core concepts, explained simply; Easy interview questions',
+      Medium: 'applying the concepts: common interview questions, small hands-on exercises; Medium questions',
+      Strong: 'advanced topics, edge cases, trade-offs and full mock-interview practice; Hard questions',
+    };
+    const phaseLines = phases
+      .map((p) => `- Days ${p.from}-${p.to}: ${p.name} phase - ${phaseGuide[p.name]}`)
+      .join('\n');
 
-    const prompt = `You are a coach writing a ${duration}-day interview study plan for a ${role || 'software developer'} candidate.
+    const prompt = `You are a coach writing a ${duration}-day interview preparation plan.
 
-Their mock interviews show these weak topics: ${weakTopics.join(', ') || 'general fundamentals'}.
-Weak interview skills: ${skillsLine}.
-Questions they answered poorly:
-${answersBlock}
+What the candidate wants to prepare for: "${goal}"
+Their current level: ${level}
 
-Write exactly ${duration} days. Spread the weak topics across the plan, start with the weakest, and revisit each one later for revision. ${duration === 30 ? 'Use days 7, 14, 21 and 28 as review days that mix earlier topics, and make the last 2 days full mock-interview practice.' : 'Make day 7 a review day that mixes all topics.'}
-If a weak skill like communication or structure is listed, build it into the tasks (e.g. "answer out loud using the STAR method").
+The plan has three phases that get harder:
+${phaseLines}
+
+Write exactly ${duration} days that build on each other, from basics to interview-ready. Cover the most important topics for this goal, in a sensible learning order. Make the last day a full revision and mock-interview day.
 
 Each day has:
 - "topic": 1-4 words
 - "goal": one short sentence (max 15 words)
 - "tasks": exactly 2 short study tasks (max 12 words each)
-- "questions": exactly 2 interview practice questions on that topic, each a single short sentence ending with "?"
+- "questions": exactly 2 interview practice questions on that topic, at the difficulty of that day's phase, each a single short sentence ending with "?"
 
 Keep every string short. Return ONLY a valid JSON object with this exact shape:
 { "days": [ { "day": 1, "topic": "...", "goal": "...", "tasks": ["...", "..."], "questions": ["...", "..."] } ] }`;
@@ -879,7 +881,7 @@ Keep every string short. Return ONLY a valid JSON object with this exact shape:
       // and ran out of room after 14 days. On low it writes all 30 in ~1500 tokens,
       // which also keeps the request under the free tier's 8000 tokens-per-minute cap.
       const response = await this.generateJson(prompt, {
-        maxTokens: duration === 30 ? 4000 : 2000,
+        maxTokens: duration === 30 ? 4000 : 2500,
         long: duration === 30,
         reasoningEffort: 'low',
       });

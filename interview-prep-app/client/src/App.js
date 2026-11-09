@@ -237,18 +237,9 @@ const Landing = () => {
 
 const AppContent = () => {
   const { isAuthenticated, loading } = useAuth();
+  // Mobile drawer only. On desktop the sidebar is always there and minimizes
+  // to an icon rail with its own button.
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
-
-  // One menu button serves both layouts: it reopens the hidden desktop sidebar,
-  // or slides in the drawer on mobile.
-  const openSidebar = () => {
-    if (window.matchMedia('(min-width: 768px)').matches) {
-      setDesktopSidebarOpen(true);
-    } else {
-      setSidebarOpen(true);
-    }
-  };
 
   if (loading) {
     return (
@@ -269,14 +260,9 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        desktopOpen={desktopSidebarOpen}
-        onDesktopClose={() => setDesktopSidebarOpen(false)}
-      />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 min-w-0">
-        <Navbar onMenuClick={openSidebar} showOnDesktop={!desktopSidebarOpen} />
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Dashboard />} />

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  FiAward, FiThumbsUp, FiTrendingUp, FiBookOpen, FiRefreshCw, FiBarChart2
+  FiAward, FiThumbsUp, FiTrendingUp, FiBookOpen, FiRefreshCw, FiBarChart2, FiMap
 } from 'react-icons/fi';
 import { interviewAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
@@ -153,6 +153,13 @@ const InterviewResult = () => {
           >
             <FiBarChart2 />
             <span>View Analytics</span>
+          </button>
+          <button
+            onClick={() => navigate('/roadmap')}
+            className="flex-1 flex items-center justify-center space-x-2 bg-white text-cyan-700 font-semibold py-3 rounded-lg border-2 border-cyan-200 hover:bg-cyan-50 transition-smooth"
+          >
+            <FiMap />
+            <span>Build Study Plan</span>
           </button>
         </div>
       </div>

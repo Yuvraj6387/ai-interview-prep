@@ -61,6 +61,7 @@ flowchart TB
         JM["Job Matcher<br/>match score · skill-gap radar"]
         MI["Mock Interview<br/>voice + text"]
         AN["Analytics"]
+        RM["Learning Roadmap<br/>weak areas · 7/30-day plan · progress"]
     end
     Pages --> APIjs["services/api.js<br/>one axios instance,<br/>adds the JWT to every request"]
     MI --> Speech["hooks/useSpeech.js<br/>browser Web Speech API"]
@@ -83,9 +84,10 @@ flowchart LR
     R --> RS["/api/resume<br/>upload · match · ats-scan · rewrite-bullet"]
     R --> B["/api/builder<br/>versions · import · summary · tailor"]
     R --> I["/api/interviews<br/>start · answer · end"]
-    P & RS & B & I --> J["auth middleware<br/>JWT → req.userId"]
+    R --> RM["/api/roadmap<br/>get · create · tick item · delete"]
+    P & RS & B & I & RM --> J["auth middleware<br/>JWT → req.userId"]
     J --> M["Mongoose models"]
-    RS & B & I & P --> AI["aiService"]
+    RS & B & I & P & RM --> AI["aiService"]
 ```
 
 Every route except register, login and Google sign-in is protected. The `auth` middleware checks the JWT and puts the user's id on `req.userId`. **Every database query filters by that id**, so one user can never read another user's data.
@@ -99,6 +101,7 @@ erDiagram
     USER ||--o{ JOB_PROFILE : creates
     JOB_PROFILE ||--o{ QUESTION : has
     USER ||--o{ INTERVIEW : takes
+    USER ||--o| ROADMAP : "follows one"
 
     USER { string fullName string email string password_hash string profileImage }
     RESUME { string extractedText object analysis }
@@ -106,9 +109,11 @@ erDiagram
     JOB_PROFILE { string targetRole number experience string_list topics }
     QUESTION { string questionText string difficulty bool isPinned string explanation }
     INTERVIEW { object config list turns string status object result }
+    ROADMAP { number duration string_list weakTopics list weakSkills number baselineScore list days }
 ```
 
 - **Resume** = the one PDF a user uploaded: its text and the AI analysis.
+- **Roadmap** = the user's current study plan. Weak topics and skills are found by plain counting over the last 10 interviews (no AI). The AI only writes the day-by-day plan. Each task and question has a `done` flag, and improvement compares scores from interviews taken after the plan started with the stored baseline.
 - **BuiltResume** = a resume made in the builder. There can be many versions (one per job type), each with its own template and color.
 
 ## 4. How the AI layer works

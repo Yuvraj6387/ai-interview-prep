@@ -135,7 +135,7 @@ class AIService {
     }
   }
 
-  async sendRequest(prompt, { maxTokens = 512, jsonMode = false, timeout } = {}) {
+  async sendRequest(prompt, { maxTokens = 512, jsonMode = false, timeout, reasoningEffort } = {}) {
     const response = await fetch(this.apiUrl, {
       method: 'POST',
       headers: {
@@ -154,6 +154,7 @@ class AIService {
         temperature: 0.7,
         max_tokens: maxTokens,
         ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
+        ...(reasoningEffort ? { reasoning_effort: reasoningEffort } : {}),
       }),
     });
 
@@ -240,12 +241,12 @@ Format the output in clear Markdown.`;
     }
   }
 
-  generateJson(prompt, { maxTokens = 2048, long = false } = {}) {
+  generateJson(prompt, { maxTokens = 2048, long = false, reasoningEffort } = {}) {
     // Groq goes first: it answers in 1-4s, while the Gemini free tier often stalls
     // or returns 503, which cost 17-25s per request before falling through to Groq.
     const providers = [{
       label: 'groq',
-      run: (timeout) => this.sendRequest(prompt, { maxTokens, jsonMode: true, timeout }),
+      run: (timeout) => this.sendRequest(prompt, { maxTokens, jsonMode: true, timeout, reasoningEffort }),
     }];
 
     // Different provider, different outage and quota: when Groq is saturated
@@ -835,6 +836,71 @@ Return ONLY a valid JSON object with this exact shape:
       };
     } catch (error) {
       console.error('Error in generateFinalReport:', error);
+      throw error;
+    }
+  }
+
+  async generateStudyPlan({ role, duration, weakTopics, weakSkills, weakAnswers }) {
+    const skillsLine = weakSkills.length
+      ? weakSkills.map((s) => `${s.label} (${s.score}/100)`).join(', ')
+      : 'none below the bar';
+    const answersBlock = weakAnswers.length
+      ? weakAnswers.map((a, i) => `${i + 1}. Q: ${a.question}\n   Feedback: ${a.feedback || 'weak answer'}`).join('\n')
+      : '(none)';
+
+    const prompt = `You are a coach writing a ${duration}-day interview study plan for a ${role || 'software developer'} candidate.
+
+Their mock interviews show these weak topics: ${weakTopics.join(', ') || 'general fundamentals'}.
+Weak interview skills: ${skillsLine}.
+Questions they answered poorly:
+${answersBlock}
+
+Write exactly ${duration} days. Spread the weak topics across the plan, start with the weakest, and revisit each one later for revision. ${duration === 30 ? 'Use days 7, 14, 21 and 28 as review days that mix earlier topics, and make the last 2 days full mock-interview practice.' : 'Make day 7 a review day that mixes all topics.'}
+If a weak skill like communication or structure is listed, build it into the tasks (e.g. "answer out loud using the STAR method").
+
+Each day has:
+- "topic": 1-4 words
+- "goal": one short sentence (max 15 words)
+- "tasks": exactly 2 short study tasks (max 12 words each)
+- "questions": exactly 2 interview practice questions on that topic, each a single short sentence ending with "?"
+
+Keep every string short. Return ONLY a valid JSON object with this exact shape:
+{ "days": [ { "day": 1, "topic": "...", "goal": "...", "tasks": ["...", "..."], "questions": ["...", "..."] } ] }`;
+
+    const clip = (value, max) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
+    const items = (list, max) => (Array.isArray(list) ? list : [])
+      .map((text) => clip(text, max))
+      .filter(Boolean)
+      .slice(0, 3)
+      .map((text) => ({ text, done: false }));
+
+    try {
+      // Low reasoning effort: by default Groq's model spent ~4300 tokens "thinking"
+      // and ran out of room after 14 days. On low it writes all 30 in ~1500 tokens,
+      // which also keeps the request under the free tier's 8000 tokens-per-minute cap.
+      const response = await this.generateJson(prompt, {
+        maxTokens: duration === 30 ? 4000 : 2000,
+        long: duration === 30,
+        reasoningEffort: 'low',
+      });
+      const parsed = extractJson(response);
+      const days = (Array.isArray(parsed.days) ? parsed.days : [])
+        .filter((d) => d && clip(d.topic, 60))
+        .slice(0, duration)
+        .map((d, i) => ({
+          day: i + 1,
+          topic: clip(d.topic, 60),
+          goal: clip(d.goal, 160),
+          tasks: items(d.tasks, 160),
+          questions: items(d.questions, 200),
+        }));
+
+      if (days.length < duration) {
+        throw new Error('The AI returned an incomplete plan. Please try again.');
+      }
+      return days;
+    } catch (error) {
+      console.error('Error in generateStudyPlan:', error);
       throw error;
     }
   }

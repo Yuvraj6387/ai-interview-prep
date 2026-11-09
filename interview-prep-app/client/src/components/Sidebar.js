@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiGrid, FiFileText, FiEdit, FiTarget, FiMic, FiBarChart2, FiLogOut, FiUser, FiX, FiChevronsLeft } from 'react-icons/fi';
+import { FiGrid, FiFileText, FiEdit, FiTarget, FiMic, FiBarChart2, FiMap, FiLogOut, FiUser, FiX, FiChevronsLeft } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { to: '/job-match', label: 'Job Matcher', icon: FiTarget },
   { to: '/mock-interview', label: 'Mock Interview', icon: FiMic },
   { to: '/analytics', label: 'Analytics', icon: FiBarChart2 },
+  { to: '/roadmap', label: 'Learning Roadmap', icon: FiMap },
 ];
 
 const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, closeLabel = 'Close menu' }) => {

@@ -97,6 +97,14 @@ export const interviewAPI = {
   getById: (id) => api.get(`/interviews/${id}`),
 };
 
+// Learning roadmap (study plan built from interview results)
+export const roadmapAPI = {
+  get: () => api.get('/roadmap'),
+  create: (duration) => api.post('/roadmap', { duration }),
+  toggleItem: (day, kind, index, done) => api.patch('/roadmap/item', { day, kind, index, done }),
+  remove: () => api.delete('/roadmap'),
+};
+
 // Question APIs
 export const questionAPI = {
   getByProfile: (profileId) => api.get(`/questions/profile/${profileId}`),

@@ -98,21 +98,22 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
           )}
         </span>
         {DIFFICULTY_STYLES[question.difficulty] && (
-          <span className={`mt-2 mr-3 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${DIFFICULTY_STYLES[question.difficulty]}`}>
+          <span className={`mt-1.5 mr-3 px-2 py-0.5 rounded-full text-[10px] font-semibold ${DIFFICULTY_STYLES[question.difficulty]}`}>
             {question.difficulty}
           </span>
         )}
       </div>
 
-      <div className="px-4 pb-3 pt-1.5">
-        <p className="text-gray-800 font-semibold text-sm sm:text-base leading-snug">
+      {/* Question and buttons share one row on wider screens, which keeps the card short */}
+      <div className="px-4 pb-2.5 pt-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+        <p className="flex-1 text-gray-800 font-semibold text-sm sm:text-[15px] leading-snug">
           {question.questionText}
         </p>
 
-        <div className="flex items-center justify-end gap-2 mt-2">
+        <div className="flex items-center justify-end gap-1.5 flex-shrink-0">
           <button
             onClick={() => onTogglePin(question._id)}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-smooth ${
+            className={`w-7 h-7 flex items-center justify-center rounded-md border transition-smooth ${
               question.isPinned
                 ? 'bg-yellow-50 border-yellow-300 text-yellow-600 hover:bg-yellow-100'
                 : 'border-gray-200 text-gray-600 hover:bg-gray-50'
@@ -120,21 +121,21 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
             title={question.isPinned ? 'Unpin' : 'Pin'}
             aria-label={question.isPinned ? 'Unpin question' : 'Pin question'}
           >
-            <FiBookmark size={14} fill={question.isPinned ? 'currentColor' : 'none'} />
+            <FiBookmark size={12} fill={question.isPinned ? 'currentColor' : 'none'} />
           </button>
 
           <button
             onClick={onToggleExplanation}
-            className={`h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-semibold transition-smooth ${
+            className={`h-7 flex items-center gap-1 px-2.5 rounded-md text-[11px] font-semibold transition-smooth ${
               isExpanded
                 ? 'bg-cyan-600 text-white'
                 : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white hover:shadow-lg'
             }`}
             title={isExpanded ? 'Hide answer' : 'See model answer'}
           >
-            <FiBookOpen size={14} />
+            <FiBookOpen size={12} />
             <span>{isExpanded ? 'Hide' : 'Answer'}</span>
-            {isExpanded ? <FiChevronUp size={12} /> : <FiChevronDown size={12} />}
+            {isExpanded ? <FiChevronUp size={11} /> : <FiChevronDown size={11} />}
           </button>
         </div>
       </div>

@@ -83,8 +83,34 @@ const runJsonChain = async (providers, { long = false } = {}) => {
 
 const formatResumeContext = (resumeContext) => resumeContext
   ? `Candidate resume - Skills: ${(resumeContext.technicalSkills || []).join(', ') || 'n/a'}. Projects: ${(resumeContext.projects || []).join(', ') || 'n/a'}. Best-fit role: ${resumeContext.suggestedRole || 'n/a'}.
-Ground your questions in THIS resume: ask about the specific skills and projects listed above instead of generic role trivia, whenever possible.`
+Use the skills above to choose WHICH technologies to ask about.`
   : '';
+
+// What the question at this position should be about. Decided in code, not left
+// to the AI: given a resume, the AI kept asking about the candidate's projects
+// every time, while a real technical round is mostly concept questions.
+// Technical rounds get one project question (question 2) and the rest are
+// concept questions on the skills; HR and Behavioral rounds are left as they were.
+const PROJECT_QUESTION_NUMBER = 2;
+const TECH_CONCEPT_RULE = 'Ask a real technical interview question on ONE specific concept from the role, topics or skills above, the kind asked in actual company interviews: how something works internally, the difference between two things (e.g. "What is the difference between useMemo and useCallback?"), when to use one approach over another, what a small piece of code outputs, or how they would fix a common problem. Do NOT ask about their own projects.';
+
+const questionFocus = (config, resumeContext, questionNumber) => {
+  const { interviewType } = config;
+  if (interviewType === 'HR') {
+    return 'Ask a typical HR round question (motivation, strengths and weaknesses, career goals, why this role, salary or relocation, etc.).';
+  }
+  if (interviewType === 'Behavioral') {
+    return 'Ask a behavioral question about a real situation they handled (teamwork, conflict, failure, deadlines, ownership), the kind answered with the STAR method. You may refer to their projects.';
+  }
+  if (interviewType === 'Coding') {
+    return 'Give one short coding problem (arrays, strings, hashing, two pointers, recursion, etc.) that can be solved by explaining the approach and time complexity out loud. State it in one or two sentences. Do NOT ask about their projects.';
+  }
+  const hasProjects = (resumeContext?.projects || []).length > 0;
+  if (hasProjects && questionNumber === PROJECT_QUESTION_NUMBER) {
+    return 'Ask one question about a specific project from their resume: a technical decision they made, how a part of it works, or a problem they solved in it.';
+  }
+  return TECH_CONCEPT_RULE;
+};
 
 const formatJobContext = (jobContext) => jobContext
   ? `Target job${jobContext.title ? ` - ${jobContext.title}` : ''}. Skills this job requires: ${(jobContext.skills || []).join(', ') || 'n/a'}. Topics its interview covers: ${(jobContext.topics || []).join(', ') || 'n/a'}.
@@ -691,7 +717,7 @@ ${formatTurnsForPrompt(turns)}
 
 Decide the next question (this will be question ${turns.length + 1} of ${numQuestions} total):
 - If the most recent answer's evaluation says it was weak/unclear, ask a clarifying FOLLOW-UP question that digs into that specific gap, referencing what they said.
-- Otherwise, ask a NEW question on a different topic than anything above, at a difficulty slightly higher than the previous question, staying relevant to the role and interview type.
+- Otherwise, ask a NEW question on a different topic than anything above, at a difficulty slightly higher than the previous question. ${questionFocus(config, resumeContext, turns.length + 1)}
 - Never repeat a question or topic already covered above.
 - ${QUESTION_STYLE_RULE}
 
@@ -702,7 +728,7 @@ Return ONLY a valid JSON object with this exact shape: { "questionText": "<the q
       const parsed = extractJson(response);
 
       return {
-        questionText: typeof parsed.questionText === 'string' ? parsed.questionText : 'Tell me about a challenging project you worked on.',
+        questionText: typeof parsed.questionText === 'string' ? parsed.questionText : 'What is the difference between a process and a thread?',
         isFollowUp: Boolean(parsed.isFollowUp),
       };
     } catch (error) {
@@ -752,7 +778,7 @@ Return ONLY a valid JSON object with this exact shape:
     const { role, experienceLevel, interviewType, difficulty, numQuestions } = config;
 
     const nextQuestionInstruction = needsNextQuestion
-      ? `Decide the next question (question ${priorTurns.length + 2} of ${numQuestions} total): if isWeak, ask a clarifying FOLLOW-UP question that digs into that specific gap, referencing what they said. Otherwise, ask a NEW question on a different topic than anything above, at a difficulty slightly higher than the previous question, staying relevant to the role and interview type. Never repeat a question or topic already covered. ${QUESTION_STYLE_RULE}`
+      ? `Decide the next question (question ${priorTurns.length + 2} of ${numQuestions} total): if isWeak, ask a clarifying FOLLOW-UP question that digs into that specific gap, referencing what they said. Otherwise, ask a NEW question on a different topic than anything above, at a difficulty slightly higher than the previous question. ${questionFocus(config, resumeContext, priorTurns.length + 2)} Never repeat a question or topic already covered. ${QUESTION_STYLE_RULE}`
       : 'This was the final question of the interview - do NOT generate a next question, set "nextQuestion" to null.';
 
     const prompt = `You are conducting a live ${interviewType} interview for a ${role} candidate with ${experienceLevel} years of experience. Overall difficulty target: ${difficulty} (gradually escalate as the interview progresses).
@@ -795,7 +821,7 @@ Return ONLY a valid JSON object with this exact shape:
         ? {
             questionText: typeof parsed.nextQuestion.questionText === 'string'
               ? parsed.nextQuestion.questionText
-              : 'Tell me about a challenging project you worked on.',
+              : 'What is the difference between a process and a thread?',
             isFollowUp: Boolean(parsed.nextQuestion.isFollowUp),
           }
         : null;
@@ -863,11 +889,12 @@ Write exactly ${duration} days that build on each other, from basics to intervie
 Each day has:
 - "topic": 1-4 words
 - "goal": one short sentence (max 15 words)
+- "subtopics": 3-5 concrete sub-topics studied that day, 1-4 words each, the specific things interviewers actually ask about (e.g. for "React Hooks": "useState", "useEffect cleanup", "useMemo vs useCallback", "Custom hooks")
 - "tasks": exactly 2 short study tasks (max 12 words each)
-- "questions": exactly 2 interview practice questions on that topic, at the difficulty of that day's phase, each a single short sentence ending with "?"
+- "questions": exactly 2 real interview questions on that day's subtopics, at the difficulty of that day's phase, each a single short sentence ending with "?"
 
 Keep every string short. Return ONLY a valid JSON object with this exact shape:
-{ "days": [ { "day": 1, "topic": "...", "goal": "...", "tasks": ["...", "..."], "questions": ["...", "..."] } ] }`;
+{ "days": [ { "day": 1, "topic": "...", "goal": "...", "subtopics": ["...", "...", "..."], "tasks": ["...", "..."], "questions": ["...", "..."] } ] }`;
 
     const clip = (value, max) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
     const items = (list, max) => (Array.isArray(list) ? list : [])
@@ -880,9 +907,10 @@ Keep every string short. Return ONLY a valid JSON object with this exact shape:
       // Low reasoning effort: by default Groq's model spent ~4300 tokens "thinking"
       // and ran out of room after 14 days. On low it writes all 30 in ~1500 tokens,
       // which also keeps the request under the free tier's 8000 tokens-per-minute cap.
+      // Subtopics add ~80 tokens a day. 5000 plus the prompt still fits the cap.
       const response = await this.generateJson(prompt, {
-        maxTokens: duration === 30 ? 4000 : 2500,
-        long: duration === 30,
+        maxTokens: duration > 14 ? 5000 : 3000,
+        long: duration > 14,
         reasoningEffort: 'low',
       });
       const parsed = extractJson(response);
@@ -893,6 +921,10 @@ Keep every string short. Return ONLY a valid JSON object with this exact shape:
           day: i + 1,
           topic: clip(d.topic, 60),
           goal: clip(d.goal, 160),
+          subtopics: (Array.isArray(d.subtopics) ? d.subtopics : [])
+            .map((text) => clip(text, 50))
+            .filter(Boolean)
+            .slice(0, 5),
           tasks: items(d.tasks, 160),
           questions: items(d.questions, 200),
         }));

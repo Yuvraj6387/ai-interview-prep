@@ -15,8 +15,12 @@ const LEVELS = [
   { value: 'Advanced', hint: 'Polishing up' },
 ];
 const DURATIONS = [
+  { value: 3, hint: 'Last-minute revision' },
+  { value: 5, hint: 'Quick revision' },
   { value: 7, hint: 'Quick sprint' },
+  { value: 10, hint: 'Short and focused' },
   { value: 14, hint: 'Steady pace' },
+  { value: 21, hint: 'Thorough prep' },
   { value: 30, hint: 'Deep prep' },
 ];
 const GOAL_EXAMPLES = [
@@ -102,11 +106,22 @@ const PlanForm = ({ onCreate, creating }) => {
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-gray-800 mb-2">How many days?</p>
-          <div className="grid grid-cols-3 gap-3">
-            {DURATIONS.map(({ value, hint }) => (
-              <OptionButton key={value} active={duration === value} onClick={() => setDuration(value)} title={`${value} days`} hint={hint} />
-            ))}
+          <label htmlFor="duration" className="block text-sm font-semibold text-gray-800 mb-2">
+            How many days do you have to prepare?
+          </label>
+          <div className="relative sm:w-72">
+            <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+            <select
+              id="duration"
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              className="w-full pl-9 pr-9 py-3 text-sm text-gray-800 border border-gray-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 outline-none appearance-none bg-white"
+            >
+              {DURATIONS.map(({ value, hint }) => (
+                <option key={value} value={value}>{value} days · {hint}</option>
+              ))}
+            </select>
+            <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
           </div>
         </div>
 
@@ -215,8 +230,19 @@ const DayCard = ({ day, isToday, open, onToggleOpen, onToggleItem, onPractice })
         <FiChevronDown className={`text-gray-400 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
+      {open && day.subtopics?.length > 0 && (
+        <div className="px-5 pt-4 border-t border-gray-100">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Subtopics</p>
+          <div className="flex flex-wrap gap-2">
+            {day.subtopics.map((sub) => (
+              <span key={sub} className={`px-2.5 py-1 rounded-full text-xs font-medium ${style.chip}`}>{sub}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {open && (
-        <div className="px-5 pb-5 grid md:grid-cols-2 gap-5 border-t border-gray-100 pt-4">
+        <div className={`px-5 pb-5 grid md:grid-cols-2 gap-5 pt-4 ${day.subtopics?.length > 0 ? '' : 'border-t border-gray-100'}`}>
           <div>
             <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
               <FiBookOpen size={13} /> Study
@@ -332,7 +358,7 @@ const Roadmap = () => {
       state: {
         source: 'roadmap',
         difficulty: PHASE_DIFFICULTY[day.phase],
-        jobContext: { title: data.roadmap.goal, skills: [], topics: [day.topic] },
+        jobContext: { title: data.roadmap.goal, skills: [], topics: day.subtopics?.length ? day.subtopics : [day.topic] },
       },
     });
   };

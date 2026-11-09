@@ -246,7 +246,7 @@ const MockInterview = () => {
           {resume ? (
             <div className="flex items-center gap-2 text-sm text-cyan-300 bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 mb-4">
               <FiCheckCircle size={16} className="flex-shrink-0" />
-              <span>Personalized using your resume — questions will be grounded in your actual skills and projects.</span>
+              <span>Personalized using your resume — technical questions on your skills, plus one about your projects.</span>
             </div>
           ) : (
             <Link

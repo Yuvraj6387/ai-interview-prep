@@ -5,7 +5,7 @@ const auth = require('../middleware/auth');
 const aiService = require('../utils/aiService');
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
-const DURATIONS = [7, 14, 30];
+const DURATIONS = [3, 5, 7, 10, 14, 21, 30];
 const PHASES = ['Easy', 'Medium', 'Strong'];
 
 // How much of the plan each phase gets. A beginner spends longer on basics,
@@ -20,9 +20,14 @@ const PHASE_SHARE = {
 // the phases always add up and every phase gets at least one day.
 const splitPhases = (duration, level) => {
   const [easyShare, mediumShare] = PHASE_SHARE[level];
-  const easy = Math.max(1, Math.round(duration * easyShare));
-  const medium = Math.max(1, Math.round(duration * mediumShare));
-  // With 7+ days and every share at least 20%, Strong always gets 1+ days.
+  let easy = Math.max(1, Math.round(duration * easyShare));
+  let medium = Math.max(1, Math.round(duration * mediumShare));
+  // Short plans (3-5 days) can round Strong down to zero. Take a day back from
+  // the bigger of the first two phases until Strong has at least one.
+  while (duration - easy - medium < 1) {
+    if (easy >= medium) easy -= 1;
+    else medium -= 1;
+  }
   const lengths = [easy, medium, duration - easy - medium];
 
   let start = 1;
@@ -87,7 +92,7 @@ router.post('/', auth, async (req, res) => {
       return res.status(400).json({ message: 'Choose your current level' });
     }
     if (!DURATIONS.includes(duration)) {
-      return res.status(400).json({ message: 'Plan length must be 7, 14 or 30 days' });
+      return res.status(400).json({ message: `Plan length must be one of: ${DURATIONS.join(', ')} days` });
     }
 
     const phases = splitPhases(duration, level);

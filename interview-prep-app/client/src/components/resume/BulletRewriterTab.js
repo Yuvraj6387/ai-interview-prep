@@ -64,7 +64,7 @@ const BulletRewriterTab = ({ suggestedRole }) => {
           rows="3"
           disabled={rewriting}
           placeholder="e.g. Worked on React projects."
-          className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-y"
+          className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth resize-y"
         />
         <div className="flex flex-col sm:flex-row gap-3 mt-3">
           <input
@@ -72,7 +72,7 @@ const BulletRewriterTab = ({ suggestedRole }) => {
             onChange={(e) => setTargetRole(e.target.value.slice(0, 80))}
             disabled={rewriting}
             placeholder="Target role (optional)"
-            className="flex-1 px-4 py-3 text-sm border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
+            className="flex-1 px-4 py-3 text-sm border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth"
           />
           <button
             type="submit"
@@ -99,7 +99,7 @@ const BulletRewriterTab = ({ suggestedRole }) => {
           <div className="grid md:grid-cols-3 gap-4">
             {result.variants.map((variant, i) => (
               <div key={variant.style} className="card p-5 flex flex-col">
-                <span className="self-start px-3 py-1 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-700 mb-3">
+                <span className="self-start px-3 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 mb-3">
                   {variant.style}
                 </span>
                 <p className="text-sm text-gray-800 leading-relaxed flex-1">
@@ -107,7 +107,7 @@ const BulletRewriterTab = ({ suggestedRole }) => {
                 </p>
                 <button
                   onClick={() => copy(variant.text, i)}
-                  className="mt-4 flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 text-gray-700 hover:border-cyan-400 hover:text-cyan-700 transition-smooth"
+                  className="mt-4 flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 text-gray-700 hover:border-orange-400 hover:text-orange-700 transition-smooth"
                 >
                   {copiedIndex === i ? <FiCheck className="text-emerald-600" /> : <FiCopy />}
                   <span>{copiedIndex === i ? 'Copied' : 'Copy'}</span>
@@ -119,13 +119,13 @@ const BulletRewriterTab = ({ suggestedRole }) => {
           {result.tips.length > 0 && (
             <div className="card p-5">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                <FiTrendingUp size={16} className="text-cyan-600" />
+                <FiTrendingUp size={16} className="text-orange-600" />
                 Make it even stronger
               </h3>
               <ul className="space-y-2">
                 {result.tips.map((tip) => (
                   <li key={tip} className="flex gap-2 text-sm text-gray-600">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 mt-2 flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
                     <WithPlaceholders text={tip} />
                   </li>
                 ))}

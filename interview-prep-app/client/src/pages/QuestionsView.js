@@ -82,7 +82,7 @@ const QuestionsView = ({ profile, onBack }) => {
         >
           <button
             onClick={onBack}
-            className="flex items-center space-x-2 text-white hover:text-cyan-300 mb-6 transition-smooth"
+            className="flex items-center space-x-2 text-zinc-700 hover:text-orange-600 mb-6 transition-smooth"
           >
             <FiArrowLeft size={20} />
             <span className="font-medium">Back to Dashboard</span>
@@ -98,7 +98,7 @@ const QuestionsView = ({ profile, onBack }) => {
                   {profile.topics.map((topic, index) => (
                     <span
                       key={index}
-                      className="bg-cyan-50 text-cyan-700 px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      className="bg-orange-50 text-orange-700 px-2.5 py-0.5 rounded-full text-xs font-medium"
                     >
                       {topic}
                     </span>
@@ -144,12 +144,12 @@ const QuestionsView = ({ profile, onBack }) => {
           </div>
         ) : generating ? (
           <div className="space-y-4">
-            <p className="flex items-center gap-2 text-slate-300 text-sm">
-              <FiLoader className="animate-spin text-cyan-400" />
+            <p className="flex items-center gap-2 text-zinc-600 text-sm">
+              <FiLoader className="animate-spin text-orange-400" />
               AI is writing 5 interview questions for {profile.targetRole}, from easy to hard...
             </p>
             {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white rounded-xl shadow-md p-4 border-l-4 border-cyan-600 animate-pulse">
+              <div key={i} className="bg-white rounded-xl shadow-md p-4 border-l-4 border-orange-600 animate-pulse">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-5 rounded-lg bg-slate-200 flex-shrink-0" />
                   <div className="flex-1 space-y-2">
@@ -162,8 +162,8 @@ const QuestionsView = ({ profile, onBack }) => {
           </div>
         ) : questions.length === 0 ? (
           <div className="card p-8 md:p-10 text-center">
-            <div className="w-20 h-20 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-5">
-              <FiHelpCircle size={36} className="text-cyan-600" />
+            <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-5">
+              <FiHelpCircle size={36} className="text-orange-600" />
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-2 font-display">
               No Questions Yet
@@ -182,11 +182,11 @@ const QuestionsView = ({ profile, onBack }) => {
         ) : (
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1 mb-3">
-              <h2 className="text-lg font-bold text-white font-display">
+              <h2 className="text-lg font-bold text-zinc-900 font-display">
                 Interview Questions ({questions.length})
               </h2>
-              <p className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-300">
-                <FiBookOpen size={14} className="text-cyan-400" />
+              <p className="flex items-center gap-1.5 text-xs sm:text-sm text-zinc-600">
+                <FiBookOpen size={14} className="text-orange-400" />
                 Pin a question to keep it on top · Tap Answer for a model answer
               </p>
             </div>

@@ -27,7 +27,7 @@ const PANEL = 'bg-white rounded-2xl shadow-lg border border-gray-100';
 
 const PanelTitle = ({ icon: Icon, children }) => (
   <p className="flex items-center gap-2.5 text-sm font-bold text-gray-800 font-display">
-    <span className="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center">
+    <span className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
       <Icon size={16} />
     </span>
     {children}
@@ -37,7 +37,7 @@ const PanelTitle = ({ icon: Icon, children }) => (
 const STEP_STYLES = {
   answered: 'bg-emerald-500 border-emerald-500 text-white',
   skipped: 'bg-amber-50 border-amber-400 text-amber-700',
-  current: 'bg-cyan-600 border-cyan-600 text-white ring-4 ring-cyan-100',
+  current: 'bg-orange-600 border-orange-600 text-white ring-4 ring-orange-100',
   upcoming: 'bg-gray-50 border-gray-200 text-gray-400',
 };
 
@@ -210,23 +210,23 @@ const MockInterview = () => {
   if (!interview) {
     return (
       <div className="relative overflow-hidden min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-        <InterviewIllustration className="pointer-events-none absolute top-8 left-1/2 -translate-x-1/2 w-[75rem] max-w-none text-cyan-300 opacity-[0.15]" />
+        <InterviewIllustration className="pointer-events-none absolute top-8 left-1/2 -translate-x-1/2 w-[75rem] max-w-none text-orange-700 opacity-[0.15]" />
         <div className="relative max-w-2xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">
+            <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-2 font-display">
               Mock Interview
             </h1>
-            <p className="text-slate-300">
+            <p className="text-zinc-600">
               AI asks, evaluates, and adapts its next question based on how you answer
             </p>
           </motion.div>
 
           {jobContext && (
-            <div className="flex items-center gap-2 text-sm text-cyan-300 bg-cyan-500/10 border border-cyan-400/30 rounded-lg px-4 py-2.5 mb-4">
+            <div className="flex items-center gap-2 text-sm text-orange-800 bg-orange-50 border border-orange-200 rounded-lg px-4 py-2.5 mb-4">
               <FiTarget size={16} className="flex-shrink-0" />
               {location.state?.source ? (
                 <span>Focused practice — questions will focus on {(jobContext.topics || []).join(', ') || 'your chosen topic'}.</span>
@@ -236,7 +236,7 @@ const MockInterview = () => {
               <button
                 type="button"
                 onClick={() => setJobContext(null)}
-                className="ml-auto text-xs font-semibold text-slate-300 hover:text-white underline flex-shrink-0"
+                className="ml-auto text-xs font-semibold text-zinc-600 hover:text-zinc-900 underline flex-shrink-0"
               >
                 Remove
               </button>
@@ -244,14 +244,14 @@ const MockInterview = () => {
           )}
 
           {resume ? (
-            <div className="flex items-center gap-2 text-sm text-cyan-300 bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 mb-4">
+            <div className="flex items-center gap-2 text-sm text-orange-700 bg-white border border-stone-200 rounded-lg px-4 py-2.5 mb-4">
               <FiCheckCircle size={16} className="flex-shrink-0" />
               <span>Personalized using your resume — technical questions on your skills, plus one about your projects.</span>
             </div>
           ) : (
             <Link
               to="/resume"
-              className="flex items-center gap-2 text-sm text-slate-200 bg-white/10 border border-white/20 hover:bg-white/15 rounded-lg px-4 py-2.5 mb-4 transition-smooth"
+              className="flex items-center gap-2 text-sm text-zinc-700 bg-white border border-stone-200 hover:bg-orange-50 rounded-lg px-4 py-2.5 mb-4 transition-smooth"
             >
               <FiFileText size={16} className="flex-shrink-0" />
               <span>Upload your resume for a personalized interview instead of generic questions</span>
@@ -275,7 +275,7 @@ const MockInterview = () => {
                     name="role"
                     value={config.role}
                     onChange={handleConfigChange}
-                    className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
+                    className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth"
                     placeholder="e.g., Full Stack Developer"
                     required
                   />
@@ -293,7 +293,7 @@ const MockInterview = () => {
                     onChange={handleConfigChange}
                     min="0"
                     max="50"
-                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
+                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth"
                     placeholder="2"
                     required
                   />
@@ -310,7 +310,7 @@ const MockInterview = () => {
                     name="interviewType"
                     value={config.interviewType}
                     onChange={handleConfigChange}
-                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth appearance-none bg-white"
+                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth appearance-none bg-white"
                   >
                     {INTERVIEW_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
@@ -325,7 +325,7 @@ const MockInterview = () => {
                     name="difficulty"
                     value={config.difficulty}
                     onChange={handleConfigChange}
-                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth appearance-none bg-white"
+                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth appearance-none bg-white"
                   >
                     {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
                   </select>
@@ -340,7 +340,7 @@ const MockInterview = () => {
                     name="numQuestions"
                     value={config.numQuestions}
                     onChange={handleConfigChange}
-                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth appearance-none bg-white"
+                    className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth appearance-none bg-white"
                   >
                     {QUESTION_COUNTS.map((n) => <option key={n} value={n}>{n}</option>)}
                   </select>
@@ -401,7 +401,7 @@ const MockInterview = () => {
             onClick={() => setTimerPaused(!timerPaused)}
             title={timerPaused ? 'Resume timer' : 'Pause timer'}
             aria-label={timerPaused ? 'Resume timer' : 'Pause timer'}
-            className="w-10 h-10 rounded-xl border-2 border-gray-200 text-gray-600 hover:border-cyan-500 hover:text-cyan-600 flex items-center justify-center transition-smooth"
+            className="w-10 h-10 rounded-xl border-2 border-gray-200 text-gray-600 hover:border-orange-500 hover:text-orange-600 flex items-center justify-center transition-smooth"
           >
             {timerPaused ? <FiPlay size={16} /> : <FiPause size={16} />}
           </button>
@@ -428,7 +428,7 @@ const MockInterview = () => {
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         rows="4"
-        className="w-full mt-3 px-3 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 focus:bg-white resize-none transition-smooth"
+        className="w-full mt-3 px-3 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white resize-none transition-smooth"
         placeholder="Jot down key points, approach, or keywords..."
       />
       <p className="text-[11px] text-gray-400 mt-1.5">Just for you during this interview — not saved.</p>
@@ -455,7 +455,7 @@ const MockInterview = () => {
           onClick={() => speak(turn?.questionText)}
           title="Hear this question"
           aria-label="Hear this question"
-          className="mt-1 p-2 rounded-full text-slate-300 hover:text-cyan-300 hover:bg-white/10 transition-smooth flex-shrink-0"
+          className="mt-1 p-2 rounded-full text-zinc-600 hover:text-orange-600 hover:bg-orange-50 transition-smooth flex-shrink-0"
         >
           <FiVolume2 size={16} />
         </button>
@@ -469,7 +469,7 @@ const MockInterview = () => {
         <div className="min-w-0">
           {/* Progress */}
           <div className="mb-6">
-            <div className="flex justify-between items-center text-sm text-slate-300 mb-2">
+            <div className="flex justify-between items-center text-sm text-zinc-600 mb-2">
               <span>Question {interview.turns.length} of {numQuestions}</span>
               <div className="flex items-center gap-2">
                 {/* Phones/tablets: a small timer pill here instead of the side panel */}
@@ -479,7 +479,7 @@ const MockInterview = () => {
                   title={timerPaused ? 'Resume timer' : 'Pause timer'}
                   aria-label={timerPaused ? 'Resume timer' : 'Pause timer'}
                   className={`xl:hidden flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border tabular-nums transition-smooth ${
-                    timerPaused ? 'border-white/20 text-slate-400' : 'border-white/20 text-slate-200'
+                    timerPaused ? 'border-stone-200 text-zinc-500' : 'border-stone-200 text-zinc-700'
                   }`}
                 >
                   <FiClock size={13} />
@@ -493,8 +493,8 @@ const MockInterview = () => {
                     title={readAloud ? 'Stop reading questions aloud' : 'Read questions aloud'}
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-smooth ${
                       readAloud
-                        ? 'bg-cyan-500/15 border-cyan-400/40 text-cyan-300'
-                        : 'border-white/20 text-slate-400 hover:text-slate-200'
+                        ? 'bg-orange-50 border-orange-300 text-orange-700'
+                        : 'border-stone-200 text-zinc-500 hover:text-zinc-700'
                     }`}
                   >
                     {readAloud ? <FiVolume2 size={13} /> : <FiVolumeX size={13} />}
@@ -503,9 +503,9 @@ const MockInterview = () => {
                 )}
               </div>
             </div>
-            <div className="w-full bg-white/20 rounded-full h-2">
+            <div className="w-full bg-orange-100 rounded-full h-2">
               <div
-                className="bg-white h-2 rounded-full transition-all duration-500"
+                className="bg-orange-500 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -527,7 +527,7 @@ const MockInterview = () => {
                       className={`rounded-2xl rounded-tr-sm px-4 py-3 max-w-[85%] shadow-sm ${
                         turn.skipped
                           ? 'bg-gray-200 text-gray-500 italic'
-                          : 'bg-cyan-600 text-white'
+                          : 'bg-white text-zinc-800 border border-orange-200'
                       }`}
                     >
                       <p className="text-sm leading-relaxed">
@@ -558,7 +558,7 @@ const MockInterview = () => {
               value={answerText}
               onChange={(e) => setAnswerText(e.target.value)}
               rows="2"
-              className={`w-full px-4 py-2.5 text-sm border-2 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-none ${
+              className={`w-full px-4 py-2.5 text-sm border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth resize-none ${
                 voice.listening ? 'border-red-300 bg-red-50/40' : 'border-gray-300'
               }`}
               placeholder={voice.listening ? 'Listening... speak your answer' : 'Type your answer, or tap Speak to answer by voice...'}
@@ -582,7 +582,7 @@ const MockInterview = () => {
                   className={`flex-1 whitespace-nowrap flex items-center justify-center space-x-1.5 px-4 py-2 font-semibold text-sm rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed ${
                     voice.listening
                       ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30'
-                      : 'border-2 border-cyan-600 text-cyan-700 hover:bg-cyan-50'
+                      : 'border-2 border-orange-600 text-orange-700 hover:bg-orange-50'
                   }`}
                 >
                   {voice.listening ? <FiSquare size={14} /> : <FiMic size={14} />}
@@ -592,7 +592,7 @@ const MockInterview = () => {
               <button
                 onClick={() => handleSubmitAnswer(false)}
                 disabled={busy}
-                className="flex-[2] whitespace-nowrap flex items-center justify-center space-x-1.5 px-4 bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white font-semibold text-sm py-2 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-[2] whitespace-nowrap flex items-center justify-center space-x-1.5 px-4 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-semibold text-sm py-2 rounded-lg hover:shadow-xl transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitAction === 'answer' ? <FiLoader className="animate-spin" size={14} /> : <FiSend size={14} />}
                 <span>{submitAction === 'answer' ? 'Evaluating...' : 'Submit Answer'}</span>
@@ -634,7 +634,7 @@ const MockInterview = () => {
               <button
                 type="button"
                 onClick={() => setNotesOpen(true)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/15 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-smooth"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-stone-200 text-sm font-medium text-zinc-600 hover:text-zinc-900 hover:bg-orange-50 transition-smooth"
               >
                 <FiEdit3 size={14} />
                 <span>Quick Notes{notes.trim() ? ' (saved)' : ''}</span>
@@ -651,7 +651,7 @@ const MockInterview = () => {
           <div className={`${PANEL} p-5`}>
             <div className="flex items-center justify-between">
               <PanelTitle icon={FiHash}>Question Progress</PanelTitle>
-              <span className="text-sm font-semibold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded-full">
+              <span className="text-sm font-semibold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full">
                 {interview.turns.length} / {numQuestions}
               </span>
             </div>
@@ -680,13 +680,13 @@ const MockInterview = () => {
             <div className="flex flex-wrap gap-x-3 gap-y-1 mt-4 text-[11px] text-gray-500">
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" />Answered</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />Skipped</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cyan-500" />Current</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" />Current</span>
             </div>
           </div>
 
           <div className={`${PANEL} p-5`}>
             <PanelTitle icon={FiFileText}>Current Question</PanelTitle>
-            <p className="text-sm text-gray-700 leading-relaxed mt-3 pl-3 border-l-2 border-cyan-500">{currentQuestion}</p>
+            <p className="text-sm text-gray-700 leading-relaxed mt-3 pl-3 border-l-2 border-orange-500">{currentQuestion}</p>
           </div>
 
           {notesPanel}

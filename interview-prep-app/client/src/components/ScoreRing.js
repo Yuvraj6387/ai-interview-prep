@@ -44,7 +44,7 @@ export const ScoreBar = ({ label, score, icon: Icon }) => {
     <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm">
       <div className="flex items-center justify-between gap-3 mb-2">
         <span className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-          {Icon && <Icon size={16} className="text-cyan-600" />}
+          {Icon && <Icon size={16} className="text-orange-600" />}
           {label}
         </span>
         <span className="text-sm">

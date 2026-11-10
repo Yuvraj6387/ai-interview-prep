@@ -120,4 +120,4 @@ export const JobMatcherArt = ({ className = '' }) => (
 
 // Shared placement: top-right beside the page title, hidden on phones.
 // Kept short enough to stay inside the header strip, above the first card.
-export const PAGE_ART_CLASS = 'pointer-events-none absolute top-2 right-6 hidden lg:block w-[19rem] xl:w-[22rem] text-cyan-300 opacity-[0.16]';
+export const PAGE_ART_CLASS = 'pointer-events-none absolute top-2 right-6 hidden lg:block w-[19rem] xl:w-[22rem] text-orange-300 opacity-[0.16]';

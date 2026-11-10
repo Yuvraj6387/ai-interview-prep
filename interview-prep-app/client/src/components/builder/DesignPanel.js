@@ -58,10 +58,10 @@ const DesignPanel = ({ template, accentColor, onTemplate, onColor }) => {
               key={id}
               type="button"
               onClick={() => onTemplate(id)}
-              className={`rounded-lg p-1.5 text-left border-2 transition-smooth ${template === id ? 'border-cyan-600 bg-cyan-50' : 'border-transparent hover:bg-gray-50'}`}
+              className={`rounded-lg p-1.5 text-left border-2 transition-smooth ${template === id ? 'border-orange-600 bg-orange-50' : 'border-transparent hover:bg-gray-50'}`}
             >
               <Thumbnail id={id} accent={accentColor} />
-              <p className={`text-xs font-semibold mt-1 text-center ${template === id ? 'text-cyan-700' : 'text-gray-600'}`}>{label}</p>
+              <p className={`text-xs font-semibold mt-1 text-center ${template === id ? 'text-orange-700' : 'text-gray-600'}`}>{label}</p>
             </button>
           ))}
         </div>
@@ -88,7 +88,7 @@ const DesignPanel = ({ template, accentColor, onTemplate, onColor }) => {
           })}
           <label
             title="Custom color"
-            className={`relative h-7 px-2.5 rounded-full border border-gray-300 flex items-center gap-1.5 text-xs font-medium text-gray-600 cursor-pointer hover:border-cyan-400 ${isPreset ? '' : 'ring-2 ring-offset-2 ring-gray-400'}`}
+            className={`relative h-7 px-2.5 rounded-full border border-gray-300 flex items-center gap-1.5 text-xs font-medium text-gray-600 cursor-pointer hover:border-orange-400 ${isPreset ? '' : 'ring-2 ring-offset-2 ring-gray-400'}`}
           >
             <span className="w-3.5 h-3.5 rounded-full border border-gray-200" style={{ background: accentColor }} />
             Custom

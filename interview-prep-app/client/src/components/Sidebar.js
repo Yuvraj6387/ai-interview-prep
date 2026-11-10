@@ -54,7 +54,7 @@ const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, close
             onClick={onClose}
             title={closeLabel}
             aria-label={closeLabel}
-            className="text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg p-1.5 flex-shrink-0 transition-smooth"
+            className="text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg p-1.5 flex-shrink-0 transition-smooth"
           >
             <CloseIcon size={22} />
           </button>
@@ -74,7 +74,7 @@ const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, close
               aria-label={label}
               className={`flex items-center rounded-lg text-sm font-medium transition-smooth ${
                 collapsed ? 'justify-center h-11' : 'space-x-3 px-4 py-3'
-              } ${isActive ? 'bg-cyan-50 text-cyan-700' : 'text-gray-600 hover:bg-gray-100'}`}
+              } ${isActive ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-gray-100'}`}
             >
               <Icon size={collapsed ? 20 : 18} className="flex-shrink-0" />
               {!collapsed && <span className="truncate">{label}</span>}

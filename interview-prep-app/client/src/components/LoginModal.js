@@ -147,7 +147,7 @@ const LoginModal = ({ onClose }) => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
+                  className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-smooth"
                   placeholder="John Doe"
                   required={!isLogin}
                 />
@@ -166,7 +166,7 @@ const LoginModal = ({ onClose }) => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
+                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-smooth"
                 placeholder="john@example.com"
                 required
               />
@@ -184,7 +184,7 @@ const LoginModal = ({ onClose }) => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-smooth"
+                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-smooth"
                 placeholder="••••••••"
                 required
               />
@@ -242,7 +242,7 @@ const LoginModal = ({ onClose }) => {
                 setError('');
                 setFormData({ email: '', password: '', fullName: '', profileImage: '' });
               }}
-              className="text-cyan-600 hover:text-cyan-800 font-medium text-xs transition-smooth"
+              className="text-orange-600 hover:text-orange-800 font-medium text-xs transition-smooth"
             >
               {isLogin
                 ? "Don't have an account? Sign up"

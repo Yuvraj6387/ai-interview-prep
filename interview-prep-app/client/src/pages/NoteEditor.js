@@ -7,7 +7,7 @@ import { useToast } from '../components/ToastProvider';
 const MAX_ITEMS = 100;
 const emptyItem = () => ({ question: '', answer: '' });
 
-const inputClass = 'w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 outline-none text-sm text-gray-800';
+const inputClass = 'w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none text-sm text-gray-800';
 
 const NoteEditor = () => {
   const { id } = useParams();
@@ -86,10 +86,10 @@ const NoteEditor = () => {
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <form onSubmit={handleSubmit} className="max-w-3xl mx-auto space-y-5">
-        <Link to={isEdit ? `/notes/${id}` : '/notes'} className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white">
+        <Link to={isEdit ? `/notes/${id}` : '/notes'} className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900">
           <FiArrowLeft size={14} /> {isEdit ? 'Back to note' : 'All notes'}
         </Link>
-        <h1 className="text-3xl md:text-4xl font-bold text-white font-display">{isEdit ? 'Edit Note' : 'New Note'}</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 font-display">{isEdit ? 'Edit Note' : 'New Note'}</h1>
 
         <div className="card p-5 md:p-6 space-y-4">
           <div>
@@ -120,7 +120,7 @@ const NoteEditor = () => {
               ].map(({ value, label, hint, icon: Icon }) => (
                 <button key={label} type="button" onClick={() => setIsPublic(value)}
                   className={`py-2.5 px-3 rounded-lg border-2 text-sm font-semibold text-left transition-smooth ${
-                    isPublic === value ? 'border-cyan-600 bg-cyan-50 text-cyan-700' : 'border-gray-200 text-gray-600 hover:border-cyan-200'
+                    isPublic === value ? 'border-orange-600 bg-orange-50 text-orange-700' : 'border-gray-200 text-gray-600 hover:border-orange-200'
                   }`}>
                   <span className="flex items-center gap-2"><Icon size={14} /> {label}</span>
                   <span className="block text-xs font-normal text-gray-500">{hint}</span>
@@ -131,22 +131,22 @@ const NoteEditor = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white font-display">Questions &amp; Answers</h2>
-          <span className="text-sm text-slate-400">{items.length} / {MAX_ITEMS}</span>
+          <h2 className="text-lg font-bold text-zinc-900 font-display">Questions &amp; Answers</h2>
+          <span className="text-sm text-zinc-500">{items.length} / {MAX_ITEMS}</span>
         </div>
-        <p className="text-xs text-slate-400 -mt-3">Tip: put code between ``` lines to show it as a code block.</p>
+        <p className="text-xs text-zinc-500 -mt-3">Tip: put code between ``` lines to show it as a code block.</p>
 
         {items.map((item, i) => (
           <div key={i} className="card p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-cyan-700">Question {i + 1}</span>
+              <span className="text-sm font-bold text-orange-700">Question {i + 1}</span>
               <div className="flex items-center gap-1">
                 <button type="button" onClick={() => moveItem(i, -1)} disabled={i === 0} aria-label="Move up"
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 disabled:opacity-30 disabled:hover:bg-transparent">
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-orange-600 hover:bg-orange-50 disabled:opacity-30 disabled:hover:bg-transparent">
                   <FiArrowUp size={16} />
                 </button>
                 <button type="button" onClick={() => moveItem(i, 1)} disabled={i === items.length - 1} aria-label="Move down"
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 disabled:opacity-30 disabled:hover:bg-transparent">
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-orange-600 hover:bg-orange-50 disabled:opacity-30 disabled:hover:bg-transparent">
                   <FiArrowDown size={16} />
                 </button>
                 <button type="button" onClick={() => removeItem(i)} aria-label="Remove question"

@@ -11,7 +11,7 @@ import { useToast } from '../components/ToastProvider';
 import { ScoreBar, scoreTone } from '../components/ScoreRing';
 
 const DIMENSIONS = [
-  { key: 'technicalAccuracy', label: 'Technical', color: '#06b6d4' },
+  { key: 'technicalAccuracy', label: 'Technical', color: '#f97316' },
   { key: 'communication', label: 'Communication', color: '#8b5cf6' },
   { key: 'confidence', label: 'Confidence', color: '#3b82f6' },
   { key: 'structure', label: 'Structure', color: '#f59e0b' },
@@ -25,7 +25,7 @@ const PRACTICE_ICONS = [
   { icon: FiMic, tint: 'bg-sky-50 text-sky-500' },
   { icon: FiBookOpen, tint: 'bg-violet-50 text-violet-500' },
   { icon: FiCode, tint: 'bg-emerald-50 text-emerald-500' },
-  { icon: FiStar, tint: 'bg-cyan-50 text-cyan-500' },
+  { icon: FiStar, tint: 'bg-orange-50 text-orange-500' },
 ];
 
 const verdictFor = (score) => {
@@ -43,7 +43,7 @@ const Card = ({ title, icon: Icon, children, className = '' }) => (
   >
     {title && (
       <h3 className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-4 font-display">
-        {Icon && <Icon size={16} className="text-cyan-600" />}
+        {Icon && <Icon size={16} className="text-orange-600" />}
         {title}
       </h3>
     )}
@@ -73,13 +73,13 @@ const BigScoreRing = ({ score }) => {
         />
         <defs>
           <linearGradient id="scoreGradient" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#06b6d4" />
-            <stop offset="100%" stopColor="#2563eb" />
+            <stop offset="0%" stopColor="#f97316" />
+            <stop offset="100%" stopColor="#c2410c" />
           </linearGradient>
         </defs>
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-5xl font-bold text-blue-600 font-display">{score}%</span>
+        <span className="text-5xl font-bold text-orange-600 font-display">{score}%</span>
       </div>
     </div>
   );
@@ -100,7 +100,7 @@ const ListSection = ({ title, icon: Icon, items }) => {
   return (
     <div>
       <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-        <Icon size={16} className="text-cyan-600" />
+        <Icon size={16} className="text-orange-600" />
         {title}
       </h4>
       <ul className="space-y-1.5">
@@ -188,10 +188,10 @@ const InterviewResult = () => {
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-6">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">
+          <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-2 font-display">
             Interview Result
           </h1>
-          <p className="text-slate-300">
+          <p className="text-zinc-600">
             {config.interviewType} interview for {config.role} · {config.difficulty} difficulty
           </p>
         </motion.div>

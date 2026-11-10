@@ -24,7 +24,7 @@ const NoteCard = ({ note }) => (
     {note.tags.length > 0 && (
       <div className="flex flex-wrap gap-1.5 mb-3">
         {note.tags.map((tag) => (
-          <span key={tag} className="px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700">{tag}</span>
+          <span key={tag} className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700">{tag}</span>
         ))}
       </div>
     )}
@@ -75,8 +75,8 @@ const Notes = () => {
           className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4"
         >
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">Important Notes</h1>
-            <p className="text-slate-300">Interview questions and answers written by the community. Read them, or share your own.</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-2 font-display">Important Notes</h1>
+            <p className="text-zinc-600">Interview questions and answers written by the community. Read them, or share your own.</p>
           </div>
           {isAuthenticated && (
             <Link to="/notes/new" className="btn-primary self-start sm:self-auto flex-shrink-0">
@@ -87,14 +87,14 @@ const Notes = () => {
 
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           {isAuthenticated && (
-            <div className="inline-flex bg-white/10 rounded-xl p-1 self-start">
+            <div className="inline-flex bg-stone-200/70 rounded-xl p-1 self-start">
               {tabs.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setTab(id)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-smooth ${
-                    tab === id ? 'bg-white text-cyan-700 shadow' : 'text-slate-200 hover:bg-white/10'
+                    tab === id ? 'bg-white text-orange-700 shadow' : 'text-zinc-600 hover:bg-white/70'
                   }`}
                 >
                   <Icon size={14} /> {label}
@@ -110,7 +110,7 @@ const Notes = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by title or tag, e.g. React"
-                className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 outline-none text-sm text-gray-800 bg-white"
+                className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none text-sm text-gray-800 bg-white"
               />
             </div>
           )}
@@ -120,7 +120,7 @@ const Notes = () => {
           <div className="flex justify-center py-16"><div className="spinner"></div></div>
         ) : notes.length === 0 ? (
           <div className="card p-10 text-center">
-            <FiBookOpen className="mx-auto text-cyan-600 mb-3" size={32} />
+            <FiBookOpen className="mx-auto text-orange-600 mb-3" size={32} />
             <p className="font-semibold text-gray-800 mb-1">
               {tab === 'mine' ? "You haven't written any notes yet" : query ? `No notes match "${query}"` : 'No notes yet'}
             </p>

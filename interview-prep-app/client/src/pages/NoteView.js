@@ -18,7 +18,7 @@ const AnswerText = ({ text }) => {
       {parts.map((part, i) => {
         if (!part.trim()) return null;
         return i % 2 === 1 ? (
-          <pre key={i} className="bg-slate-900 text-slate-100 text-xs rounded-lg p-4 overflow-x-auto"><code>{part.replace(/\n$/, '')}</code></pre>
+          <pre key={i} className="bg-slate-900 text-zinc-700 text-xs rounded-lg p-4 overflow-x-auto"><code>{part.replace(/\n$/, '')}</code></pre>
         ) : (
           <p key={i} className="whitespace-pre-wrap">{part.trim()}</p>
         );
@@ -30,7 +30,7 @@ const AnswerText = ({ text }) => {
 const QuestionItem = ({ number, item, open, onToggle }) => (
   <div className="card overflow-hidden">
     <button type="button" onClick={onToggle} className="w-full flex items-start gap-4 px-5 py-4 text-left">
-      <span className="w-8 h-8 rounded-full bg-cyan-50 text-cyan-700 text-sm font-bold flex items-center justify-center flex-shrink-0">
+      <span className="w-8 h-8 rounded-full bg-orange-50 text-orange-700 text-sm font-bold flex items-center justify-center flex-shrink-0">
         {number}
       </span>
       <p className="flex-1 pt-1 font-semibold text-gray-800">{item.question}</p>
@@ -94,7 +94,7 @@ const NoteView = () => {
   if (error) {
     return (
       <div className="max-w-3xl mx-auto py-16 px-4 text-center">
-        <p className="text-slate-200 mb-4">{error}</p>
+        <p className="text-zinc-700 mb-4">{error}</p>
         <Link to="/notes" className="btn-secondary"><FiArrowLeft /> <span>Back to notes</span></Link>
       </div>
     );
@@ -106,23 +106,23 @@ const NoteView = () => {
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-5">
-        <Link to="/notes" className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white">
+        <Link to="/notes" className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900">
           <FiArrowLeft size={14} /> All notes
         </Link>
 
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-          <h1 className="text-3xl md:text-4xl font-bold text-white font-display leading-tight">{note.title}</h1>
-          {note.description && <p className="text-slate-300">{note.description}</p>}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-400">
+          <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 font-display leading-tight">{note.title}</h1>
+          {note.description && <p className="text-zinc-600">{note.description}</p>}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-zinc-500">
             <span className="flex items-center gap-1.5"><FiUser size={14} /> {note.author}</span>
             <span className="flex items-center gap-1.5"><FiCalendar size={14} /> {formatDate(note.updatedAt)}</span>
             <span>{note.items.length} questions</span>
-            {!note.isPublic && <span className="flex items-center gap-1.5 text-amber-300"><FiLock size={14} /> Only you can see this</span>}
+            {!note.isPublic && <span className="flex items-center gap-1.5 text-amber-700"><FiLock size={14} /> Only you can see this</span>}
           </div>
           {note.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {note.tags.map((tag) => (
-                <span key={tag} className="px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-cyan-200">{tag}</span>
+                <span key={tag} className="px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">{tag}</span>
               ))}
             </div>
           )}
@@ -149,7 +149,7 @@ const NoteView = () => {
           )}
         </div>
 
-        <p className="text-xs text-slate-400">Try answering each question yourself first, then open it to check.</p>
+        <p className="text-xs text-zinc-500">Try answering each question yourself first, then open it to check.</p>
 
         <div className="space-y-3">
           {note.items.map((item, i) => (

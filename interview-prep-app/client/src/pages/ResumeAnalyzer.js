@@ -40,7 +40,7 @@ const ListSection = ({ title, icon: Icon, items }) => {
   return (
     <div>
       <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-        <Icon size={16} className="text-cyan-600" />
+        <Icon size={16} className="text-orange-600" />
         {title}
       </h4>
       <ul className="space-y-1.5">
@@ -146,21 +146,21 @@ const ResumeAnalyzer = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">
+          <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-2 font-display">
             Resume Analyzer
           </h1>
-          <p className="text-slate-300">
+          <p className="text-zinc-600">
             Upload your resume and let AI find your strengths, gaps, and interview focus areas
           </p>
         </motion.div>
 
-        <div className="flex gap-1 p-1 mb-6 bg-white/10 border border-white/15 rounded-xl overflow-x-auto">
+        <div className="flex gap-1 p-1 mb-6 bg-stone-200/70 rounded-xl overflow-x-auto">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-smooth ${
-                activeTab === id ? 'bg-white text-slate-900 shadow' : 'text-slate-200 hover:bg-white/10'
+                activeTab === id ? 'bg-white text-slate-900 shadow' : 'text-zinc-600 hover:bg-white/70'
               }`}
             >
               <Icon size={16} />
@@ -184,7 +184,7 @@ const ResumeAnalyzer = () => {
         >
           {showScore && <p className={CARD_TITLE}>Upload a new version</p>}
           <div className={`flex-1 flex flex-col items-stretch gap-4 ${showScore ? '' : 'sm:flex-row sm:items-center'}`}>
-            <label className={`min-w-0 flex items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl px-4 cursor-pointer hover:border-cyan-400 transition-smooth ${showScore ? 'min-h-[4.5rem]' : 'flex-1 py-4'}`}>
+            <label className={`min-w-0 flex items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl px-4 cursor-pointer hover:border-orange-400 transition-smooth ${showScore ? 'min-h-[4.5rem]' : 'flex-1 py-4'}`}>
               <FiFile className="text-gray-400 flex-shrink-0" size={22} />
               <span className="text-sm text-gray-600 truncate">
                 {selectedFile ? selectedFile.name : 'Choose a PDF resume to upload'}
@@ -236,8 +236,8 @@ const ResumeAnalyzer = () => {
                 </div>
 
                 {analysis.suggestedRole && (
-                  <div className="flex items-center gap-3 bg-cyan-50 px-4 py-2.5 rounded-xl">
-                    <FiTarget className="text-cyan-600 flex-shrink-0" size={20} />
+                  <div className="flex items-center gap-3 bg-orange-50 px-4 py-2.5 rounded-xl">
+                    <FiTarget className="text-orange-600 flex-shrink-0" size={20} />
                     <div>
                       <p className="text-xs text-gray-500">Suggested Role</p>
                       <p className="text-sm font-semibold text-gray-800">{analysis.suggestedRole}</p>
@@ -260,7 +260,7 @@ const ResumeAnalyzer = () => {
         {/* Analyzing state */}
         {analyzing && (
           <div className="card p-8 md:p-10 text-center">
-            <FiLoader className="animate-spin text-cyan-600 mx-auto mb-4" size={48} />
+            <FiLoader className="animate-spin text-orange-600 mx-auto mb-4" size={48} />
             <h3 className="text-xl font-bold text-gray-800 mb-2 font-display">
               AI is analyzing your resume...
             </h3>
@@ -271,8 +271,8 @@ const ResumeAnalyzer = () => {
         {/* Empty state */}
         {!analyzing && !analysis && (
           <div className="card p-8 md:p-10 text-center">
-            <div className="w-24 h-24 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FiFile size={40} className="text-cyan-600" />
+            <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FiFile size={40} className="text-orange-600" />
             </div>
             <h3 className="text-2xl font-bold text-gray-800 mb-3 font-display">
               No Resume Analyzed Yet
@@ -330,7 +330,7 @@ const ResumeAnalyzer = () => {
             {analysis.improvements?.length > 0 && (
               <div className="card p-5 md:p-6">
                 <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                  <FiTrendingUp size={16} className="text-cyan-600" />
+                  <FiTrendingUp size={16} className="text-orange-600" />
                   Improvement Suggestions
                 </h4>
                 <ul className="space-y-1.5">

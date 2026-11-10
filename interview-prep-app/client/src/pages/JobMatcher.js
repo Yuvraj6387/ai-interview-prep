@@ -101,8 +101,8 @@ const JobMatcher = () => {
       <JobMatcherArt className={PAGE_ART_CLASS} />
       <div className="relative max-w-4xl mx-auto space-y-6">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">Job Matcher</h1>
-          <p className="text-slate-300">
+          <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-2 font-display">Job Matcher</h1>
+          <p className="text-zinc-600">
             Paste a job description to see how well your resume fits it, then practise an interview for that exact job
           </p>
         </motion.div>
@@ -110,7 +110,7 @@ const JobMatcher = () => {
         {hasResume === false && (
           <Link
             to="/resume"
-            className="flex items-center gap-2 text-sm text-slate-200 bg-white/10 border border-white/20 hover:bg-white/15 rounded-lg px-4 py-2.5 transition-smooth"
+            className="flex items-center gap-2 text-sm text-zinc-700 bg-white border border-stone-200 hover:bg-orange-50 rounded-lg px-4 py-2.5 transition-smooth"
           >
             <FiFileText size={16} className="flex-shrink-0" />
             <span>Upload your resume in Resume Analyzer first — the matcher compares the job against it</span>
@@ -129,7 +129,7 @@ const JobMatcher = () => {
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value.slice(0, MAX_LENGTH))}
             rows="8"
-            className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-y"
+            className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth resize-y"
             placeholder="Paste the job description here — responsibilities, required skills, experience..."
             disabled={matching}
           />
@@ -201,18 +201,18 @@ const JobMatcher = () => {
             {match.learningPlan?.length > 0 && (
               <div className="card p-5 md:p-6">
                 <h3 className="flex items-center gap-2 text-lg font-bold text-gray-800 font-display mb-1">
-                  <FiBookOpen className="text-cyan-600" />
+                  <FiBookOpen className="text-orange-600" />
                   How to close your biggest gaps
                 </h3>
                 <p className="text-sm text-gray-500 mb-5">What to study, and a small project that proves the skill</p>
                 <div className="grid md:grid-cols-3 gap-4">
                   {match.learningPlan.map((plan) => (
-                    <div key={plan.skill} className="bg-cyan-50/60 border border-cyan-100 rounded-xl p-4 flex flex-col gap-3">
+                    <div key={plan.skill} className="bg-orange-50/60 border border-orange-100 rounded-xl p-4 flex flex-col gap-3">
                       <p className="font-semibold text-gray-800">{plan.skill}</p>
                       {plan.topics.length > 0 && (
                         <div className="flex flex-wrap gap-1.5">
                           {plan.topics.map((topic) => (
-                            <span key={topic} className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white text-cyan-700 border border-cyan-100">
+                            <span key={topic} className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white text-orange-700 border border-orange-100">
                               {topic}
                             </span>
                           ))}
@@ -220,13 +220,13 @@ const JobMatcher = () => {
                       )}
                       {plan.project && (
                         <p className="flex gap-2 text-sm text-gray-600">
-                          <FiCode size={14} className="text-cyan-600 mt-0.5 flex-shrink-0" />
+                          <FiCode size={14} className="text-orange-600 mt-0.5 flex-shrink-0" />
                           <span><span className="font-semibold text-gray-700">Build: </span>{plan.project}</span>
                         </p>
                       )}
                       {plan.resource && (
                         <p className="flex gap-2 text-sm text-gray-600">
-                          <FiExternalLink size={14} className="text-cyan-600 mt-0.5 flex-shrink-0" />
+                          <FiExternalLink size={14} className="text-orange-600 mt-0.5 flex-shrink-0" />
                           <span><span className="font-semibold text-gray-700">Learn: </span>{plan.resource}</span>
                         </p>
                       )}
@@ -240,13 +240,13 @@ const JobMatcher = () => {
               {match.suggestions.length > 0 && (
                 <div className="card p-5">
                   <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                    <FiTrendingUp size={16} className="text-cyan-600" />
+                    <FiTrendingUp size={16} className="text-orange-600" />
                     How to close the gap
                   </h3>
                   <ul className="space-y-2">
                     {match.suggestions.map((tip) => (
                       <li key={tip} className="flex gap-2 text-sm text-gray-600">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 mt-2 flex-shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
                         {tip}
                       </li>
                     ))}
@@ -256,12 +256,12 @@ const JobMatcher = () => {
               {match.interviewTopics.length > 0 && (
                 <div className="card p-5">
                   <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                    <FiTag size={16} className="text-cyan-600" />
+                    <FiTag size={16} className="text-orange-600" />
                     Likely interview topics
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {match.interviewTopics.map((topic) => (
-                      <span key={topic} className="px-3 py-1.5 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700">
+                      <span key={topic} className="px-3 py-1.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700">
                         {topic}
                       </span>
                     ))}

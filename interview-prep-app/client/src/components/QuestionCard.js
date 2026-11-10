@@ -119,8 +119,8 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
             onClick={onToggleExplanation}
             className={`${PILL} ${
               isExpanded
-                ? 'bg-cyan-600 text-white hover:bg-cyan-500'
-                : 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100'
+                ? 'bg-orange-600 text-white hover:bg-orange-500'
+                : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
             }`}
             title={isExpanded ? 'Hide answer' : 'See model answer'}
           >
@@ -147,7 +147,7 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
             <div className="mx-4 mb-4 pt-3 border-t border-gray-100">
               {loading && (
                 <div className="flex flex-col items-center py-6">
-                  <FiLoader className="animate-spin mb-2 text-cyan-600" size={26} />
+                  <FiLoader className="animate-spin mb-2 text-orange-600" size={26} />
                   <p className="text-sm text-gray-500">Generating explanation...</p>
                 </div>
               )}

@@ -63,7 +63,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
   if (!hasResume) {
     return (
       <div className="card p-8 md:p-10 text-center">
-        <FiShield size={40} className="text-cyan-600 mx-auto mb-4" />
+        <FiShield size={40} className="text-orange-600 mx-auto mb-4" />
         <h3 className="text-xl font-bold text-gray-800 mb-2 font-display">Upload your resume first</h3>
         <p className="text-gray-600">The ATS scan checks the resume you upload in the Analysis tab.</p>
       </div>
@@ -80,7 +80,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
             onChange={(e) => setTargetRole(e.target.value.slice(0, 80))}
             placeholder="e.g. Frontend Developer"
             disabled={scanning}
-            className="flex-1 px-4 py-3 text-sm border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
+            className="flex-1 px-4 py-3 text-sm border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth"
           />
           <button
             type="submit"
@@ -112,7 +112,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
 
           <div className="card p-5">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-4">
-              <FiLayout size={16} className="text-cyan-600" />
+              <FiLayout size={16} className="text-orange-600" />
               Formatting checks
               <span className="text-gray-400 font-normal">({result.checks.filter((c) => c.passed).length}/{result.checks.length} passed)</span>
             </h3>
@@ -139,7 +139,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
           {result.sections.length > 0 && (
             <div className="card p-5">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-4">
-                <FiList size={16} className="text-cyan-600" />
+                <FiList size={16} className="text-orange-600" />
                 Section-wise feedback
               </h3>
               <div className="divide-y divide-gray-100">
@@ -162,7 +162,7 @@ const AtsScanTab = ({ hasResume, suggestedRole }) => {
           {result.topFixes.length > 0 && (
             <div className="card p-5">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                <FiTrendingUp size={16} className="text-cyan-600" />
+                <FiTrendingUp size={16} className="text-orange-600" />
                 Fix these first
               </h3>
               <ul className="space-y-2">

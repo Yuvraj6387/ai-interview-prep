@@ -79,7 +79,7 @@ const AddJobModal = ({ onClose, onSubmit, loading, initialData, title = 'Add New
                   name="targetRole"
                   value={formData.targetRole}
                   onChange={handleChange}
-                  className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
+                  className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth"
                   placeholder="e.g., Frontend Developer"
                   required
                 />
@@ -100,7 +100,7 @@ const AddJobModal = ({ onClose, onSubmit, loading, initialData, title = 'Add New
                   onChange={handleChange}
                   min="0"
                   max="50"
-                  className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth"
+                  className="w-full pl-9 pr-2 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth"
                   placeholder="3"
                   required
                 />
@@ -120,7 +120,7 @@ const AddJobModal = ({ onClose, onSubmit, loading, initialData, title = 'Add New
                 value={formData.topics}
                 onChange={handleChange}
                 rows="2"
-                className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-none"
+                className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth resize-none"
                 placeholder="e.g., React, JavaScript, TypeScript"
                 required
               />
@@ -137,7 +137,7 @@ const AddJobModal = ({ onClose, onSubmit, loading, initialData, title = 'Add New
                 type="button"
                 onClick={handleGenerateDescription}
                 disabled={generatingDescription}
-                className="flex items-center gap-1 text-xs font-medium text-cyan-600 hover:text-cyan-800 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1 text-xs font-medium text-orange-600 hover:text-orange-800 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {generatingDescription ? (
                   <FiLoader className="animate-spin" size={11} />
@@ -154,7 +154,7 @@ const AddJobModal = ({ onClose, onSubmit, loading, initialData, title = 'Add New
                 value={formData.description}
                 onChange={handleChange}
                 rows="2"
-                className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth resize-none"
+                className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth resize-none"
                 placeholder="Add additional context about the role..."
               />
             </div>

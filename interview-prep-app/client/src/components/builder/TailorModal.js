@@ -27,7 +27,7 @@ const TailorModal = ({ open, resumeTitle, loading, onSubmit, onClose }) => {
         className="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-5 md:p-6 animate-scale-in"
       >
         <div className="flex items-start gap-3 mb-4">
-          <span className="w-7 h-7 rounded-lg bg-cyan-50 text-cyan-700 flex items-center justify-center flex-shrink-0"><FiTarget size={14} /></span>
+          <span className="w-7 h-7 rounded-lg bg-orange-50 text-orange-700 flex items-center justify-center flex-shrink-0"><FiTarget size={14} /></span>
           <div className="flex-1">
             <h2 className="font-bold text-gray-800 font-display">Tailor to a job</h2>
             <p className="text-xs text-gray-500">Makes a new copy of “{resumeTitle}” aimed at this job. Your original stays as it is.</p>
@@ -42,7 +42,7 @@ const TailorModal = ({ open, resumeTitle, loading, onSubmit, onClose }) => {
           onChange={(e) => setJobDescription(e.target.value.slice(0, MAX_LENGTH))}
           disabled={loading}
           placeholder="Paste the company's job description: role, responsibilities, required skills..."
-          className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 resize-y"
+          className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-y"
         />
         <p className="text-[11px] text-gray-400 mt-1.5">
           It rewords your summary and bullets with the job's keywords and puts the most relevant skills and projects first.

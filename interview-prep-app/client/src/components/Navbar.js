@@ -18,7 +18,7 @@ const Navbar = ({ onMenuClick, showOnDesktop = false }) => {
             onClick={onMenuClick}
             title="Open menu"
             aria-label="Open menu"
-            className="text-gray-700 hover:text-cyan-600 transition-smooth p-1.5"
+            className="text-gray-700 hover:text-orange-600 transition-smooth p-1.5"
           >
             <FiMenu size={22} />
           </button>
@@ -40,10 +40,11 @@ const Navbar = ({ onMenuClick, showOnDesktop = false }) => {
 
             <button
               onClick={() => setShowLoginModal(true)}
-              className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 px-3 sm:px-6 py-2.5 text-sm sm:text-base bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-smooth btn-pulse"
+              className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 px-3 sm:px-6 py-2.5 text-sm sm:text-base bg-orange-600 hover:bg-orange-500 text-white font-semibold rounded-lg shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-smooth btn-pulse"
             >
               <FiLogIn size={18} />
-              <span>Login / Sign Up</span>
+              <span className="hidden sm:inline">Login / Sign Up</span>
+              <span className="sm:hidden">Login</span>
             </button>
           </div>
         </div>

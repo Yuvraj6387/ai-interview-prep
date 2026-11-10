@@ -33,7 +33,7 @@ const SkillGapCard = ({ skills }) => {
   return (
     <div className="card p-5 md:p-6">
       <h3 className="flex items-center gap-2 text-lg font-bold text-gray-800 font-display">
-        <FiCrosshair className="text-cyan-600" />
+        <FiCrosshair className="text-orange-600" />
         Skill Gap Analysis
       </h3>
       <p className="text-sm text-gray-500 mb-5">Your current level, read from your resume, against what this job needs</p>
@@ -52,7 +52,7 @@ const SkillGapCard = ({ skills }) => {
               <PolarAngleAxis dataKey="skill" tick={{ fontSize: 11, fill: '#475569' }} />
               <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
               <Radar name="Job needs" dataKey="target" stroke="#64748b" strokeDasharray="4 3" fill="#64748b" fillOpacity={0.08} />
-              <Radar name="Your level" dataKey="current" stroke="#0891b2" fill="#06b6d4" fillOpacity={0.3} />
+              <Radar name="Your level" dataKey="current" stroke="#ea580c" fill="#f97316" fillOpacity={0.3} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Tooltip />
             </RadarChart>
@@ -69,7 +69,7 @@ const SkillGapCard = ({ skills }) => {
                   <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${status.className}`}>{status.label}</span>
                 </div>
                 <div className="relative h-2 bg-gray-100 rounded-full">
-                  <div className="absolute inset-y-0 left-0 bg-cyan-500 rounded-full" style={{ width: `${s.current}%` }} />
+                  <div className="absolute inset-y-0 left-0 bg-orange-500 rounded-full" style={{ width: `${s.current}%` }} />
                   {/* Marker for the level the job needs */}
                   <div className="absolute -top-1 -bottom-1 w-0.5 bg-slate-700" style={{ left: `${s.target}%` }} />
                 </div>

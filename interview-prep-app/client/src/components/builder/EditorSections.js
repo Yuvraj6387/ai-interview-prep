@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiChevronDown, FiPlus, FiTrash2, FiArrowUp, FiArrowDown, FiZap, FiLoader } from 'react-icons/fi';
 
-const INPUT = 'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-smooth';
+const INPUT = 'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-smooth';
 
 // Lists edited as "one item per line" in a textarea.
 const toLines = (items) => (items || []).join('\n');
@@ -67,7 +67,7 @@ export const SummaryField = ({ content, update, onGenerate, generating }) => (
       type="button"
       onClick={onGenerate}
       disabled={generating}
-      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-cyan-50 text-cyan-700 hover:bg-cyan-100 transition-smooth disabled:opacity-50"
+      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-orange-50 text-orange-700 hover:bg-orange-100 transition-smooth disabled:opacity-50"
     >
       {generating ? <FiLoader className="animate-spin" /> : <FiZap />}
       {generating ? 'Writing...' : 'Write it with AI'}
@@ -93,8 +93,8 @@ export const EntryList = ({ items = [], onChange, fields, withBullets, addLabel,
       {items.map((item, index) => (
         <div key={index} className="rounded-lg border border-gray-200 bg-gray-50/60 p-3 space-y-2.5">
           <div className="flex items-center justify-end gap-1 -mb-1">
-            <button type="button" title="Move up" onClick={() => move(index, -1)} className="p-1.5 text-gray-400 hover:text-cyan-700 rounded"><FiArrowUp size={14} /></button>
-            <button type="button" title="Move down" onClick={() => move(index, 1)} className="p-1.5 text-gray-400 hover:text-cyan-700 rounded"><FiArrowDown size={14} /></button>
+            <button type="button" title="Move up" onClick={() => move(index, -1)} className="p-1.5 text-gray-400 hover:text-orange-700 rounded"><FiArrowUp size={14} /></button>
+            <button type="button" title="Move down" onClick={() => move(index, 1)} className="p-1.5 text-gray-400 hover:text-orange-700 rounded"><FiArrowDown size={14} /></button>
             <button type="button" title="Remove" onClick={() => remove(index)} className="p-1.5 text-gray-400 hover:text-red-600 rounded"><FiTrash2 size={14} /></button>
           </div>
           <div className="grid sm:grid-cols-2 gap-2.5">
@@ -125,13 +125,13 @@ export const EntryList = ({ items = [], onChange, fields, withBullets, addLabel,
       <button
         type="button"
         onClick={() => onChange([...items, emptyEntry])}
-        className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-semibold text-cyan-700 border border-dashed border-cyan-300 rounded-lg hover:bg-cyan-50 transition-smooth"
+        className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-semibold text-orange-700 border border-dashed border-orange-300 rounded-lg hover:bg-orange-50 transition-smooth"
       >
         <FiPlus /> {addLabel}
       </button>
       {withBullets && (
         <p className="text-[11px] text-gray-400">
-          Weak bullet? Polish it in the <Link to="/resume" className="text-cyan-700 underline">Bullet Rewriter</Link> tab of Resume Analyzer.
+          Weak bullet? Polish it in the <Link to="/resume" className="text-orange-700 underline">Bullet Rewriter</Link> tab of Resume Analyzer.
         </p>
       )}
     </div>

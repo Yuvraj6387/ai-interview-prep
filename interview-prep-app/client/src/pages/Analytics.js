@@ -25,7 +25,7 @@ const StatTile = ({ icon: Icon, label, value, suffix, accent }) => (
 );
 
 const TILE_ACCENTS = {
-  cyan: { tile: 'bg-cyan-50 text-cyan-600', border: 'border-cyan-500' },
+  cyan: { tile: 'bg-orange-50 text-orange-600', border: 'border-orange-500' },
   teal: { tile: 'bg-teal-50 text-teal-600', border: 'border-teal-500' },
   amber: { tile: 'bg-amber-50 text-amber-600', border: 'border-amber-400' },
 };
@@ -111,18 +111,18 @@ const Analytics = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">
+          <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-2 font-display">
             Analytics
           </h1>
-          <p className="text-slate-300">
+          <p className="text-zinc-600">
             Your interview performance over time
           </p>
         </motion.div>
 
         {interviews.length === 0 ? (
           <div className="card p-8 md:p-10 text-center">
-            <div className="w-24 h-24 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FiTrendingUp size={40} className="text-cyan-600" />
+            <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FiTrendingUp size={40} className="text-orange-600" />
             </div>
             <h3 className="text-2xl font-bold text-gray-800 mb-3 font-display">No Data Yet</h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
@@ -155,7 +155,7 @@ const Analytics = () => {
                     <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
                     <YAxis domain={[0, 100]} stroke="#9ca3af" fontSize={12} />
                     <Tooltip />
-                    <Line type="monotone" dataKey="score" stroke="#0891b2" strokeWidth={2.5} dot={{ fill: '#0891b2', r: 4 }} />
+                    <Line type="monotone" dataKey="score" stroke="#ea580c" strokeWidth={2.5} dot={{ fill: '#ea580c', r: 4 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -165,7 +165,7 @@ const Analytics = () => {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="card p-5 md:p-6">
                 <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                  <FiTag size={16} className="text-cyan-600" />
+                  <FiTag size={16} className="text-orange-600" />
                   Weak Topics To Focus On
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -180,14 +180,14 @@ const Analytics = () => {
 
               <div className="card p-5 md:p-6">
                 <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                  <FiAward size={16} className="text-cyan-600" />
+                  <FiAward size={16} className="text-orange-600" />
                   Strongest Areas
                 </h4>
                 <div className="space-y-2">
                   {stats.strongAreas.map(({ role, avg }) => (
                     <div key={role} className="flex justify-between items-center text-sm">
                       <span className="text-gray-700">{role}</span>
-                      <span className="font-semibold text-cyan-700">{avg}%</span>
+                      <span className="font-semibold text-orange-700">{avg}%</span>
                     </div>
                   ))}
                 </div>
@@ -212,7 +212,7 @@ const Analytics = () => {
                           {i.config.interviewType} · {i.config.difficulty} · {new Date(i.completedAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <span className="text-lg font-bold text-cyan-700">{i.result?.overallScore ?? '-'}</span>
+                      <span className="text-lg font-bold text-orange-700">{i.result?.overallScore ?? '-'}</span>
                     </button>
                   ))}
               </div>

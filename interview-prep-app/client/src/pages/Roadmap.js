@@ -32,9 +32,9 @@ const GOAL_EXAMPLES = [
 ];
 
 const PHASE_STYLE = {
-  Easy: { label: 'Easy Phase', blurb: 'Fundamentals', dot: 'bg-emerald-500', bar: 'bg-emerald-500', chip: 'bg-emerald-50 text-emerald-700', border: 'border-emerald-400', heading: 'text-emerald-300' },
-  Medium: { label: 'Medium Phase', blurb: 'Apply & practice', dot: 'bg-amber-500', bar: 'bg-amber-500', chip: 'bg-amber-50 text-amber-700', border: 'border-amber-400', heading: 'text-amber-300' },
-  Strong: { label: 'Strong Phase', blurb: 'Advanced & mock', dot: 'bg-rose-500', bar: 'bg-rose-500', chip: 'bg-rose-50 text-rose-700', border: 'border-rose-400', heading: 'text-rose-300' },
+  Easy: { label: 'Easy Phase', blurb: 'Fundamentals', dot: 'bg-emerald-500', bar: 'bg-emerald-500', chip: 'bg-emerald-50 text-emerald-700', border: 'border-emerald-400', heading: 'text-emerald-700' },
+  Medium: { label: 'Medium Phase', blurb: 'Apply & practice', dot: 'bg-amber-500', bar: 'bg-amber-500', chip: 'bg-amber-50 text-amber-700', border: 'border-amber-400', heading: 'text-amber-700' },
+  Strong: { label: 'Strong Phase', blurb: 'Advanced & mock', dot: 'bg-rose-500', bar: 'bg-rose-500', chip: 'bg-rose-50 text-rose-700', border: 'border-rose-400', heading: 'text-rose-700' },
 };
 // Practice in a mock interview at the difficulty of the day's phase.
 const PHASE_DIFFICULTY = { Easy: 'Easy', Medium: 'Medium', Strong: 'Hard' };
@@ -48,7 +48,7 @@ const OptionButton = ({ active, onClick, title, hint }) => (
     type="button"
     onClick={onClick}
     className={`py-3 px-2 rounded-lg border-2 text-sm font-semibold transition-smooth ${
-      active ? 'border-cyan-600 bg-cyan-50 text-cyan-700' : 'border-gray-200 text-gray-600 hover:border-cyan-200'
+      active ? 'border-orange-600 bg-orange-50 text-orange-700' : 'border-gray-200 text-gray-600 hover:border-orange-200'
     }`}
   >
     {title}
@@ -80,7 +80,7 @@ const PlanForm = ({ onCreate, creating }) => {
             onChange={(e) => setGoal(e.target.value)}
             maxLength={150}
             placeholder="e.g. React frontend developer interview"
-            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 outline-none text-sm text-gray-800"
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none text-sm text-gray-800"
           />
           <div className="flex flex-wrap gap-2 mt-3">
             {GOAL_EXAMPLES.map((example) => (
@@ -88,7 +88,7 @@ const PlanForm = ({ onCreate, creating }) => {
                 key={example}
                 type="button"
                 onClick={() => setGoal(example)}
-                className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-cyan-50 hover:text-cyan-700 transition-smooth"
+                className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-orange-50 hover:text-orange-700 transition-smooth"
               >
                 {example}
               </button>
@@ -115,7 +115,7 @@ const PlanForm = ({ onCreate, creating }) => {
               id="duration"
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
-              className="w-full pl-9 pr-9 py-3 text-sm text-gray-800 border border-gray-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 outline-none appearance-none bg-white"
+              className="w-full pl-9 pr-9 py-3 text-sm text-gray-800 border border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none appearance-none bg-white"
             >
               {DURATIONS.map(({ value, hint }) => (
                 <option key={value} value={value}>{value} days · {hint}</option>
@@ -154,7 +154,7 @@ const ProgressOverview = ({ roadmap, progress }) => {
       <div className="flex flex-col md:flex-row md:items-center gap-6">
         <div className="md:w-56 flex-shrink-0">
           <p className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-            <FiCalendar size={16} className="text-cyan-600" /> Overall
+            <FiCalendar size={16} className="text-orange-600" /> Overall
           </p>
           <p className="text-3xl font-bold text-gray-800 font-display">{percent}%</p>
           <p className="text-xs text-gray-500 mt-1">
@@ -196,7 +196,7 @@ const CheckItem = ({ item, onToggle }) => (
       onClick={onToggle}
       aria-label={item.done ? 'Mark as not done' : 'Mark as done'}
       className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-smooth ${
-        item.done ? 'bg-cyan-600 border-cyan-600 text-white' : 'border-gray-300 hover:border-cyan-500'
+        item.done ? 'bg-orange-600 border-orange-600 text-white' : 'border-gray-300 hover:border-orange-500'
       }`}
     >
       {item.done && <FiCheck size={13} strokeWidth={3} />}
@@ -215,14 +215,14 @@ const DayCard = ({ day, isToday, open, onToggleOpen, onToggleItem, onPractice })
     <div className={`bg-white rounded-xl shadow-md border-l-4 ${complete || isToday ? style.border : 'border-transparent'}`}>
       <button type="button" onClick={onToggleOpen} className="w-full flex items-center gap-4 px-5 py-4 text-left">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-          complete ? style.chip : isToday ? 'bg-cyan-600 text-white' : 'bg-gray-100 text-gray-500'
+          complete ? style.chip : isToday ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-500'
         }`}>
           {complete ? <FiCheck size={18} /> : day.day}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-gray-800 truncate">
             {day.topic}
-            {isToday && <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded-full">Today</span>}
+            {isToday && <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full">Today</span>}
           </p>
           {day.goal && <p className="text-xs text-gray-500 truncate">{day.goal}</p>}
         </div>
@@ -261,7 +261,7 @@ const DayCard = ({ day, isToday, open, onToggleOpen, onToggleItem, onPractice })
             <button
               type="button"
               onClick={() => onPractice(day)}
-              className="mt-3 flex items-center gap-2 text-xs font-semibold text-cyan-700 hover:text-cyan-600"
+              className="mt-3 flex items-center gap-2 text-xs font-semibold text-orange-700 hover:text-orange-600"
             >
               <FiPlay size={12} /> Practice {day.topic} in a mock interview
             </button>
@@ -382,21 +382,21 @@ const Roadmap = () => {
           className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4"
         >
           <div className="min-w-0">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">Learning Roadmap</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-2 font-display">Learning Roadmap</h1>
             {roadmap ? (
-              <p className="flex items-center gap-2 text-slate-300">
-                <FiTarget className="flex-shrink-0 text-cyan-400" />
+              <p className="flex items-center gap-2 text-zinc-600">
+                <FiTarget className="flex-shrink-0 text-orange-400" />
                 <span className="truncate">{roadmap.goal}</span>
-                <span className="text-slate-400 flex-shrink-0">· {roadmap.level} · {roadmap.duration} days</span>
+                <span className="text-zinc-500 flex-shrink-0">· {roadmap.level} · {roadmap.duration} days</span>
               </p>
             ) : (
-              <p className="text-slate-300">Tell us your goal and get a plan that goes from easy to interview-ready</p>
+              <p className="text-zinc-600">Tell us your goal and get a plan that goes from easy to interview-ready</p>
             )}
           </div>
           {roadmap && (
             <button
               onClick={() => setConfirmReset(true)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-200 border border-white/25 rounded-lg hover:bg-white/10 transition-smooth self-start sm:self-auto flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-zinc-700 border border-stone-200 rounded-lg hover:bg-orange-50 transition-smooth self-start sm:self-auto flex-shrink-0"
             >
               <FiRefreshCw size={14} /> New Plan
             </button>
@@ -418,7 +418,7 @@ const Roadmap = () => {
                   <h3 className={`flex items-center gap-2 text-sm font-semibold pt-2 ${style.heading}`}>
                     <span className={`w-2.5 h-2.5 rounded-full ${style.dot}`} />
                     {style.label}
-                    <span className="font-normal text-slate-400">· {style.blurb}</span>
+                    <span className="font-normal text-zinc-500">· {style.blurb}</span>
                   </h3>
                   {days.map((day) => (
                     <DayCard

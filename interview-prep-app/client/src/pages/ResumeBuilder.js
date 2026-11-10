@@ -16,14 +16,14 @@ import TailorModal from '../components/builder/TailorModal';
 import { SectionCard, ProfileFields, SummaryField, EntryList, LinesField } from '../components/builder/EditorSections';
 
 const BTN = 'flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed';
-const PRIMARY = `${BTN} bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white shadow-md shadow-cyan-600/25`;
-const SECONDARY = `${BTN} border border-gray-200 text-gray-700 hover:border-cyan-400 hover:text-cyan-700`;
+const PRIMARY = `${BTN} bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white shadow-md shadow-orange-600/25`;
+const SECONDARY = `${BTN} border border-gray-200 text-gray-700 hover:border-orange-400 hover:text-orange-700`;
 
 // Saves this long after the last keystroke, so typing doesn't fire a request per letter.
 const AUTOSAVE_DELAY_MS = 1200;
 
 const SECTIONS = [
-  { id: 'profile', title: 'Profile & Contact', icon: FiUser, tint: 'bg-cyan-50 text-cyan-700' },
+  { id: 'profile', title: 'Profile & Contact', icon: FiUser, tint: 'bg-orange-50 text-orange-700' },
   { id: 'summary', title: 'Professional Summary', icon: FiAlignLeft, tint: 'bg-slate-100 text-slate-700' },
   { id: 'experience', title: 'Work Experience', icon: FiBriefcase, tint: 'bg-purple-50 text-purple-700' },
   { id: 'projects', title: 'Projects', icon: FiFolder, tint: 'bg-green-50 text-green-700' },
@@ -84,7 +84,7 @@ const useTailor = () => {
 const TailoredNotes = ({ notes, onDismiss }) => (
   <div className="card p-4 md:p-5">
     <div className="flex items-start gap-3">
-      <span className="w-7 h-7 rounded-lg bg-cyan-50 text-cyan-700 flex items-center justify-center flex-shrink-0"><FiTarget size={14} /></span>
+      <span className="w-7 h-7 rounded-lg bg-orange-50 text-orange-700 flex items-center justify-center flex-shrink-0"><FiTarget size={14} /></span>
       <div className="flex-1 min-w-0">
         <p className="font-bold text-gray-800 font-display">
           Tailored for {[notes.jobTitle, notes.company].filter(Boolean).join(' at ') || 'this job'}
@@ -100,7 +100,7 @@ const TailoredNotes = ({ notes, onDismiss }) => (
           <ul className="space-y-1">
             {notes.changes.map((c) => (
               <li key={c} className="flex gap-2 text-sm text-gray-600">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 mt-2 flex-shrink-0" />{c}
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />{c}
               </li>
             ))}
           </ul>
@@ -165,14 +165,14 @@ const VersionList = () => {
   return (
     <div className="relative max-w-5xl mx-auto space-y-6">
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">Resume Builder</h1>
-        <p className="text-slate-300">Build an ATS-friendly resume, keep a version for each kind of job, and download it as a PDF</p>
+        <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-2 font-display">Resume Builder</h1>
+        <p className="text-zinc-600">Build an ATS-friendly resume, keep a version for each kind of job, and download it as a PDF</p>
       </motion.div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="card bg-gradient-to-br from-cyan-50 to-white p-5 flex flex-col">
+        <div className="card bg-gradient-to-br from-orange-50 to-white p-5 flex flex-col">
           <div className="flex items-center gap-3 mb-2">
-            <span className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-cyan-600"><FiZap size={14} /></span>
+            <span className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-orange-600"><FiZap size={14} /></span>
             <div>
               <p className="font-bold text-gray-800 font-display">Magic Import</p>
               <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">AI fast fill</p>
@@ -181,7 +181,7 @@ const VersionList = () => {
           <p className="text-sm text-gray-600 mb-4 flex-1">
             {hasUpload
               ? 'Fill every section from the resume you uploaded in Resume Analyzer, then edit it here.'
-              : <>Upload your PDF in <Link to="/resume" className="text-cyan-700 underline">Resume Analyzer</Link> first, and the AI will fill these sections from it.</>}
+              : <>Upload your PDF in <Link to="/resume" className="text-orange-700 underline">Resume Analyzer</Link> first, and the AI will fill these sections from it.</>}
           </p>
           <button onClick={() => run('import', builderAPI.importFromUpload, 'Resume imported')} disabled={!hasUpload || !!busy} className={`${PRIMARY} self-start`}>
             {busy === 'import' ? <FiLoader className="animate-spin" /> : <FiZap />}
@@ -203,11 +203,11 @@ const VersionList = () => {
       </div>
 
       <div>
-        <h2 className="text-lg font-bold text-white font-display mb-3">Your versions</h2>
+        <h2 className="text-lg font-bold text-zinc-900 font-display mb-3">Your versions</h2>
         {versions === null ? (
           <div className="flex justify-center py-10"><div className="spinner" /></div>
         ) : versions.length === 0 ? (
-          <div className="bg-white/10 border border-white/15 rounded-2xl p-8 text-center text-slate-300 text-sm">
+          <div className="bg-white border border-stone-200 rounded-2xl p-8 text-center text-zinc-600 text-sm">
             No resumes yet. Import yours or start from blank above.
           </div>
         ) : (
@@ -408,21 +408,21 @@ const Editor = ({ id }) => {
           Wider screens: everything on one line. */}
       <div className="card p-3 md:p-4 flex flex-col lg:flex-row lg:items-center gap-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <button onClick={() => navigate('/resume-builder')} title="All versions" className="p-2 -ml-1 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-cyan-700 transition-smooth flex-shrink-0">
+          <button onClick={() => navigate('/resume-builder')} title="All versions" className="p-2 -ml-1 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-orange-700 transition-smooth flex-shrink-0">
             <FiArrowLeft size={16} />
           </button>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value.slice(0, 60))}
             aria-label="Version name"
-            className="flex-1 min-w-0 px-3 py-2 text-sm font-semibold border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+            className="flex-1 min-w-0 px-3 py-2 text-sm font-semibold border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
           />
           <SaveStatus status={status} />
         </div>
         <div className="grid grid-cols-3 lg:flex gap-2">
           <button
             onClick={() => setShowDesign((v) => !v)}
-            className={`${SECONDARY} px-2 sm:px-4 ${showDesign ? '!border-cyan-500 !text-cyan-700 bg-cyan-50' : ''}`}
+            className={`${SECONDARY} px-2 sm:px-4 ${showDesign ? '!border-orange-500 !text-orange-700 bg-orange-50' : ''}`}
           >
             <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: accentColor }} />
             <span className="whitespace-nowrap">Design<span className="hidden lg:inline">: {TEMPLATES[template]?.label}</span></span>
@@ -447,10 +447,10 @@ const Editor = ({ id }) => {
       {tailoredFor && <TailoredNotes notes={tailoredFor} onDismiss={() => setTailoredFor(null)} />}
 
       {/* Phones: one panel at a time */}
-      <div className="lg:hidden flex gap-1 p-1 bg-white/10 border border-white/15 rounded-xl">
+      <div className="lg:hidden flex gap-1 p-1 bg-stone-200/70 rounded-xl">
         {['edit', 'preview'].map((v) => (
           <button key={v} onClick={() => setMobileView(v)}
-            className={`flex-1 py-2 rounded-lg text-sm font-semibold capitalize transition-smooth ${mobileView === v ? 'bg-white text-slate-900' : 'text-slate-200'}`}>
+            className={`flex-1 py-2 rounded-lg text-sm font-semibold capitalize transition-smooth ${mobileView === v ? 'bg-white text-slate-900 shadow' : 'text-zinc-600'}`}>
             {v}
           </button>
         ))}
@@ -459,7 +459,7 @@ const Editor = ({ id }) => {
       <div className="grid lg:grid-cols-2 gap-4 items-start">
         <div className={`card p-4 md:p-5 space-y-3 ${mobileView === 'edit' ? '' : 'hidden lg:block'}`}>
           <h2 className="flex items-center gap-2 font-bold text-gray-800 font-display">
-            <span className="w-1.5 h-5 rounded-full bg-cyan-600" /> Editor
+            <span className="w-1.5 h-5 rounded-full bg-orange-600" /> Editor
           </h2>
           {SECTIONS.map(({ id: sectionId, title: sectionTitle, icon, tint }) => (
             <SectionCard key={sectionId} title={sectionTitle} icon={icon} tint={tint}

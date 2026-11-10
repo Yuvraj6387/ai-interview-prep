@@ -79,10 +79,10 @@ const Dashboard = () => {
         >
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 font-display">
+              <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-2 font-display">
                 Interview Dashboard
               </h1>
-              <p className="text-slate-300">
+              <p className="text-zinc-600">
                 Prepare for your dream job with AI-powered interview questions
               </p>
             </div>
@@ -90,7 +90,7 @@ const Dashboard = () => {
             <div className="flex gap-2.5 mt-4 md:mt-0 flex-shrink-0">
               <button
                 onClick={() => setShowPinned(!showPinned)}
-                className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 transition-smooth border border-white/25"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium bg-white text-zinc-700 rounded-lg hover:bg-orange-50 transition-smooth border border-stone-200 shadow-sm"
               >
                 <FiBookmark size={15} />
                 <span>Pinned</span>
@@ -121,8 +121,8 @@ const Dashboard = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="card p-8 md:p-10 text-center"
               >
-                <div className="w-24 h-24 bg-cyan-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <FiPlus size={40} className="text-cyan-600" />
+                <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FiPlus size={40} className="text-orange-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-3 font-display">
                   No Job Profiles Yet

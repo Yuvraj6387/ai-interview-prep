@@ -234,20 +234,21 @@ Return ONLY a valid JSON array of objects, each with a "question" and a "difficu
 
   async generateExplanation(questionText, targetRole, topics) {
     const topicsList = Array.isArray(topics) ? topics.join(', ') : topics;
-    const prompt = `Act as an expert technical interviewer. Provide a detailed, clear, and comprehensive explanation for the following interview question asked to a ${targetRole} with focus on ${topicsList}.
-    
+    const prompt = `You are a senior engineer helping a ${targetRole} candidate (topics: ${topicsList}) prepare. Answer this interview question the way a great ChatGPT answer reads: crisp, correct and to the point.
+
 Question: "${questionText}"
 
-Include in your explanation:
-1. The core concept being tested
-2. A clear, accurate answer
-3. An example if applicable
-4. Common pitfalls or mistakes candidates make
-Keep the whole explanation under 400 words. Do not repeat the question.
-Format the output in clear Markdown.`;
+Write Markdown in exactly this shape:
+1. Start straight away with a 1-2 sentence direct answer. Bold only the key term (2-4 words), never the whole sentence. No greeting, no "Great question", do not repeat the question.
+2. "### Key points" with 3-5 short bullets (one line each).
+3. ONLY if the answer involves a flow, a lifecycle, layers or how parts connect (for example the event loop, JWT login flow, virtual DOM diffing, request/response cycle, MVC, caching), add "### Diagram" with ONE mermaid flowchart in a \`\`\`mermaid code block. Rules for the diagram: start with "flowchart LR" or "flowchart TD", at most 8 nodes, write every node as ID["short label"] with the label in double quotes, use --> or -->|"label"| for arrows, no semicolons, no styling lines. Skip this section for simple definition questions.
+4. ONLY if code makes it clearer, add "### Example" with one short code block (at most 12 lines) in the right language.
+5. End with "**Interview tip:**" and one sentence on what interviewers listen for or a common mistake.
+
+Keep the text (not counting code or the diagram) under 170 words. Use simple English.`;
 
     try {
-      return await this.sendRequest(prompt, { maxTokens: 2048 });
+      return await this.sendRequest(prompt, { maxTokens: 1500, reasoningEffort: 'low' });
     } catch (error) {
       console.error('Error in generateExplanation:', error);
       throw error;

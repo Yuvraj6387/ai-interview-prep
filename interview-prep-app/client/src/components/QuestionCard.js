@@ -6,39 +6,54 @@ import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { questionAPI } from '../services/api';
+import MermaidDiagram from './MermaidDiagram';
 
 const markdownComponents = {
-  code({ inline, className, children, ...props }) {
-    const match = /language-(\w+)/.exec(className || '');
+  // react-markdown v10 no longer says whether code is inline, so a fenced
+  // block is recognised by its language tag or by spanning several lines.
+  // Without this, short inline code like `===` was drawn as a big code block.
+  code({ className, children }) {
+    const text = String(children).replace(/\n$/, '');
+    const language = /language-(\w+)/.exec(className || '')?.[1];
 
-    return !inline ? (
+    if (language === 'mermaid') {
+      return <MermaidDiagram chart={text} />;
+    }
+    if (!language && !text.includes('\n')) {
+      return <code className="px-1.5 py-0.5 rounded bg-orange-50 text-orange-800 text-[0.9em] font-mono">{text}</code>;
+    }
+    return (
       <SyntaxHighlighter
         style={vscDarkPlus}
-        language={match ? match[1] : 'javascript'}
+        language={language || 'javascript'}
         PreTag="div"
-        customStyle={{ borderRadius: '10px', padding: '16px', fontSize: '14px' }}
-        {...props}
+        customStyle={{ borderRadius: '10px', padding: '14px', fontSize: '13px', margin: '12px 0' }}
       >
-        {String(children).replace(/\n$/, '')}
+        {text}
       </SyntaxHighlighter>
-    ) : (
-      <code className="bg-gray-200 px-1 rounded">{children}</code>
     );
   },
+  // The code renderer above draws its own box, so skip the outer <pre>.
+  pre({ children }) {
+    return <>{children}</>;
+  },
   ul({ children }) {
-    return <ul className="list-disc pl-5 mb-4">{children}</ul>;
+    return <ul className="list-disc pl-5 mb-3 space-y-1 marker:text-orange-400">{children}</ul>;
   },
   ol({ children }) {
-    return <ol className="list-decimal pl-5 mb-4">{children}</ol>;
+    return <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>;
   },
   h2({ children }) {
-    return <h2 className="text-lg font-bold mt-4 mb-2">{children}</h2>;
+    return <h2 className="text-[15px] font-bold text-zinc-900 mt-4 mb-1.5">{children}</h2>;
   },
   h3({ children }) {
-    return <h3 className="text-base font-semibold mt-3 mb-2">{children}</h3>;
+    return <h3 className="text-[15px] font-semibold text-zinc-900 mt-4 mb-1.5">{children}</h3>;
   },
   p({ children }) {
     return <p className="mb-3">{children}</p>;
+  },
+  strong({ children }) {
+    return <strong className="font-semibold text-zinc-900">{children}</strong>;
   },
 };
 
@@ -162,7 +177,7 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
               )}
 
               {!loading && !error && fetched && (
-                <div className="prose prose-sm max-w-none">
+                <div className="text-sm text-gray-700 leading-relaxed">
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                     {explanation}
                   </ReactMarkdown>

@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+
+// Bump this when the answer prompt changes, so old saved answers get rewritten.
+const EXPLANATION_VERSION = 2;
 const Question = require('../models/Question');
 const JobProfile = require('../models/JobProfile');
 const auth = require('../middleware/auth');
@@ -65,8 +68,8 @@ router.post('/:id/explanation', auth, async (req, res) => {
       return res.status(404).json({ message: 'Question not found' });
     }
 
-    // If explanation already exists, return it
-    if (question.explanation) {
+    // Reuse a saved answer if it was written in the current style
+    if (question.explanation && question.explanationVersion >= EXPLANATION_VERSION) {
       return res.json({ explanation: question.explanation });
     }
 
@@ -80,6 +83,7 @@ router.post('/:id/explanation', auth, async (req, res) => {
 
     // Save explanation
     question.explanation = explanation;
+    question.explanationVersion = EXPLANATION_VERSION;
     await question.save();
 
     res.json({ explanation });

@@ -23,6 +23,12 @@ const questionSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  // Which answer style the saved explanation was written in. Answers from an
+  // older prompt are written again in the current style the next time they open.
+  explanationVersion: {
+    type: Number,
+    default: 1
+  },
   isPinned: {
     type: Boolean,
     default: false

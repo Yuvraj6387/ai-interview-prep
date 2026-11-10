@@ -103,13 +103,9 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
         question.isPinned ? 'ring-2 ring-amber-300' : ''
       }`}
     >
-      {/* Top row: number tab on the left; difficulty, pin and answer as matching pills on the right */}
-      <div className="flex items-start justify-between gap-2">
-        <span className="bg-gradient-to-br from-slate-700 to-slate-900 text-white font-bold text-xs px-3 py-1 rounded-br-xl">
-          Q{index + 1}
-        </span>
-
-        <div className="flex flex-wrap items-center justify-end gap-1.5 mt-1.5 mr-3">
+      {/* Top row: difficulty, pin and answer as matching pills on the right */}
+      <div className="flex items-start justify-end gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-1.5 mt-2 mr-3">
           {DIFFICULTY_STYLES[question.difficulty] && (
             <span className={`${PILL} ${DIFFICULTY_STYLES[question.difficulty]}`}>
               {question.difficulty}
@@ -146,7 +142,8 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
         </div>
       </div>
 
-      <p className="px-4 pb-3 pt-1 text-gray-800 font-semibold text-sm sm:text-[15px] leading-snug">
+      <p className="px-4 pb-3 pt-1.5 text-gray-800 font-semibold text-sm sm:text-[15px] leading-snug">
+        <span className="text-orange-600 mr-1">Q{index + 1}.</span>
         {question.questionText}
       </p>
 

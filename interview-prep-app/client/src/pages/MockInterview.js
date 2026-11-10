@@ -265,8 +265,11 @@ const MockInterview = () => {
             onSubmit={handleStart}
             className="card p-5 space-y-4"
           >
-            <div className="grid grid-cols-3 gap-3">
-              <div className="col-span-2">
+            {/* Phones: role on its own line, then two fields per line so
+                values like "Full Stack" and "Medium" are not cut off.
+                Wider screens: role + years, then type, difficulty, questions. */}
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
+              <div className="col-span-2 sm:col-span-4">
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Target Role *</label>
                 <div className="relative">
                   <FiBriefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
@@ -282,7 +285,7 @@ const MockInterview = () => {
                 </div>
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Years *</label>
                 <div className="relative">
                   <FiAward className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
@@ -299,10 +302,8 @@ const MockInterview = () => {
                   />
                 </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Type</label>
                 <div className="relative">
                   <FiLayers className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
@@ -317,7 +318,7 @@ const MockInterview = () => {
                 </div>
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Difficulty</label>
                 <div className="relative">
                   <FiTrendingUp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
@@ -332,7 +333,7 @@ const MockInterview = () => {
                 </div>
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Questions</label>
                 <div className="relative">
                   <FiHash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />

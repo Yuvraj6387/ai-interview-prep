@@ -19,4 +19,19 @@ const auth = (req, res, next) => {
   }
 };
 
+// For pages guests can read too (public notes, DSA problems). A valid token
+// sets req.userId; a missing or expired one just means reading as a guest.
+const optionalAuth = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (token) {
+    try {
+      req.userId = jwt.verify(token, process.env.JWT_SECRET).userId;
+    } catch {
+      // read as a guest
+    }
+  }
+  next();
+};
+
 module.exports = auth;
+module.exports.optionalAuth = optionalAuth;

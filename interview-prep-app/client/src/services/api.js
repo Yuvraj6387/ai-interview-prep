@@ -114,6 +114,14 @@ export const notesAPI = {
   remove: (id) => api.delete(`/notes/${id}`),
 };
 
+export const dsaAPI = {
+  list: () => api.get('/dsa/problems'),
+  get: (id) => api.get(`/dsa/problems/${id}`),
+  // Java only: JavaScript runs in the browser (utils/jsRunner.js).
+  run: (id, language, code) => api.post(`/dsa/problems/${id}/run`, { language, code }),
+  submit: (id, language, code, passedCount) => api.post(`/dsa/problems/${id}/submit`, { language, code, passedCount }),
+};
+
 // Question APIs
 export const questionAPI = {
   getByProfile: (profileId) => api.get(`/questions/profile/${profileId}`),

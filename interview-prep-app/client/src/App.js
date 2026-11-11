@@ -21,6 +21,8 @@ const Roadmap = lazy(() => import('./pages/Roadmap'));
 const Notes = lazy(() => import('./pages/Notes'));
 const NoteView = lazy(() => import('./pages/NoteView'));
 const NoteEditor = lazy(() => import('./pages/NoteEditor'));
+const DsaPractice = lazy(() => import('./pages/DsaPractice'));
+const DsaProblem = lazy(() => import('./pages/DsaProblem'));
 
 const RouteFallback = () => (
   <div className="flex justify-center items-center py-20">
@@ -56,7 +58,7 @@ const AppContent = () => {
   }
 
   // Logged-out visitors get the landing page, plus read-only access to the
-  // public notes so a shared note link works without an account.
+  // public notes and the DSA problems, so shared links work without an account.
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen">
@@ -65,6 +67,8 @@ const AppContent = () => {
           <Routes>
             <Route path="/notes" element={<Notes />} />
             <Route path="/notes/:id" element={<NoteView />} />
+            <Route path="/dsa" element={<DsaPractice />} />
+            <Route path="/dsa/:id" element={<DsaProblem />} />
             <Route path="*" element={<Landing />} />
           </Routes>
         </Suspense>
@@ -92,6 +96,8 @@ const AppContent = () => {
             <Route path="/notes/new" element={<NoteEditor />} />
             <Route path="/notes/:id" element={<NoteView />} />
             <Route path="/notes/:id/edit" element={<NoteEditor />} />
+            <Route path="/dsa" element={<DsaPractice />} />
+            <Route path="/dsa/:id" element={<DsaProblem />} />
             <Route path="/interview/:profileId" element={<InterviewRoute />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

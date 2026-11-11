@@ -1,25 +1,14 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const router = express.Router();
 const Note = require('../models/Note');
 const auth = require('../middleware/auth');
 
+// Reading a public note doesn't need an account, so a shared link works for
+// anyone. If a valid token is sent anyway, it is used to recognise the author.
+const { optionalAuth } = auth;
+
 const MAX_ITEMS = 100;
 const MAX_TAGS = 5;
-
-// Reading a public note doesn't need an account, so a shared link works for
-// anyone. If a valid token is sent anyway, use it to recognise the author.
-const optionalAuth = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-  if (token) {
-    try {
-      req.userId = jwt.verify(token, process.env.JWT_SECRET).userId;
-    } catch {
-      // An expired token just means reading as a guest.
-    }
-  }
-  next();
-};
 
 const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 

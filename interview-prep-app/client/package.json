@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@codemirror/lang-java": "^6.0.1",
+    "@codemirror/lang-javascript": "^6.2.2",
     "@react-pdf/renderer": "3.4.5",
+    "@uiw/react-codemirror": "^4.23.7",
     "axios": "^1.6.0",
     "framer-motion": "^10.16.0",
     "mermaid": "^11.4.1",

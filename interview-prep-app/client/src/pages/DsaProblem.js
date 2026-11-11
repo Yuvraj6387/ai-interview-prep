@@ -1,0 +1,347 @@
+import React, { useCallback, useEffect, useState, lazy, Suspense } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import {
+  FiArrowLeft, FiCheckCircle, FiXCircle, FiPlay, FiSend, FiRotateCcw, FiLoader, FiAlertTriangle, FiLogIn
+} from 'react-icons/fi';
+import { dsaAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/ToastProvider';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { runJavaScript } from '../utils/jsRunner';
+import { DIFFICULTY_STYLES } from './DsaPractice';
+
+// The editor is the heaviest part of the page, so the text shows first.
+const CodeEditor = lazy(() => import('../components/CodeEditor'));
+
+const LANGUAGES = [
+  { id: 'javascript', label: 'JavaScript' },
+  { id: 'java', label: 'Java' },
+];
+
+// Small helpers for saved drafts. Storage can be blocked (private mode), so
+// every read and write is allowed to fail.
+const draftKey = (id, language) => `dsa-draft:${id}:${language}`;
+const readStore = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
+const writeStore = (key, value) => { try { localStorage.setItem(key, value); } catch { /* ignore */ } };
+const removeStore = (key) => { try { localStorage.removeItem(key); } catch { /* ignore */ } };
+
+// [1,2,3] -> "[1, 2, 3]", strings keep their quotes.
+const formatValue = (value) => (Array.isArray(value)
+  ? `[${value.map(formatValue).join(', ')}]`
+  : JSON.stringify(value));
+
+const formatInput = (problem, args) => problem.params
+  .map((p, i) => `${p.name} = ${formatValue(args[i])}`)
+  .join(', ');
+
+// Java results come back as values, JavaScript ones already as text.
+const outputText = (result) => {
+  if (result.outputText !== undefined) {
+    try { return formatValue(JSON.parse(result.outputText)); } catch { return result.outputText; }
+  }
+  return formatValue(result.output);
+};
+
+const inlineCode = {
+  code({ children }) {
+    return <code className="px-1.5 py-0.5 rounded bg-orange-50 text-orange-800 text-[0.9em] font-mono">{children}</code>;
+  },
+  p({ children }) {
+    return <p className="mb-3">{children}</p>;
+  },
+};
+
+const Mono = ({ label, children, tone }) => (
+  <div>
+    <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 mb-1">{label}</p>
+    <pre className={`text-xs font-mono rounded-lg px-3 py-2 whitespace-pre-wrap break-all ${
+      tone === 'bad' ? 'bg-red-50 text-red-800' : 'bg-stone-50 text-zinc-800'
+    }`}
+    >
+      {children}
+    </pre>
+  </div>
+);
+
+const TestDetail = ({ problem, number, test, result, hidden }) => (
+  <div className="rounded-xl border border-stone-200 p-3 space-y-2">
+    <p className={`flex items-center gap-1.5 text-sm font-semibold ${result.passed ? 'text-green-700' : 'text-red-700'}`}>
+      {result.passed ? <FiCheckCircle /> : <FiXCircle />}
+      Test {number}{hidden ? ' (hidden)' : ''}: {result.passed ? 'Passed' : 'Failed'}
+    </p>
+    <Mono label="Input">{formatInput(problem, test.args)}</Mono>
+    <Mono label="Expected">{formatValue(test.expected)}</Mono>
+    {result.error
+      ? <Mono label="Error" tone="bad">{result.error}</Mono>
+      : <Mono label="Your output" tone={result.passed ? undefined : 'bad'}>{outputText(result)}</Mono>}
+  </div>
+);
+
+const Results = ({ problem, result }) => {
+  if (result.status === 'compile_error' || result.status === 'timeout' || (result.status === 'error' && !result.results.length)) {
+    const isTimeout = result.status === 'timeout';
+    return (
+      <div className={`rounded-xl p-4 ${isTimeout ? 'bg-amber-50 text-amber-800' : 'bg-red-50 text-red-800'}`}>
+        <p className="flex items-center gap-2 font-semibold text-sm mb-1">
+          <FiAlertTriangle /> {isTimeout ? 'Time limit exceeded' : 'Your code has an error'}
+        </p>
+        <pre className="text-xs font-mono whitespace-pre-wrap break-words">{result.message}</pre>
+      </div>
+    );
+  }
+
+  const { results, tests, mode } = result;
+  const passedCount = results.filter((r) => r.passed).length;
+  const firstFail = results.findIndex((r) => !r.passed);
+
+  return (
+    <div className="space-y-3">
+      {mode === 'submit' && (
+        <div className={`rounded-xl p-4 ${result.passed ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+          <p className="flex items-center gap-2 font-bold">
+            {result.passed ? <FiCheckCircle /> : <FiXCircle />}
+            {result.passed ? 'Accepted' : 'Wrong answer'}
+          </p>
+          <p className="text-sm mt-0.5">{passedCount} / {results.length} tests passed</p>
+        </div>
+      )}
+
+      {mode === 'run'
+        ? results.map((r, i) => (
+          <TestDetail key={i} problem={problem} number={i + 1} test={tests[i]} result={r} />
+        ))
+        : firstFail >= 0 && (
+          <TestDetail
+            problem={problem}
+            number={firstFail + 1}
+            test={tests[firstFail]}
+            result={results[firstFail]}
+            hidden={firstFail >= problem.sampleCount}
+          />
+        )}
+
+      {result.status === 'error' && result.message && (
+        <Mono label="Error" tone="bad">{result.message}</Mono>
+      )}
+      {result.logs && <Mono label="Console output">{result.logs}</Mono>}
+    </div>
+  );
+};
+
+const DsaProblem = () => {
+  const { id } = useParams();
+  const { isAuthenticated } = useAuth();
+  const { showToast } = useToast();
+  const [problem, setProblem] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const [language, setLanguage] = useState(() => readStore('dsa-language') || 'javascript');
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(null); // 'run' | 'submit' | null
+  const [result, setResult] = useState(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+  // Kept apart from `problem` so marking it solved doesn't reload the code.
+  const [solvedNow, setSolvedNow] = useState(false);
+
+  useEffect(() => {
+    setProblem(null);
+    setResult(null);
+    setSolvedNow(false);
+    dsaAPI.get(id)
+      .then((response) => setProblem(response.data))
+      .catch((err) => setLoadError(err.response?.status === 404 ? 'This problem does not exist.' : 'Unable to load this problem.'));
+  }, [id]);
+
+  // Java needs the server's runner; fall back if it isn't set up.
+  const activeLanguage = problem && !problem.javaAvailable ? 'javascript' : language;
+
+  // Load the saved draft, or the starter code, whenever the problem or
+  // language changes.
+  useEffect(() => {
+    if (!problem) return;
+    setCode(readStore(draftKey(problem.id, activeLanguage)) ?? problem.starter[activeLanguage]);
+    setResult(null);
+  }, [problem, activeLanguage]);
+
+  const handleCodeChange = useCallback((value) => {
+    setCode(value);
+    writeStore(draftKey(id, activeLanguage), value);
+  }, [id, activeLanguage]);
+
+  const changeLanguage = (value) => {
+    setLanguage(value);
+    writeStore('dsa-language', value);
+  };
+
+  const resetCode = () => {
+    setConfirmReset(false);
+    removeStore(draftKey(problem.id, activeLanguage));
+    setCode(problem.starter[activeLanguage]);
+    setResult(null);
+  };
+
+  const errorMessage = (err) => err.response?.data?.message || 'Something went wrong. Please try again.';
+
+  const run = async () => {
+    const tests = problem.tests.slice(0, problem.sampleCount);
+    setBusy('run');
+    setResult(null);
+    try {
+      const outcome = activeLanguage === 'javascript'
+        ? await runJavaScript(code, problem.fn, tests)
+        : (await dsaAPI.run(problem.id, 'java', code)).data;
+      setResult({ ...outcome, mode: 'run', tests });
+    } catch (err) {
+      showToast(errorMessage(err), 'error');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const submit = async () => {
+    setBusy('submit');
+    setResult(null);
+    try {
+      let outcome;
+      if (activeLanguage === 'javascript') {
+        const local = await runJavaScript(code, problem.fn, problem.tests);
+        const passedCount = local.results.filter((r) => r.passed).length;
+        const saved = (await dsaAPI.submit(problem.id, 'javascript', code, passedCount)).data;
+        outcome = { ...local, ...saved };
+      } else {
+        outcome = (await dsaAPI.submit(problem.id, 'java', code)).data;
+      }
+      setResult({ ...outcome, mode: 'submit', tests: problem.tests });
+      if (outcome.passed) setSolvedNow(true);
+    } catch (err) {
+      showToast(errorMessage(err), 'error');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  if (loadError) {
+    return (
+      <div className="max-w-3xl mx-auto py-16 px-4 text-center">
+        <p className="text-zinc-700 mb-4">{loadError}</p>
+        <Link to="/dsa" className="btn-secondary"><FiArrowLeft /> <span>All problems</span></Link>
+      </div>
+    );
+  }
+  if (!problem) {
+    return <div className="flex justify-center py-20"><div className="spinner"></div></div>;
+  }
+
+  const samples = problem.tests.slice(0, problem.sampleCount);
+
+  return (
+    <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto space-y-4">
+        <Link to="/dsa" className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900">
+          <FiArrowLeft size={14} /> All problems
+        </Link>
+
+        {/* minmax(0, 1fr): without it a long line of code widens the column
+            past the phone screen instead of scrolling inside the editor. */}
+        <div className="grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-5 items-start">
+          {/* Problem */}
+          <div className="card p-5 sm:p-6">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${DIFFICULTY_STYLES[problem.difficulty]}`}>
+                {problem.difficulty}
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-zinc-600">{problem.topic}</span>
+              {(problem.solved || solvedNow) && (
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-green-700">
+                  <FiCheckCircle size={12} /> Solved
+                </span>
+              )}
+            </div>
+            <h1 className="text-2xl font-bold text-zinc-900 font-display mb-3">{problem.title}</h1>
+            <div className="text-sm text-zinc-700 leading-relaxed">
+              <ReactMarkdown components={inlineCode}>{problem.statement}</ReactMarkdown>
+            </div>
+
+            <div className="space-y-3 mt-4">
+              {samples.map((test, i) => (
+                <div key={i} className="rounded-xl bg-stone-50 border border-stone-200 p-3">
+                  <p className="text-xs font-semibold text-zinc-800 mb-1.5">Example {i + 1}</p>
+                  <p className="text-xs font-mono text-zinc-700 break-all"><span className="text-zinc-500">Input: </span>{formatInput(problem, test.args)}</p>
+                  <p className="text-xs font-mono text-zinc-700 break-all"><span className="text-zinc-500">Output: </span>{formatValue(test.expected)}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs font-semibold text-zinc-800 mt-4 mb-1.5">Constraints</p>
+            <ul className="list-disc pl-5 space-y-0.5 text-xs text-zinc-600 font-mono">
+              {problem.constraints.map((c) => <li key={c}>{c}</li>)}
+            </ul>
+          </div>
+
+          {/* Editor and results */}
+          <div className="space-y-4">
+            <div className="card overflow-hidden">
+              <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-stone-200 bg-stone-50/60">
+                <select
+                  value={activeLanguage}
+                  onChange={(e) => changeLanguage(e.target.value)}
+                  className="text-sm font-semibold text-zinc-800 bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-orange-200 outline-none"
+                  aria-label="Language"
+                >
+                  {LANGUAGES.map((l) => (
+                    <option key={l.id} value={l.id} disabled={l.id === 'java' && !problem.javaAvailable}>
+                      {l.label}{l.id === 'java' && !problem.javaAvailable ? ' (not set up)' : ''}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setConfirmReset(true)}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800 px-2 py-1.5"
+                >
+                  <FiRotateCcw size={12} /> Reset
+                </button>
+              </div>
+              <Suspense fallback={<div className="h-[320px] bg-stone-50 animate-pulse" />}>
+                <CodeEditor value={code} onChange={handleCodeChange} language={activeLanguage} />
+              </Suspense>
+            </div>
+
+            {isAuthenticated ? (
+              <div className="flex gap-3">
+                <button type="button" onClick={run} disabled={Boolean(busy)} className="btn-secondary flex-1">
+                  {busy === 'run' ? <FiLoader className="animate-spin" /> : <FiPlay />} <span>Run</span>
+                </button>
+                <button type="button" onClick={submit} disabled={Boolean(busy)} className="btn-primary flex-1">
+                  {busy === 'submit' ? <FiLoader className="animate-spin" /> : <FiSend />} <span>Submit</span>
+                </button>
+              </div>
+            ) : (
+              <div className="card p-4 flex items-center gap-3 text-sm text-zinc-700">
+                <FiLogIn className="text-orange-600 flex-shrink-0" />
+                <span>Log in to run your code against the tests and save your progress.</span>
+              </div>
+            )}
+
+            {result && (
+              <div className="card p-4">
+                <Results problem={problem} result={result} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <ConfirmDialog
+        open={confirmReset}
+        title="Reset your code?"
+        message="Your code for this problem will be replaced with the starter code."
+        confirmLabel="Reset"
+        onConfirm={resetCode}
+        onCancel={() => setConfirmReset(false)}
+      />
+    </div>
+  );
+};
+
+export default DsaProblem;

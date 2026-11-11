@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiGrid, FiFileText, FiEdit, FiTarget, FiMic, FiBarChart2, FiMap, FiBookOpen, FiLogOut, FiUser, FiX,
-  FiChevronsLeft, FiChevronsRight
+  FiChevronsLeft, FiChevronsRight, FiCode
 } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,6 +15,7 @@ const navItems = [
   { to: '/mock-interview', label: 'Mock Interview', icon: FiMic },
   { to: '/analytics', label: 'Analytics', icon: FiBarChart2 },
   { to: '/roadmap', label: 'Learning Roadmap', icon: FiMap },
+  { to: '/dsa', label: 'DSA Practice', icon: FiCode },
   { to: '/notes', label: 'Important Notes', icon: FiBookOpen },
 ];
 

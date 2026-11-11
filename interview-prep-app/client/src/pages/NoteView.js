@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  FiArrowLeft, FiChevronDown, FiEdit2, FiTrash2, FiLink, FiLock, FiUser, FiCalendar, FiEye, FiEyeOff
+  FiArrowLeft, FiChevronDown, FiEdit2, FiTrash2, FiLink, FiLock, FiUser, FiCalendar, FiEye, FiEyeOff, FiMoreVertical
 } from 'react-icons/fi';
 import { notesAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
@@ -26,6 +26,61 @@ const AnswerText = ({ text }) => {
     </div>
   );
 };
+
+// The owner's Edit / Delete options, tucked into a "⋮" menu so Delete isn't
+// one stray tap away. Closes on an outside tap or Escape.
+const OwnerMenu = ({ editTo, onDelete }) => {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = (event) => { if (!boxRef.current?.contains(event.target)) setOpen(false); };
+    const onKey = (event) => { if (event.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={boxRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="More options"
+        title="More options"
+        className={`${CORNER_BUTTON} ${open ? 'bg-orange-50 text-orange-700 border-orange-200' : ''}`}
+      >
+        <FiMoreVertical size={18} />
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 mt-2 w-44 z-30 rounded-xl bg-white border border-stone-200 shadow-xl shadow-orange-900/10 p-1.5">
+          <Link to={editTo} role="menuitem" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-700 hover:bg-stone-50">
+            <FiEdit2 size={15} /> Edit note
+          </Link>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => { setOpen(false); onDelete(); }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50"
+          >
+            <FiTrash2 size={15} /> Delete note
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Round icon buttons in the title's corner.
+const CORNER_BUTTON = 'w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-stone-200 text-zinc-600 hover:text-orange-700 hover:border-orange-300 shadow-sm transition-smooth';
 
 const QuestionItem = ({ number, item, open, onToggle }) => (
   <div className="card overflow-hidden">
@@ -111,7 +166,19 @@ const NoteView = () => {
         </Link>
 
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-          <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 font-display leading-tight">{note.title}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 font-display leading-tight">{note.title}</h1>
+            <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+              {note.isPublic && (
+                <button type="button" onClick={copyLink} className={CORNER_BUTTON} aria-label="Copy link" title="Copy link">
+                  <FiLink size={17} />
+                </button>
+              )}
+              {note.isOwner && (
+                <OwnerMenu editTo={`/notes/${note._id}/edit`} onDelete={() => setConfirmDelete(true)} />
+              )}
+            </div>
+          </div>
           {note.description && <p className="text-zinc-600">{note.description}</p>}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-zinc-500">
             <span className="flex items-center gap-1.5"><FiUser size={14} /> {note.author}</span>
@@ -132,21 +199,6 @@ const NoteView = () => {
           <button type="button" onClick={toggleAll} className="btn-secondary">
             {allOpen ? <FiEyeOff /> : <FiEye />} <span>{allOpen ? 'Hide all answers' : 'Show all answers'}</span>
           </button>
-          {note.isPublic && (
-            <button type="button" onClick={copyLink} className="btn-secondary"><FiLink /> <span>Copy link</span></button>
-          )}
-          {note.isOwner && (
-            <>
-              <Link to={`/notes/${note._id}/edit`} className="btn-secondary"><FiEdit2 /> <span>Edit</span></Link>
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-red-600 bg-white rounded-xl border border-red-200 hover:bg-red-50 transition-smooth"
-              >
-                <FiTrash2 /> <span>Delete</span>
-              </button>
-            </>
-          )}
         </div>
 
         <p className="text-xs text-zinc-500">Try answering each question yourself first, then open it to check.</p>

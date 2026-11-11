@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, lazy, Suspense } from 'react';
+import React, { useCallback, useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -9,6 +9,7 @@ import { dsaAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ToastProvider';
 import ConfirmDialog from '../components/ConfirmDialog';
+import ResizeHandle from '../components/ResizeHandle';
 import { runJavaScript } from '../utils/jsRunner';
 import { DIFFICULTY_STYLES, leetcodeUrl } from './DsaPractice';
 import { markdownComponents } from '../components/QuestionCard';
@@ -31,6 +32,16 @@ const draftKey = (id, language) => `dsa-draft:${id}:${language}`;
 const readStore = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
 const writeStore = (key, value) => { try { localStorage.setItem(key, value); } catch { /* ignore */ } };
 const removeStore = (key) => { try { localStorage.removeItem(key); } catch { /* ignore */ } };
+
+// The two resizable sizes, remembered in this browser like on LeetCode:
+// the problem column's share of the width (desktop only) and the editor height.
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const SPLIT = { min: 25, max: 75, initial: 50, key: 'dsa-split' };
+const EDITOR_HEIGHT = { min: 200, max: 1000, initial: 320, key: 'dsa-editor-height' };
+const readSize = ({ key, min, max, initial }) => {
+  const saved = Number(readStore(key));
+  return saved ? clamp(saved, min, max) : initial;
+};
 
 // [1,2,3] -> "[1, 2, 3]", strings keep their quotes.
 const formatValue = (value) => (Array.isArray(value)
@@ -148,6 +159,26 @@ const DsaProblem = () => {
   const [confirmReset, setConfirmReset] = useState(false);
   // Kept apart from `problem` so marking it solved doesn't reload the code.
   const [solvedNow, setSolvedNow] = useState(false);
+  const [split, setSplit] = useState(() => readSize(SPLIT));
+  const [editorHeight, setEditorHeight] = useState(() => readSize(EDITOR_HEIGHT));
+  const layoutRef = useRef(null);
+  const dragStart = useRef(null); // the size when the current drag started
+
+  const splitHandlers = {
+    onStart: () => { dragStart.current = { size: split, width: layoutRef.current?.offsetWidth || 1 }; },
+    onDrag: ({ dx }) => setSplit(clamp(dragStart.current.size + (dx / dragStart.current.width) * 100, SPLIT.min, SPLIT.max)),
+    onEnd: () => writeStore(SPLIT.key, split.toFixed(1)),
+    onKey: (step) => { const next = clamp(split + step * 2, SPLIT.min, SPLIT.max); setSplit(next); writeStore(SPLIT.key, next); },
+    onReset: () => { setSplit(SPLIT.initial); removeStore(SPLIT.key); },
+  };
+
+  const heightHandlers = {
+    onStart: () => { dragStart.current = { size: editorHeight }; },
+    onDrag: ({ dy }) => setEditorHeight(clamp(Math.round(dragStart.current.size + dy), EDITOR_HEIGHT.min, EDITOR_HEIGHT.max)),
+    onEnd: () => writeStore(EDITOR_HEIGHT.key, editorHeight),
+    onKey: (step) => { const next = clamp(editorHeight + step * 20, EDITOR_HEIGHT.min, EDITOR_HEIGHT.max); setEditorHeight(next); writeStore(EDITOR_HEIGHT.key, next); },
+    onReset: () => { setEditorHeight(EDITOR_HEIGHT.initial); removeStore(EDITOR_HEIGHT.key); },
+  };
   const [hints, setHints] = useState([]); // up to 3, each one says a bit more
   const [hintLoading, setHintLoading] = useState(false);
   const [review, setReview] = useState('');
@@ -274,16 +305,18 @@ const DsaProblem = () => {
 
   return (
     <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-4">
+      <div className="max-w-[1600px] mx-auto space-y-4">
         <Link to="/dsa" className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900">
           <FiArrowLeft size={14} /> All problems
         </Link>
 
-        {/* minmax(0, 1fr): without it a long line of code widens the column
-            past the phone screen instead of scrolling inside the editor. */}
-        <div className="grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-5 items-start">
+        {/* Stacked on phones. On desktop the problem takes `split`% of the
+            width and the bar between the columns resizes it. min-w-0 lets a
+            long line of code scroll inside the editor instead of widening the
+            column. */}
+        <div ref={layoutRef} className="flex flex-col lg:flex-row gap-5 lg:gap-0 lg:items-start">
           {/* Problem */}
-          <div className="card p-5 sm:p-6">
+          <div className="card p-5 sm:p-6 min-w-0 lg:flex-none lg:w-[var(--split)]" style={{ '--split': `${split}%` }}>
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${DIFFICULTY_STYLES[problem.difficulty]}`}>
                 {problem.difficulty}
@@ -359,8 +392,15 @@ const DsaProblem = () => {
             )}
           </div>
 
+          <ResizeHandle
+            direction="vertical"
+            label="Drag to resize the problem and the code"
+            className="hidden lg:flex w-5 flex-shrink-0 self-stretch"
+            {...splitHandlers}
+          />
+
           {/* Editor and results */}
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0 flex-1">
             <div className="card overflow-hidden">
               <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-stone-200 bg-stone-50/60">
                 <select
@@ -383,9 +423,15 @@ const DsaProblem = () => {
                   <FiRotateCcw size={12} /> Reset
                 </button>
               </div>
-              <Suspense fallback={<div className="h-[320px] bg-stone-50 animate-pulse" />}>
-                <CodeEditor value={code} onChange={handleCodeChange} language={activeLanguage} />
+              <Suspense fallback={<div className="bg-stone-50 animate-pulse" style={{ height: editorHeight }} />}>
+                <CodeEditor value={code} onChange={handleCodeChange} language={activeLanguage} height={`${editorHeight}px`} />
               </Suspense>
+              <ResizeHandle
+                direction="horizontal"
+                label="Drag to make the editor taller or shorter"
+                className="h-4 border-t border-stone-200 bg-stone-50/60"
+                {...heightHandlers}
+              />
             </div>
 
             {isAuthenticated ? (

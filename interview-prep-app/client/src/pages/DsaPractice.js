@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiCheck, FiCheckCircle, FiChevronRight, FiChevronDown, FiCode, FiExternalLink, FiLayers } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiChevronRight, FiChevronDown, FiCode, FiExternalLink, FiFileText, FiLayers } from 'react-icons/fi';
 import { dsaAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ToastProvider';
+import SolutionModal from '../components/SolutionModal';
 
 export const DIFFICULTY_STYLES = {
   Easy: 'bg-green-50 text-green-700',
@@ -24,9 +25,10 @@ const LEVEL_TEXT = {
   Hard: 'text-red-700',
 };
 
-// One problem row. The LeetCode button sits beside the link (not inside it),
-// because a link inside a link isn't allowed.
-const ProblemRow = ({ problem }) => (
+// One problem row. The Solution and LeetCode buttons sit beside the link (not
+// inside it), because a link inside a link isn't allowed. Solution only shows
+// once the user has solved the problem.
+const ProblemRow = ({ problem, onShowSolution }) => (
   <div className="flex items-center hover:bg-orange-50/50 transition-smooth">
     <Link to={`/dsa/${problem.id}`} className="flex flex-1 min-w-0 items-center gap-3 pl-4 sm:pl-5 py-3.5">
       {problem.solved ? (
@@ -42,6 +44,17 @@ const ProblemRow = ({ problem }) => (
       </div>
       <FiChevronRight className="text-zinc-300 flex-shrink-0" />
     </Link>
+    {problem.solved && (
+      <button
+        type="button"
+        onClick={() => onShowSolution(problem)}
+        title="See my solution"
+        aria-label={`See my solution for ${problem.title}`}
+        className="ml-1 h-9 px-2.5 flex items-center gap-1.5 rounded-lg text-xs font-semibold text-green-700 hover:bg-green-50 flex-shrink-0 transition-smooth"
+      >
+        <FiFileText size={15} /> <span className="hidden sm:inline">Solution</span>
+      </button>
+    )}
     {problem.leetcode ? (
       <a
         href={leetcodeUrl(problem.leetcode)}
@@ -149,6 +162,8 @@ const DsaPractice = () => {
   const [data, setData] = useState(null);
   const [topic, setTopic] = useState('All');
   const [difficulty, setDifficulty] = useState('All');
+  const [solutionFor, setSolutionFor] = useState(null); // problem whose solution pop-up is open
+  const closeSolution = useCallback(() => setSolutionFor(null), []);
 
   useEffect(() => {
     dsaAPI.list()
@@ -259,7 +274,7 @@ const DsaPractice = () => {
                     </div>
                     <div className="card divide-y divide-stone-100 overflow-hidden">
                       {g.rows.map(({ problem }) => (
-                        <ProblemRow key={problem.id} problem={problem} />
+                        <ProblemRow key={problem.id} problem={problem} onShowSolution={setSolutionFor} />
                       ))}
                     </div>
                   </section>
@@ -269,6 +284,8 @@ const DsaPractice = () => {
           </>
         )}
       </div>
+
+      {solutionFor && <SolutionModal problem={solutionFor} onClose={closeSolution} />}
     </div>
   );
 };

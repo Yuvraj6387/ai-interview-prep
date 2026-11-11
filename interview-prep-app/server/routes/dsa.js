@@ -129,12 +129,14 @@ router.get('/problems/:id', optionalAuth, async (req, res) => {
 
 // GET /api/dsa/problems/:id/submissions: this user's own submissions for the
 // problem, newest first, with their code, so solved solutions can be seen and
-// loaded again later.
+// loaded again later. ?accepted=true returns only the ones that passed.
 const SUBMISSIONS_SHOWN = 20;
 router.get('/problems/:id/submissions', auth, async (req, res) => {
   if (!byId.has(req.params.id)) return res.status(404).json({ message: 'Problem not found' });
+  const filter = { userId: req.userId, problemId: req.params.id };
+  if (req.query.accepted === 'true') filter.passed = true;
   try {
-    const submissions = await DsaSubmission.find({ userId: req.userId, problemId: req.params.id })
+    const submissions = await DsaSubmission.find(filter)
       .sort({ createdAt: -1 })
       .limit(SUBMISSIONS_SHOWN)
       .select('language code passedCount total passed createdAt')

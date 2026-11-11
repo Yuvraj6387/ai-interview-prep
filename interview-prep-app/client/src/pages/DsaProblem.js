@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ToastProvider';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ResizeHandle from '../components/ResizeHandle';
+import DsaSubmissions from '../components/DsaSubmissions';
 import { runJavaScript } from '../utils/jsRunner';
 import { DIFFICULTY_STYLES, leetcodeUrl } from './DsaPractice';
 import { markdownComponents } from '../components/QuestionCard';
@@ -159,6 +160,8 @@ const DsaProblem = () => {
   const [confirmReset, setConfirmReset] = useState(false);
   // Kept apart from `problem` so marking it solved doesn't reload the code.
   const [solvedNow, setSolvedNow] = useState(false);
+  // Goes up after every Submit so My Submissions reloads.
+  const [submitCount, setSubmitCount] = useState(0);
   const [split, setSplit] = useState(() => readSize(SPLIT));
   const [editorHeight, setEditorHeight] = useState(() => readSize(EDITOR_HEIGHT));
   const layoutRef = useRef(null);
@@ -215,6 +218,18 @@ const DsaProblem = () => {
   const changeLanguage = (value) => {
     setLanguage(value);
     writeStore('dsa-language', value);
+  };
+
+  // Puts a saved submission back in the editor. It is saved as that
+  // language's draft first, so switching language loads it instead of the
+  // starter code.
+  const loadSubmission = (lang, savedCode) => {
+    writeStore(draftKey(problem.id, lang), savedCode);
+    if (lang === activeLanguage) setCode(savedCode);
+    else changeLanguage(lang);
+    setResult(null);
+    showToast('Loaded into the editor', 'success');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetCode = () => {
@@ -282,6 +297,7 @@ const DsaProblem = () => {
       }
       setResult({ ...outcome, mode: 'submit', tests: problem.tests });
       if (outcome.passed) setSolvedNow(true);
+      setSubmitCount((n) => n + 1);
     } catch (err) {
       showToast(errorMessage(err), 'error');
     } finally {
@@ -477,6 +493,10 @@ const DsaProblem = () => {
                   <ReactMarkdown components={markdownComponents}>{review}</ReactMarkdown>
                 </div>
               </div>
+            )}
+
+            {isAuthenticated && (
+              <DsaSubmissions problemId={problem.id} refreshKey={submitCount} onLoad={loadSubmission} />
             )}
           </div>
         </div>

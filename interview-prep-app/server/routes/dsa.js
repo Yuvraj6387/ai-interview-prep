@@ -127,6 +127,24 @@ router.get('/problems/:id', optionalAuth, async (req, res) => {
   }
 });
 
+// GET /api/dsa/problems/:id/submissions: this user's own submissions for the
+// problem, newest first, with their code, so solved solutions can be seen and
+// loaded again later.
+const SUBMISSIONS_SHOWN = 20;
+router.get('/problems/:id/submissions', auth, async (req, res) => {
+  if (!byId.has(req.params.id)) return res.status(404).json({ message: 'Problem not found' });
+  try {
+    const submissions = await DsaSubmission.find({ userId: req.userId, problemId: req.params.id })
+      .sort({ createdAt: -1 })
+      .limit(SUBMISSIONS_SHOWN)
+      .select('language code passedCount total passed createdAt')
+      .lean();
+    res.json({ submissions });
+  } catch (error) {
+    res.status(500).json({ message: 'Unable to load your submissions' });
+  }
+});
+
 const TOO_MANY_RUNS = 'Too many code runs. Please wait a few minutes.';
 
 // POST /api/dsa/problems/:id/run: Java, Python or C++ "Run" on the sample tests.

@@ -117,8 +117,9 @@ export const notesAPI = {
 export const dsaAPI = {
   list: () => api.get('/dsa/problems'),
   get: (id) => api.get(`/dsa/problems/${id}`),
-  // Java only: JavaScript runs in the browser (utils/jsRunner.js).
+  // Java, Python and C++ only: JavaScript runs in the browser (utils/jsRunner.js).
   run: (id, language, code) => api.post(`/dsa/problems/${id}/run`, { language, code }),
+  submissions: (id) => api.get(`/dsa/problems/${id}/submissions`),
   submit: (id, language, code, passedCount) => api.post(`/dsa/problems/${id}/submit`, { language, code, passedCount }),
   hint: (id, level, language, code) => api.post(`/dsa/problems/${id}/hint`, { level, language, code }),
   review: (id, language, code) => api.post(`/dsa/problems/${id}/review`, { language, code }),

@@ -19,7 +19,10 @@ const CodeEditor = lazy(() => import('../components/CodeEditor'));
 const LANGUAGES = [
   { id: 'javascript', label: 'JavaScript' },
   { id: 'java', label: 'Java' },
+  { id: 'python', label: 'Python' },
 ];
+// JavaScript runs in the browser; the others need the server's code runner.
+const needsRunner = (language) => language !== 'javascript';
 
 // Small helpers for saved drafts. Storage can be blocked (private mode), so
 // every read and write is allowed to fail.
@@ -37,7 +40,7 @@ const formatInput = (problem, args) => problem.params
   .map((p, i) => `${p.name} = ${formatValue(args[i])}`)
   .join(', ');
 
-// Java results come back as values, JavaScript ones already as text.
+// Java and Python results come back as values, JavaScript ones already as text.
 const outputText = (result) => {
   if (result.outputText !== undefined) {
     try { return formatValue(JSON.parse(result.outputText)); } catch { return result.outputText; }
@@ -160,8 +163,9 @@ const DsaProblem = () => {
       .catch((err) => setLoadError(err.response?.status === 404 ? 'This problem does not exist.' : 'Unable to load this problem.'));
   }, [id]);
 
-  // Java needs the server's runner; fall back if it isn't set up.
-  const activeLanguage = problem && !problem.javaAvailable ? 'javascript' : language;
+  // Java and Python need the server's runner; fall back if it isn't set up.
+  const knownLanguage = LANGUAGES.some((l) => l.id === language) ? language : 'javascript';
+  const activeLanguage = problem && needsRunner(knownLanguage) && !problem.runnerAvailable ? 'javascript' : knownLanguage;
 
   // Load the saved draft, or the starter code, whenever the problem or
   // language changes.
@@ -197,7 +201,7 @@ const DsaProblem = () => {
     try {
       const outcome = activeLanguage === 'javascript'
         ? await runJavaScript(code, problem, tests)
-        : (await dsaAPI.run(problem.id, 'java', code)).data;
+        : (await dsaAPI.run(problem.id, activeLanguage, code)).data;
       setResult({ ...outcome, mode: 'run', tests });
     } catch (err) {
       showToast(errorMessage(err), 'error');
@@ -242,7 +246,7 @@ const DsaProblem = () => {
         const saved = (await dsaAPI.submit(problem.id, 'javascript', code, passedCount)).data;
         outcome = { ...local, ...saved };
       } else {
-        outcome = (await dsaAPI.submit(problem.id, 'java', code)).data;
+        outcome = (await dsaAPI.submit(problem.id, activeLanguage, code)).data;
       }
       setResult({ ...outcome, mode: 'submit', tests: problem.tests });
       if (outcome.passed) setSolvedNow(true);
@@ -365,8 +369,8 @@ const DsaProblem = () => {
                   aria-label="Language"
                 >
                   {LANGUAGES.map((l) => (
-                    <option key={l.id} value={l.id} disabled={l.id === 'java' && !problem.javaAvailable}>
-                      {l.label}{l.id === 'java' && !problem.javaAvailable ? ' (not set up)' : ''}
+                    <option key={l.id} value={l.id} disabled={needsRunner(l.id) && !problem.runnerAvailable}>
+                      {l.label}{needsRunner(l.id) && !problem.runnerAvailable ? ' (not set up)' : ''}
                     </option>
                   ))}
                 </select>

@@ -264,7 +264,7 @@ Keep the text (not counting code or the diagram) under 170 words. Use simple Eng
       .join('\n');
     return `Problem: ${problem.title} (${problem.difficulty}, topic: ${problem.topic})
 ${problem.statement}
-Function to write (${language === 'java' ? 'Java' : 'JavaScript'}): ${signature}
+Function to write (${{ java: 'Java', python: 'Python' }[language] || 'JavaScript'}): ${signature}
 ${examples}`;
   }
 

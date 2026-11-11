@@ -22,6 +22,23 @@ const JAVA_TYPES = {
   TreeNode: 'TreeNode',
 };
 
+// Python type hints, written the way LeetCode writes them.
+const PYTHON_TYPES = {
+  int: 'int',
+  boolean: 'bool',
+  string: 'str',
+  'int[]': 'List[int]',
+  'int[][]': 'List[List[int]]',
+  'string[]': 'List[str]',
+  'char[][]': 'List[List[str]]',
+  'list<int>': 'List[int]',
+  'list<string>': 'List[str]',
+  'list<list<int>>': 'List[List[int]]',
+  'list<list<string>>': 'List[List[str]]',
+  ListNode: 'Optional[ListNode]',
+  TreeNode: 'Optional[TreeNode]',
+};
+
 const usesType = (problem, type) => problem.returns === type || problem.params.some((p) => p.type === type);
 
 const JS_NODE_NOTES = {
@@ -33,13 +50,20 @@ const JAVA_NODE_NOTES = {
   TreeNode: '/*\n * TreeNode is already defined for you:\n * class TreeNode { int val; TreeNode left, right; TreeNode(int val) {...} }\n */\n',
 };
 
+const PYTHON_NODE_NOTES = {
+  ListNode: '# ListNode is already defined for you: ListNode(val, next=None)\n',
+  TreeNode: '# TreeNode is already defined for you: TreeNode(val, left=None, right=None)\n',
+};
+
 const starterCode = (problem) => {
   const names = problem.params.map((p) => p.name).join(', ');
   const javaParams = problem.params.map((p) => `${JAVA_TYPES[p.type]} ${p.name}`).join(', ');
+  const pythonParams = problem.params.map((p) => `, ${p.name}: ${PYTHON_TYPES[p.type]}`).join('');
   const nodeTypes = ['ListNode', 'TreeNode'].filter((t) => usesType(problem, t));
   return {
     javascript: `${nodeTypes.map((t) => JS_NODE_NOTES[t]).join('')}function ${problem.fn}(${names}) {\n  // Write your code here\n\n}\n`,
     java: `${nodeTypes.map((t) => JAVA_NODE_NOTES[t]).join('')}class Solution {\n    public ${JAVA_TYPES[problem.returns]} ${problem.fn}(${javaParams}) {\n        // Write your code here\n\n    }\n}\n`,
+    python: `${nodeTypes.map((t) => PYTHON_NODE_NOTES[t]).join('')}class Solution:\n    def ${problem.fn}(self${pythonParams}) -> ${PYTHON_TYPES[problem.returns]}:\n        # Write your code here\n        pass\n`,
   };
 };
 
@@ -225,6 +249,118 @@ ${calls.join('\n')}
 `;
 };
 
+// ---------- Python ----------
+// The program is: a fixed prelude (imports, ListNode, TreeNode, helpers), then
+// the user's code, then the test calls. The prelude always has the same number
+// of lines, so an error's line number can be turned back into the line in the
+// user's editor by subtracting PYTHON_PRELUDE_LINES.
+const PYTHON_PRELUDE = `import sys, json, traceback
+from typing import *
+sys.setrecursionlimit(10000)
+
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def _build_list(values):
+    dummy = cur = ListNode(0)
+    for v in values:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return dummy.next
+
+def _build_tree(values):
+    if not values or values[0] is None:
+        return None
+    root = TreeNode(values[0])
+    queue, i = [root], 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+# Stops after 10000 nodes so a list accidentally turned into a loop still prints.
+def _ser_list(head):
+    out = []
+    while head is not None and len(out) < 10000:
+        out.append(head.val)
+        head = head.next
+    return out
+
+def _ser_tree(root):
+    out, queue = [], [root]
+    while queue and len(out) < 100000:
+        node = queue.pop(0)
+        if node is None:
+            out.append(None)
+            continue
+        out.append(node.val)
+        queue.append(node.left)
+        queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    return out
+`;
+const PYTHON_PRELUDE_LINES = PYTHON_PRELUDE.split('\n').length - 1;
+
+// Python's json module reads a JSON string literal, and a JSON string literal
+// is also a valid Python string literal, so the tests go in as one JSON text.
+const pythonProgram = (problem, userCode, tests) => {
+  const userLines = userCode.split(/\r?\n/).length;
+  const kinds = problem.params.map((p) => p.type);
+  const serializer = problem.returns === 'ListNode' ? '_ser_list' : problem.returns === 'TreeNode' ? '_ser_tree' : '';
+
+  return `${PYTHON_PRELUDE}${userCode.replace(/\r\n/g, '\n')}
+
+def _describe(error):
+    # Points at the last line of the user's own code in the traceback.
+    lines = [f.lineno - ${PYTHON_PRELUDE_LINES} for f in traceback.extract_tb(error.__traceback__)
+             if ${PYTHON_PRELUDE_LINES} < f.lineno <= ${PYTHON_PRELUDE_LINES + userLines}]
+    where = " (line %d)" % lines[-1] if lines else ""
+    return "%s: %s%s" % (type(error).__name__, error, where)
+
+def _build(value, kind):
+    if kind == "ListNode":
+        return _build_list(value)
+    if kind == "TreeNode":
+        return _build_tree(value)
+    return value
+
+def _main():
+    tests = json.loads(${JSON.stringify(JSON.stringify(tests.map((t) => t.args)))})
+    kinds = ${JSON.stringify(kinds)}
+    for i, args in enumerate(tests):
+        try:
+            result = Solution().${problem.fn}(*[_build(a, k) for a, k in zip(args, kinds)])
+            text = json.dumps(${serializer}(result), separators=(",", ":"), default=list)
+            print("\\n@@R%d\\t%s" % (i, text))
+        except Exception as error:
+            print("\\n@@E%d\\t%s" % (i, _describe(error).replace("\\n", " ")))
+
+_main()
+`;
+};
+
+// "File "jdoodle.py", line 52" becomes "Line 3", the line in the editor.
+const pythonErrorLines = (text) => text.replace(
+  /File "[^"]*", line (\d+)/g,
+  (_, n) => `Line ${Math.max(1, Number(n) - PYTHON_PRELUDE_LINES)}`,
+);
+
 // Some answers can come in any order (all subsets, groups of anagrams...).
 // Both sides are put in a fixed order before comparing:
 //   'unordered': the order of the outer list doesn't matter
@@ -242,7 +378,7 @@ const sameAnswer = (output, expected, compare) => JSON.stringify(normalize(outpu
 
 // Reads the marked lines back. Tests with no line (the program crashed or ran
 // out of time first) come back as not run.
-const parseJavaOutput = (stdout, tests, compare) => {
+const parseRunOutput = (stdout, tests, compare) => {
   const found = new Map();
   for (const line of stdout.split(/\r?\n/)) {
     const match = line.match(/^@@([RE])(\d+)\t(.*)$/);
@@ -272,4 +408,6 @@ const userOutput = (stdout) => stdout
   .trim()
   .slice(0, 2000);
 
-module.exports = { starterCode, javaProgram, parseJavaOutput, userOutput, sameAnswer, JAVA_TYPES };
+module.exports = {
+  starterCode, javaProgram, pythonProgram, pythonErrorLines, parseRunOutput, userOutput, sameAnswer, JAVA_TYPES,
+};

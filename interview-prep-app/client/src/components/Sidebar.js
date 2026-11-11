@@ -115,6 +115,11 @@ const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, close
           <FiLogOut />
           {!collapsed && <span>Logout</span>}
         </button>
+        {!collapsed && (
+          <p className="mt-3 text-center text-[11px] text-gray-500">
+            Built by <span className="font-semibold text-orange-600">Yuvraj</span>
+          </p>
+        )}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@
   "dependencies": {
     "@codemirror/lang-java": "^6.0.1",
     "@codemirror/lang-javascript": "^6.2.2",
+    "@codemirror/lang-python": "^6.1.6",
     "@react-pdf/renderer": "3.4.5",
     "@uiw/react-codemirror": "^4.23.7",
     "axios": "^1.6.0",

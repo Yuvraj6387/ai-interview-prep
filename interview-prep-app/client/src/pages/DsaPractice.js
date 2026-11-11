@@ -183,7 +183,7 @@ const DsaPractice = () => {
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-2 font-display">DSA Practice</h1>
           <p className="text-zinc-600">
-            The most asked interview questions for every topic. Solve them here in JavaScript or Java, or open any of them on LeetCode.
+            The most asked interview questions for every topic. Solve them here in JavaScript, Java or Python, or open any of them on LeetCode.
           </p>
         </motion.div>
 

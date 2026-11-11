@@ -2,11 +2,14 @@ import React, { useMemo } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { java } from '@codemirror/lang-java';
+import { python } from '@codemirror/lang-python';
+
+const MODES = { javascript, java, python };
 
 // CodeMirror rather than Monaco (VS Code's editor): it is much smaller and it
 // works with a phone keyboard.
 const CodeEditor = ({ value, onChange, language, height = '320px' }) => {
-  const extensions = useMemo(() => [language === 'java' ? java() : javascript()], [language]);
+  const extensions = useMemo(() => [(MODES[language] || javascript)()], [language]);
 
   return (
     <CodeMirror

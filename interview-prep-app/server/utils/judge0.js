@@ -52,6 +52,13 @@ const runJava = async (source) => {
     clearTimeout(timer);
   }
 
+  // A wrong key, or a key not subscribed to Judge0 on RapidAPI.
+  if (response.status === 401 || response.status === 403) {
+    console.error('Judge0 rejected the API key:', response.status, await response.text().catch(() => ''));
+    const error = new Error('Java is not set up correctly on this server yet. Try JavaScript for now.');
+    error.status = 503;
+    throw error;
+  }
   if (response.status === 429) {
     const error = new Error("Today's limit for running Java code has been reached. Try JavaScript, or try again tomorrow.");
     error.status = 429;

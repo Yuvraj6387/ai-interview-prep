@@ -8,7 +8,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { questionAPI } from '../services/api';
 import MermaidDiagram from './MermaidDiagram';
 
-const markdownComponents = {
+export const markdownComponents = {
   // react-markdown v10 no longer says whether code is inline, so a fenced
   // block is recognised by its language tag or by spanning several lines.
   // Without this, short inline code like `===` was drawn as a big code block.

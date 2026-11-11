@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useState, lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import {
-  FiArrowLeft, FiCheckCircle, FiXCircle, FiPlay, FiSend, FiRotateCcw, FiLoader, FiAlertTriangle, FiLogIn, FiExternalLink
+  FiArrowLeft, FiCheckCircle, FiXCircle, FiPlay, FiSend, FiRotateCcw, FiLoader, FiAlertTriangle, FiLogIn, FiExternalLink,
+  FiZap, FiCpu
 } from 'react-icons/fi';
 import { dsaAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +11,7 @@ import { useToast } from '../components/ToastProvider';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { runJavaScript } from '../utils/jsRunner';
 import { DIFFICULTY_STYLES, leetcodeUrl } from './DsaPractice';
+import { markdownComponents } from '../components/QuestionCard';
 
 // The editor is the heaviest part of the page, so the text shows first.
 const CodeEditor = lazy(() => import('../components/CodeEditor'));
@@ -142,11 +144,17 @@ const DsaProblem = () => {
   const [confirmReset, setConfirmReset] = useState(false);
   // Kept apart from `problem` so marking it solved doesn't reload the code.
   const [solvedNow, setSolvedNow] = useState(false);
+  const [hints, setHints] = useState([]); // up to 3, each one says a bit more
+  const [hintLoading, setHintLoading] = useState(false);
+  const [review, setReview] = useState('');
+  const [reviewLoading, setReviewLoading] = useState(false);
 
   useEffect(() => {
     setProblem(null);
     setResult(null);
     setSolvedNow(false);
+    setHints([]);
+    setReview('');
     dsaAPI.get(id)
       .then((response) => setProblem(response.data))
       .catch((err) => setLoadError(err.response?.status === 404 ? 'This problem does not exist.' : 'Unable to load this problem.'));
@@ -198,9 +206,34 @@ const DsaProblem = () => {
     }
   };
 
+  const getHint = async () => {
+    setHintLoading(true);
+    try {
+      const { data } = await dsaAPI.hint(problem.id, hints.length + 1, activeLanguage, code);
+      setHints((prev) => [...prev, data.hint]);
+    } catch (err) {
+      showToast(errorMessage(err), 'error');
+    } finally {
+      setHintLoading(false);
+    }
+  };
+
+  const getReview = async () => {
+    setReviewLoading(true);
+    try {
+      const { data } = await dsaAPI.review(problem.id, activeLanguage, code);
+      setReview(data.review);
+    } catch (err) {
+      showToast(errorMessage(err), 'error');
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
   const submit = async () => {
     setBusy('submit');
     setResult(null);
+    setReview('');
     try {
       let outcome;
       if (activeLanguage === 'javascript') {
@@ -289,6 +322,36 @@ const DsaProblem = () => {
             <ul className="list-disc pl-5 space-y-0.5 text-xs text-zinc-600 font-mono">
               {problem.constraints.map((c) => <li key={c}>{c}</li>)}
             </ul>
+
+            {/* AI hints: one at a time, each gives away a little more */}
+            {isAuthenticated && (
+              <div className="mt-5 pt-4 border-t border-stone-100 space-y-3">
+                {hints.map((hint, i) => (
+                  <div key={i} className="rounded-xl bg-amber-50/70 border border-amber-200 p-3">
+                    <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-800 mb-1.5">
+                      <FiZap size={12} /> Hint {i + 1} of 3
+                    </p>
+                    <div className="text-sm text-zinc-700 leading-relaxed [&_p:last-child]:mb-0">
+                      <ReactMarkdown components={markdownComponents}>{hint}</ReactMarkdown>
+                    </div>
+                  </div>
+                ))}
+                {hints.length < 3 && (
+                  <button
+                    type="button"
+                    onClick={getHint}
+                    disabled={hintLoading}
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold text-amber-800 bg-amber-50 border border-amber-200 hover:bg-amber-100 disabled:opacity-60 transition-smooth"
+                  >
+                    {hintLoading ? <FiLoader className="animate-spin" size={14} /> : <FiZap size={14} />}
+                    {hints.length === 0 ? 'Stuck? Get a hint' : `Next hint (${hints.length + 1} of 3)`}
+                  </button>
+                )}
+                {hints.length === 0 && (
+                  <p className="text-xs text-zinc-500">Hints get more detailed one by one, and never give the full code. They look at the code you have written so far.</p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Editor and results */}
@@ -339,6 +402,29 @@ const DsaProblem = () => {
             {result && (
               <div className="card p-4">
                 <Results problem={problem} result={result} />
+                {/* Offered only after this code passed, so it reviews a real solution */}
+                {result.mode === 'submit' && result.passed && !review && (
+                  <button
+                    type="button"
+                    onClick={getReview}
+                    disabled={reviewLoading}
+                    className="btn-secondary w-full mt-3"
+                  >
+                    {reviewLoading ? <FiLoader className="animate-spin" /> : <FiCpu />}
+                    <span>{reviewLoading ? 'Reviewing your solution...' : 'AI Review of my solution'}</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {review && (
+              <div className="card p-4 sm:p-5">
+                <p className="flex items-center gap-2 font-bold text-zinc-900 mb-2">
+                  <FiCpu className="text-orange-600" /> AI Review
+                </p>
+                <div className="text-sm text-gray-700 leading-relaxed">
+                  <ReactMarkdown components={markdownComponents}>{review}</ReactMarkdown>
+                </div>
               </div>
             )}
           </div>

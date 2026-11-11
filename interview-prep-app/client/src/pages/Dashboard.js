@@ -1,12 +1,53 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FiPlus, FiBookmark } from 'react-icons/fi';
+import { useNavigate, Link } from 'react-router-dom';
+import { FiPlus, FiBookmark, FiCode, FiArrowRight } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import JobCard from '../components/JobCard';
 import AddJobModal from '../components/AddJobModal';
-import { profileAPI } from '../services/api';
+import { profileAPI, dsaAPI } from '../services/api';
 import { useToast } from '../components/ToastProvider';
 import ConfirmDialog from '../components/ConfirmDialog';
+
+// DSA progress at a glance. If it can't load, it simply isn't shown, so the
+// dashboard never breaks because of it.
+const DsaProgressCard = () => {
+  const [counts, setCounts] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    dsaAPI.list()
+      .then(({ data }) => {
+        if (!cancelled) setCounts({ solved: data.problems.filter((p) => p.solved).length, total: data.problems.length });
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  if (!counts) return null;
+  const percent = Math.round((counts.solved / counts.total) * 100);
+
+  return (
+    <Link to="/dsa" className="card p-4 sm:p-5 mb-8 flex items-center gap-4 hover:-translate-y-0.5 transition-smooth">
+      <div className="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
+        <FiCode size={20} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline justify-between gap-3 mb-1.5">
+          <p className="font-semibold text-zinc-900">DSA Practice</p>
+          <p className="text-sm text-zinc-600 flex-shrink-0">
+            <span className="font-bold text-orange-600">{counts.solved}</span> / {counts.total} solved
+          </p>
+        </div>
+        <div className="h-2 rounded-full bg-stone-100 overflow-hidden">
+          <div className="h-full bg-orange-500 rounded-full" style={{ width: `${percent}%` }} />
+        </div>
+      </div>
+      <span className="hidden sm:flex items-center gap-1 text-sm font-semibold text-orange-700 flex-shrink-0">
+        {counts.solved ? 'Continue' : 'Start'} <FiArrowRight size={14} />
+      </span>
+    </Link>
+  );
+};
 
 const Dashboard = () => {
   const [profiles, setProfiles] = useState([]);
@@ -106,6 +147,8 @@ const Dashboard = () => {
             </div>
           </div>
         </motion.div>
+
+        <DsaProgressCard />
 
         {/* Loading State */}
         {loading ? (

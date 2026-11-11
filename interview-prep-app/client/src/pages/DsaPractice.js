@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiCheckCircle, FiChevronRight, FiCode, FiExternalLink } from 'react-icons/fi';
+import { FiCheckCircle, FiChevronRight, FiChevronDown, FiCode, FiExternalLink, FiLayers } from 'react-icons/fi';
 import { dsaAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ToastProvider';
@@ -16,17 +16,13 @@ export const leetcodeUrl = (slug) => `https://leetcode.com/problems/${slug}/`;
 
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 
-const Chip = ({ active, onClick, children }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-smooth ${
-      active ? 'bg-orange-600 text-white' : 'bg-white text-zinc-600 border border-stone-200 hover:border-orange-300'
-    }`}
-  >
-    {children}
-  </button>
-);
+// Text colour of the selected level in the level switch.
+const LEVEL_TEXT = {
+  All: 'text-orange-700',
+  Easy: 'text-green-700',
+  Medium: 'text-amber-700',
+  Hard: 'text-red-700',
+};
 
 // One problem row. The LeetCode button sits beside the link (not inside it),
 // because a link inside a link isn't allowed.
@@ -131,17 +127,37 @@ const DsaPractice = () => {
               )}
             </div>
 
-            <div className="space-y-3">
-              <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
-                {['All', ...data.topics].map((t) => (
-                  <Chip key={t} active={topic === t} onClick={() => setTopic(t)}>{t}</Chip>
-                ))}
+            {/* Filters: a topic dropdown (the phone's own picker on mobile) and
+                a level switch. */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative sm:w-72">
+                <FiLayers className="absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-600 pointer-events-none" size={16} />
+                <select
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  aria-label="Topic"
+                  className="w-full appearance-none pl-10 pr-10 py-3 rounded-xl bg-white border border-stone-200 shadow-sm text-base sm:text-sm font-semibold text-zinc-800 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none"
+                >
+                  <option value="All">All topics ({problems.length})</option>
+                  {data.topics.map((t) => (
+                    <option key={t} value={t}>{t} ({problems.filter((p) => p.topic === t).length})</option>
+                  ))}
+                </select>
+                <FiChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" size={16} />
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-1 sm:max-w-md bg-stone-200/70 rounded-xl p-1" role="group" aria-label="Level">
                 {['All', ...DIFFICULTIES].map((d) => (
-                  <Chip key={d} active={difficulty === d} onClick={() => setDifficulty(d)}>
-                    {d === 'All' ? 'Any level' : d}
-                  </Chip>
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setDifficulty(d)}
+                    aria-pressed={difficulty === d}
+                    className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-smooth ${
+                      difficulty === d ? `bg-white shadow ${LEVEL_TEXT[d]}` : 'text-zinc-600 hover:bg-white/60'
+                    }`}
+                  >
+                    {d}
+                  </button>
                 ))}
               </div>
             </div>

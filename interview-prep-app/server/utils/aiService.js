@@ -255,6 +255,81 @@ Keep the text (not counting code or the diagram) under 170 words. Use simple Eng
     }
   }
 
+  // The problem as the AI sees it: statement, function signature, and the two
+  // examples shown on the page.
+  describeDsaProblem(problem, language) {
+    const signature = `${problem.fn}(${problem.params.map((p) => `${p.name}: ${p.type}`).join(', ')}) -> ${problem.returns}`;
+    const examples = problem.tests.slice(0, 2)
+      .map((t, i) => `Example ${i + 1}: input ${JSON.stringify(t.args)} -> output ${JSON.stringify(t.expected)}`)
+      .join('\n');
+    return `Problem: ${problem.title} (${problem.difficulty}, topic: ${problem.topic})
+${problem.statement}
+Function to write (${language === 'java' ? 'Java' : 'JavaScript'}): ${signature}
+${examples}`;
+  }
+
+  // One hint at a time. Each level gives away a little more, and none of them
+  // gives the finished code, so the user still solves it themselves.
+  async generateDsaHint(problem, { level, language, code }) {
+    const LEVELS = {
+      1: 'Level 1 of 3 (only a nudge): in at most 2 short sentences, name the general technique or data structure (for example "a hash map", "two pointers", "a stack") and ask one guiding question. Do NOT say what to store, what to compare, or the key insight. That comes in the next hint.',
+      2: 'Level 2 of 3 (the key idea): explain the main insight that makes the efficient solution work and what to keep track of, in 2-3 sentences. Still no code.',
+      3: 'Level 3 of 3 (the plan): give a short numbered outline of the algorithm (at most 5 steps), then one line with its time and space complexity. Small inline expressions are fine, but no full code.',
+    };
+    // A user's half-written code is the best clue to where they are stuck.
+    const attempt = code && code.trim()
+      ? `\nTheir code so far:\n\`\`\`\n${code.slice(0, 6000)}\n\`\`\`\nFIRST check their code. If it has a bug or goes in a direction that cannot work (for example sorting when the original indices are needed, or a loop that misses a case), start the hint by pointing that out in one sentence, without fixing it for them. If their code is empty or only the starter, ignore it.`
+      : '';
+    const prompt = `You are a friendly DSA mentor helping a student who is stuck. Give ONE hint.
+
+${this.describeDsaProblem(problem, language)}
+${attempt}
+
+${LEVELS[level]}
+Rules: never write the full solution or a complete function. Plain, simple English. Use Markdown with \`inline code\` for names. No greeting, no headings and no bold labels like "Hint:" or "Outline:", and do not restate the problem.`;
+
+    try {
+      const text = await this.sendRequest(prompt, { maxTokens: 700, reasoningEffort: 'low' });
+      return text.trim();
+    } catch (error) {
+      console.error('Error in generateDsaHint:', error);
+      throw error;
+    }
+  }
+
+  // Feedback on a solution that already passed every test.
+  async reviewDsaSolution(problem, { language, code }) {
+    const prompt = `You are a senior engineer reviewing a candidate's accepted solution, the way an interviewer would after they finish coding.
+
+${this.describeDsaProblem(problem, language)}
+
+Their solution:
+\`\`\`${language}
+${code.slice(0, 8000)}
+\`\`\`
+
+Write Markdown in exactly this shape, short and specific to THIS code:
+### Complexity
+- **Time:** O(...) with a few words on why
+- **Space:** O(...) with a few words on why
+### What's good
+1-3 bullets.
+### Can be better
+1-3 bullets: a faster or simpler approach if one exists (name it and give its complexity), plus any readability, naming or edge-case points. If it is already optimal, say so in one bullet.
+### Interview tip
+One sentence on how to explain this solution or a follow-up question an interviewer may ask.
+
+Rules: no greeting, do not repeat the problem, do not rewrite their whole solution. A short code line or two is fine only if it makes a point clearer. Under 200 words.`;
+
+    try {
+      const text = await this.sendRequest(prompt, { maxTokens: 1500, reasoningEffort: 'low' });
+      return text.trim();
+    } catch (error) {
+      console.error('Error in reviewDsaSolution:', error);
+      throw error;
+    }
+  }
+
   async generateJobDescription(targetRole, experience, topics) {
     const topicsList = Array.isArray(topics) ? topics.join(', ') : topics;
     const prompt = `Write a short, natural 2-3 sentence description of interview preparation focus for a ${targetRole} role with ${experience} years of experience, covering these topics: ${topicsList}. Write it as if the candidate is describing what they want to prepare for. Return ONLY the description text - no quotes, no markdown, no extra commentary.`;

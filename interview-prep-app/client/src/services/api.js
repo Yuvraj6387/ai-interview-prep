@@ -120,6 +120,8 @@ export const dsaAPI = {
   // Java only: JavaScript runs in the browser (utils/jsRunner.js).
   run: (id, language, code) => api.post(`/dsa/problems/${id}/run`, { language, code }),
   submit: (id, language, code, passedCount) => api.post(`/dsa/problems/${id}/submit`, { language, code, passedCount }),
+  hint: (id, level, language, code) => api.post(`/dsa/problems/${id}/hint`, { level, language, code }),
+  review: (id, language, code) => api.post(`/dsa/problems/${id}/review`, { language, code }),
 };
 
 // Question APIs

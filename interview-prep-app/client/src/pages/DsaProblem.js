@@ -2,14 +2,14 @@ import React, { useCallback, useEffect, useState, lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import {
-  FiArrowLeft, FiCheckCircle, FiXCircle, FiPlay, FiSend, FiRotateCcw, FiLoader, FiAlertTriangle, FiLogIn
+  FiArrowLeft, FiCheckCircle, FiXCircle, FiPlay, FiSend, FiRotateCcw, FiLoader, FiAlertTriangle, FiLogIn, FiExternalLink
 } from 'react-icons/fi';
 import { dsaAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ToastProvider';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { runJavaScript } from '../utils/jsRunner';
-import { DIFFICULTY_STYLES } from './DsaPractice';
+import { DIFFICULTY_STYLES, leetcodeUrl } from './DsaPractice';
 
 // The editor is the heaviest part of the page, so the text shows first.
 const CodeEditor = lazy(() => import('../components/CodeEditor'));
@@ -188,7 +188,7 @@ const DsaProblem = () => {
     setResult(null);
     try {
       const outcome = activeLanguage === 'javascript'
-        ? await runJavaScript(code, problem.fn, tests)
+        ? await runJavaScript(code, problem, tests)
         : (await dsaAPI.run(problem.id, 'java', code)).data;
       setResult({ ...outcome, mode: 'run', tests });
     } catch (err) {
@@ -204,7 +204,7 @@ const DsaProblem = () => {
     try {
       let outcome;
       if (activeLanguage === 'javascript') {
-        const local = await runJavaScript(code, problem.fn, problem.tests);
+        const local = await runJavaScript(code, problem, problem.tests);
         const passedCount = local.results.filter((r) => r.passed).length;
         const saved = (await dsaAPI.submit(problem.id, 'javascript', code, passedCount)).data;
         outcome = { ...local, ...saved };
@@ -257,7 +257,20 @@ const DsaProblem = () => {
                 </span>
               )}
             </div>
-            <h1 className="text-2xl font-bold text-zinc-900 font-display mb-3">{problem.title}</h1>
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <h1 className="text-2xl font-bold text-zinc-900 font-display">{problem.title}</h1>
+              {problem.leetcode && (
+                <a
+                  href={leetcodeUrl(problem.leetcode)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Open this question on LeetCode"
+                  className="flex items-center gap-1.5 mt-1 px-2.5 py-1.5 rounded-lg border border-stone-200 text-xs font-semibold text-zinc-600 hover:text-orange-700 hover:border-orange-300 flex-shrink-0 transition-smooth"
+                >
+                  LeetCode <FiExternalLink size={12} />
+                </a>
+              )}
+            </div>
             <div className="text-sm text-zinc-700 leading-relaxed">
               <ReactMarkdown components={inlineCode}>{problem.statement}</ReactMarkdown>
             </div>

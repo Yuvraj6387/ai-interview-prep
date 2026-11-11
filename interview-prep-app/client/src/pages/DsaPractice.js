@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiCheckCircle, FiChevronRight, FiCode } from 'react-icons/fi';
+import { FiCheckCircle, FiChevronRight, FiCode, FiExternalLink } from 'react-icons/fi';
 import { dsaAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ToastProvider';
@@ -11,6 +11,8 @@ export const DIFFICULTY_STYLES = {
   Medium: 'bg-amber-50 text-amber-700',
   Hard: 'bg-red-50 text-red-700',
 };
+
+export const leetcodeUrl = (slug) => `https://leetcode.com/problems/${slug}/`;
 
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 
@@ -24,6 +26,41 @@ const Chip = ({ active, onClick, children }) => (
   >
     {children}
   </button>
+);
+
+// One problem row. The LeetCode button sits beside the link (not inside it),
+// because a link inside a link isn't allowed.
+const ProblemRow = ({ problem, number }) => (
+  <div className="flex items-center hover:bg-orange-50/50 transition-smooth">
+    <Link to={`/dsa/${problem.id}`} className="flex flex-1 min-w-0 items-center gap-3 pl-4 sm:pl-5 py-3.5">
+      {problem.solved ? (
+        <FiCheckCircle className="text-green-600 flex-shrink-0" size={18} aria-label="Solved" />
+      ) : (
+        <span className="w-[18px] h-[18px] rounded-full border-2 border-stone-200 flex-shrink-0" />
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold text-zinc-800 text-sm sm:text-[15px] truncate">{number}. {problem.title}</p>
+        <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${DIFFICULTY_STYLES[problem.difficulty]}`}>
+          {problem.difficulty}
+        </span>
+      </div>
+      <FiChevronRight className="text-zinc-300 flex-shrink-0" />
+    </Link>
+    {problem.leetcode ? (
+      <a
+        href={leetcodeUrl(problem.leetcode)}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Open this question on LeetCode"
+        aria-label={`Open ${problem.title} on LeetCode`}
+        className="mx-2 sm:mx-3 w-9 h-9 flex items-center justify-center rounded-lg text-zinc-400 hover:text-orange-600 hover:bg-orange-100/60 flex-shrink-0 transition-smooth"
+      >
+        <FiExternalLink size={16} />
+      </a>
+    ) : (
+      <span className="mx-2 sm:mx-3 w-9 flex-shrink-0" />
+    )}
+  </div>
 );
 
 const DsaPractice = () => {
@@ -40,8 +77,22 @@ const DsaPractice = () => {
   }, [showToast]);
 
   const problems = useMemo(() => data?.problems || [], [data]);
-  const shown = useMemo(() => problems.filter((p) => (topic === 'All' || p.topic === topic)
-    && (difficulty === 'All' || p.difficulty === difficulty)), [problems, topic, difficulty]);
+
+  // Problems grouped by topic, each numbered within its topic (1, 2, 3...).
+  const groups = useMemo(() => (data?.topics || [])
+    .filter((t) => topic === 'All' || t === topic)
+    .map((t) => {
+      const inTopic = problems.filter((p) => p.topic === t);
+      return {
+        topic: t,
+        solved: inTopic.filter((p) => p.solved).length,
+        total: inTopic.length,
+        rows: inTopic
+          .map((p, i) => ({ problem: p, number: i + 1 }))
+          .filter(({ problem }) => difficulty === 'All' || problem.difficulty === difficulty),
+      };
+    })
+    .filter((g) => g.rows.length > 0), [data, problems, topic, difficulty]);
 
   const solvedCount = problems.filter((p) => p.solved).length;
   const percent = problems.length ? Math.round((solvedCount / problems.length) * 100) : 0;
@@ -51,7 +102,9 @@ const DsaPractice = () => {
       <div className="max-w-4xl mx-auto space-y-6">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-2 font-display">DSA Practice</h1>
-          <p className="text-zinc-600">Solve common interview problems in JavaScript or Java. Your code is checked against test cases.</p>
+          <p className="text-zinc-600">
+            The most asked interview questions for every topic. Solve them here in JavaScript or Java, or open any of them on LeetCode.
+          </p>
         </motion.div>
 
         {!data ? (
@@ -73,7 +126,7 @@ const DsaPractice = () => {
                 </>
               ) : (
                 <p className="text-sm text-zinc-600">
-                  {problems.length} problems. Log in to run your code and save your progress.
+                  {problems.length} problems across {data.topics.length} topics. Log in to run your code and save your progress.
                 </p>
               )}
             </div>
@@ -93,35 +146,27 @@ const DsaPractice = () => {
               </div>
             </div>
 
-            {shown.length === 0 ? (
+            {groups.length === 0 ? (
               <div className="card p-10 text-center">
                 <FiCode className="mx-auto text-orange-600 mb-3" size={28} />
                 <p className="text-sm text-zinc-600">No problems match these filters.</p>
               </div>
             ) : (
-              <div className="card divide-y divide-stone-100 overflow-hidden">
-                {shown.map((p) => (
-                  <Link
-                    key={p.id}
-                    to={`/dsa/${p.id}`}
-                    className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-orange-50/50 transition-smooth"
-                  >
-                    {p.solved ? (
-                      <FiCheckCircle className="text-green-600 flex-shrink-0" size={18} aria-label="Solved" />
-                    ) : (
-                      <span className="w-[18px] h-[18px] rounded-full border-2 border-stone-200 flex-shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-zinc-800 text-sm sm:text-[15px] truncate">
-                        {problems.indexOf(p) + 1}. {p.title}
-                      </p>
-                      <p className="text-xs text-zinc-500">{p.topic}</p>
+              <div className="space-y-6">
+                {groups.map((g) => (
+                  <section key={g.topic}>
+                    <div className="flex items-baseline justify-between mb-2 px-1">
+                      <h2 className="font-bold text-zinc-900 font-display">{g.topic}</h2>
+                      <span className="text-xs text-zinc-500">
+                        {isAuthenticated ? `${g.solved} / ${g.total} solved` : `${g.total} questions`}
+                      </span>
                     </div>
-                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0 ${DIFFICULTY_STYLES[p.difficulty]}`}>
-                      {p.difficulty}
-                    </span>
-                    <FiChevronRight className="text-zinc-300 flex-shrink-0" />
-                  </Link>
+                    <div className="card divide-y divide-stone-100 overflow-hidden">
+                      {g.rows.map(({ problem, number }) => (
+                        <ProblemRow key={problem.id} problem={problem} number={number} />
+                      ))}
+                    </div>
+                  </section>
                 ))}
               </div>
             )}

@@ -63,7 +63,7 @@ const runJavaTests = async (problem, code, tests) => {
     const message = run.compileOutput.replace(/\S*\.java:(\d+):/g, 'Line $1:');
     return { status: 'compile_error', message: message || 'Your code did not compile.', results: [] };
   }
-  const results = parseJavaOutput(run.stdout, tests);
+  const results = parseJavaOutput(run.stdout, tests, problem.compare);
   return {
     status: run.status,
     message: run.status === 'timeout'
@@ -81,8 +81,8 @@ router.get('/problems', optionalAuth, async (req, res) => {
     res.json({
       topics: TOPICS,
       javaAvailable: isJavaAvailable(),
-      problems: problems.map(({ id, title, topic, difficulty }) => ({
-        id, title, topic, difficulty, solved: solved.has(id),
+      problems: problems.map(({ id, title, topic, difficulty, leetcode }) => ({
+        id, title, topic, difficulty, leetcode, solved: solved.has(id),
       })),
     });
   } catch (error) {

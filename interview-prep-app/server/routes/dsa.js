@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 const DsaSubmission = require('../models/DsaSubmission');
 const { problems, TOPICS, SAMPLE_COUNT } = require('../data/dsaProblems');
 const { starterCode, javaProgram, parseJavaOutput, userOutput } = require('../utils/dsaCode');
-const { runJava, isJavaAvailable } = require('../utils/judge0');
+const { runJava, isJavaAvailable } = require('../utils/javaRunner');
 
 const { optionalAuth } = auth;
 const MAX_CODE_LENGTH = 20000;
@@ -59,7 +59,8 @@ const runJavaTests = async (problem, code, tests) => {
   const run = await runJava(javaProgram(problem, code, tests));
   if (run.status === 'compile_error') {
     // "Main.java:3: error: ..." reads better as "Line 3: error: ...".
-    const message = run.compileOutput.replace(/Main\.java:(\d+):/g, 'Line $1:');
+    // The file name differs between Judge0 and JDoodle.
+    const message = run.compileOutput.replace(/\S*\.java:(\d+):/g, 'Line $1:');
     return { status: 'compile_error', message: message || 'Your code did not compile.', results: [] };
   }
   const results = parseJavaOutput(run.stdout, tests);

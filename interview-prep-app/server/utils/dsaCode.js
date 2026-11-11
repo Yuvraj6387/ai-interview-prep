@@ -128,10 +128,12 @@ const parseJavaOutput = (stdout, tests) => {
   });
 };
 
-// Whatever the user printed themselves, without our result lines.
+// Whatever the user printed themselves, without our result lines. Each result
+// line starts with "\n" (in case the user's last print had no newline), which
+// leaves blank lines behind, so those are dropped too.
 const userOutput = (stdout) => stdout
   .split(/\r?\n/)
-  .filter((l) => !/^@@[RE]\d+\t/.test(l))
+  .filter((l) => l.trim() !== '' && !/^@@[RE]\d+\t/.test(l))
   .join('\n')
   .trim()
   .slice(0, 2000);

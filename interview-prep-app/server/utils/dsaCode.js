@@ -411,13 +411,13 @@ struct TreeNode {
 const CPP_HELPERS = `
 static const long long NUL_ = LLONG_MIN;
 
-ListNode* buildList(vector<int> a) {
+ListNode* makeList_(vector<int> a) {
     ListNode dummy, *cur = &dummy;
     for (int v : a) { cur->next = new ListNode(v); cur = cur->next; }
     return dummy.next;
 }
 
-TreeNode* buildTree(vector<long long> a) {
+TreeNode* makeTree_(vector<long long> a) {
     if (a.empty() || a[0] == NUL_) return nullptr;
     TreeNode* root = new TreeNode((int) a[0]);
     queue<TreeNode*> q; q.push(root);
@@ -495,9 +495,9 @@ const cppLiteral = (value, type) => {
     case 'char[][]':
       return `{${value.map((row) => `{${row.map(cppChar).join(', ')}}`).join(', ')}}`;
     case 'ListNode':
-      return `buildList({${value.join(', ')}})`;
+      return `makeList_({${value.join(', ')}})`;
     case 'TreeNode':
-      return `buildTree({${value.map((v) => (v === null ? 'NUL_' : v)).join(', ')}})`;
+      return `makeTree_({${value.map((v) => (v === null ? 'NUL_' : v)).join(', ')}})`;
     default:
       throw new Error(`Unsupported type ${type}`);
   }

@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiCheckCircle, FiChevronRight, FiChevronDown, FiCode, FiExternalLink, FiLayers } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiChevronRight, FiChevronDown, FiCode, FiExternalLink, FiLayers } from 'react-icons/fi';
 import { dsaAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ToastProvider';
@@ -26,7 +26,7 @@ const LEVEL_TEXT = {
 
 // One problem row. The LeetCode button sits beside the link (not inside it),
 // because a link inside a link isn't allowed.
-const ProblemRow = ({ problem, number }) => (
+const ProblemRow = ({ problem }) => (
   <div className="flex items-center hover:bg-orange-50/50 transition-smooth">
     <Link to={`/dsa/${problem.id}`} className="flex flex-1 min-w-0 items-center gap-3 pl-4 sm:pl-5 py-3.5">
       {problem.solved ? (
@@ -35,7 +35,7 @@ const ProblemRow = ({ problem, number }) => (
         <span className="w-[18px] h-[18px] rounded-full border-2 border-stone-200 flex-shrink-0" />
       )}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-zinc-800 text-sm sm:text-[15px] line-clamp-2">{number}. {problem.title}</p>
+        <p className="font-semibold text-zinc-800 text-sm sm:text-[15px] line-clamp-2">{problem.title}</p>
         <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${DIFFICULTY_STYLES[problem.difficulty]}`}>
           {problem.difficulty}
         </span>
@@ -59,6 +59,90 @@ const ProblemRow = ({ problem, number }) => (
   </div>
 );
 
+// The topic filter. A native <select> can't be styled (on Windows it opens a
+// plain grey list), so this is a small dropdown of our own: a button, and a
+// panel of topics with their counts. It closes on an outside tap or Escape.
+const TopicPicker = ({ value, onChange, options, showSolved }) => {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef(null);
+  const current = options.find((o) => o.name === value) || options[0];
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = (event) => { if (!boxRef.current?.contains(event.target)) setOpen(false); };
+    const onKey = (event) => { if (event.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const choose = (name) => {
+    onChange(name);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={boxRef} className="relative sm:w-72">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label="Topic"
+        className={`w-full flex items-center gap-3 pl-3.5 pr-3 py-3 rounded-xl bg-white border shadow-sm text-left transition-smooth ${
+          open ? 'border-orange-400 ring-2 ring-orange-100' : 'border-stone-200 hover:border-orange-300'
+        }`}
+      >
+        <FiLayers className="text-orange-600 flex-shrink-0" size={16} />
+        <span className="flex-1 min-w-0 truncate text-sm font-semibold text-zinc-800">{current.label}</span>
+        <span className="text-xs font-semibold text-zinc-500 bg-stone-100 rounded-full px-2 py-0.5 flex-shrink-0">{current.total}</span>
+        <FiChevronDown className={`text-zinc-400 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} size={16} />
+      </button>
+
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.15 }}
+          role="listbox"
+          aria-label="Topics"
+          className="absolute z-30 left-0 mt-2 w-full sm:w-[34rem] max-h-[60vh] overflow-y-auto rounded-2xl bg-white border border-stone-200 shadow-xl shadow-orange-900/10 p-2 grid sm:grid-cols-2 gap-1"
+        >
+          {options.map((o) => {
+            const selected = o.name === value;
+            return (
+              <button
+                key={o.name}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                onClick={() => choose(o.name)}
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-left transition-smooth ${
+                  selected ? 'bg-orange-50 text-orange-700 font-semibold' : 'text-zinc-700 hover:bg-stone-50'
+                } ${o.name === 'All' ? 'sm:col-span-2' : ''}`}
+              >
+                <span className="w-4 flex-shrink-0">{selected && <FiCheck size={15} />}</span>
+                <span className="flex-1 min-w-0">{o.label}</span>
+                <span className={`text-xs font-semibold rounded-full px-2 py-0.5 flex-shrink-0 ${
+                  selected ? 'bg-orange-100 text-orange-700' : 'bg-stone-100 text-zinc-500'
+                }`}
+                >
+                  {showSolved ? `${o.solved}/${o.total}` : o.total}
+                </span>
+              </button>
+            );
+          })}
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
 const DsaPractice = () => {
   const { isAuthenticated } = useAuth();
   const { showToast } = useToast();
@@ -74,7 +158,7 @@ const DsaPractice = () => {
 
   const problems = useMemo(() => data?.problems || [], [data]);
 
-  // Problems grouped by topic, each numbered within its topic (1, 2, 3...).
+  // Problems grouped by topic.
   const groups = useMemo(() => (data?.topics || [])
     .filter((t) => topic === 'All' || t === topic)
     .map((t) => {
@@ -84,8 +168,8 @@ const DsaPractice = () => {
         solved: inTopic.filter((p) => p.solved).length,
         total: inTopic.length,
         rows: inTopic
-          .map((p, i) => ({ problem: p, number: i + 1 }))
-          .filter(({ problem }) => difficulty === 'All' || problem.difficulty === difficulty),
+          .filter((p) => difficulty === 'All' || p.difficulty === difficulty)
+          .map((p) => ({ problem: p })),
       };
     })
     .filter((g) => g.rows.length > 0), [data, problems, topic, difficulty]);
@@ -127,24 +211,20 @@ const DsaPractice = () => {
               )}
             </div>
 
-            {/* Filters: a topic dropdown (the phone's own picker on mobile) and
-                a level switch. */}
+            {/* Filters: a topic picker and a level switch. */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative sm:w-72">
-                <FiLayers className="absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-600 pointer-events-none" size={16} />
-                <select
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  aria-label="Topic"
-                  className="w-full appearance-none pl-10 pr-10 py-3 rounded-xl bg-white border border-stone-200 shadow-sm text-base sm:text-sm font-semibold text-zinc-800 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none"
-                >
-                  <option value="All">All topics ({problems.length})</option>
-                  {data.topics.map((t) => (
-                    <option key={t} value={t}>{t} ({problems.filter((p) => p.topic === t).length})</option>
-                  ))}
-                </select>
-                <FiChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" size={16} />
-              </div>
+              <TopicPicker
+                value={topic}
+                onChange={setTopic}
+                showSolved={isAuthenticated}
+                options={[
+                  { name: 'All', label: 'All topics', total: problems.length, solved: solvedCount },
+                  ...data.topics.map((t) => {
+                    const inTopic = problems.filter((p) => p.topic === t);
+                    return { name: t, label: t, total: inTopic.length, solved: inTopic.filter((p) => p.solved).length };
+                  }),
+                ]}
+              />
               <div className="flex flex-1 sm:max-w-md bg-stone-200/70 rounded-xl p-1" role="group" aria-label="Level">
                 {['All', ...DIFFICULTIES].map((d) => (
                   <button
@@ -178,8 +258,8 @@ const DsaPractice = () => {
                       </span>
                     </div>
                     <div className="card divide-y divide-stone-100 overflow-hidden">
-                      {g.rows.map(({ problem, number }) => (
-                        <ProblemRow key={problem.id} problem={problem} number={number} />
+                      {g.rows.map(({ problem }) => (
+                        <ProblemRow key={problem.id} problem={problem} />
                       ))}
                     </div>
                   </section>

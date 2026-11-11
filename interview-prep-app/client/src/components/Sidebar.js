@@ -84,9 +84,11 @@ const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, close
         })}
       </nav>
 
-      <div className={`py-4 border-t border-gray-100 space-y-3 ${collapsed ? 'px-2' : 'px-3'}`}>
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-3 px-3 py-2'}`} title={collapsed ? user?.fullName : undefined}>
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white font-semibold shadow-md flex-shrink-0">
+      {/* Compact footer: avatar, name and a small logout button on one row.
+          In the icon rail they stack instead. */}
+      <div className={`py-2.5 border-t border-gray-100 ${collapsed ? 'px-2 space-y-2' : 'px-3'}`}>
+        <div className={`flex items-center ${collapsed ? 'flex-col gap-2' : 'gap-2.5 px-1'}`} title={collapsed ? user?.fullName : undefined}>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white text-sm font-semibold shadow-sm flex-shrink-0">
             {user?.profileImage ? (
               <img
                 src={user.profileImage}
@@ -94,29 +96,26 @@ const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, close
                 className="w-full h-full rounded-full object-cover"
               />
             ) : (
-              <FiUser className="text-xl" />
+              <FiUser className="text-base" />
             )}
           </div>
           {!collapsed && (
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-800 truncate">{user?.fullName}</p>
-              <p className="text-xs text-gray-600 truncate">{user?.email}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold text-gray-800 truncate leading-tight">{user?.fullName}</p>
+              <p className="text-[11px] text-gray-500 truncate leading-tight">{user?.email}</p>
             </div>
           )}
+          <button
+            onClick={logout}
+            title="Logout"
+            aria-label="Logout"
+            className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg text-red-500 hover:text-white hover:bg-red-500 transition-smooth"
+          >
+            <FiLogOut size={16} />
+          </button>
         </div>
-        <button
-          onClick={logout}
-          title={collapsed ? 'Logout' : undefined}
-          aria-label="Logout"
-          className={`w-full flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-smooth ${
-            collapsed ? 'h-10' : 'space-x-2 px-4 py-2.5'
-          }`}
-        >
-          <FiLogOut />
-          {!collapsed && <span>Logout</span>}
-        </button>
         {!collapsed && (
-          <p className="mt-3 text-center text-[11px] text-gray-500">
+          <p className="mt-1.5 text-center text-[10px] text-gray-400">
             Built by <span className="font-semibold text-orange-600">Yuvraj</span>
           </p>
         )}

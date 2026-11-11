@@ -3,8 +3,9 @@ import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { java } from '@codemirror/lang-java';
 import { python } from '@codemirror/lang-python';
+import { cpp } from '@codemirror/lang-cpp';
 
-const MODES = { javascript, java, python };
+const MODES = { javascript, java, python, cpp };
 
 // CodeMirror rather than Monaco (VS Code's editor): it is much smaller and it
 // works with a phone keyboard.

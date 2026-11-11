@@ -1,4 +1,4 @@
-// Runs Java and Python code on an outside code-execution service, which runs
+// Runs Java, Python and C++ code on an outside code-execution service, which runs
 // each program in its own sandbox. User code never runs on this server.
 // (JavaScript runs in the user's browser instead.)
 //
@@ -25,6 +25,10 @@ const LANGUAGE_SETUP = {
   python: {
     jdoodle: { language: 'python3', versionIndex: process.env.JDOODLE_PYTHON_VERSION || '4' },
     judge0Id: 71, // Python 3.8
+  },
+  cpp: {
+    jdoodle: { language: 'cpp17', versionIndex: process.env.JDOODLE_CPP_VERSION || '0' },
+    judge0Id: 54, // C++ (GCC 9.2)
   },
 };
 
@@ -55,6 +59,7 @@ const post = async (url, headers, body) => {
 const COMPILE_ERROR = {
   java: /^\S+\.java:\d+: error:/m,
   python: /^\s*(SyntaxError|IndentationError|TabError)\b/m,
+  cpp: /\.cpp:\d+:(\d+:)? (fatal )?error:/,
 };
 
 // ---------- JDoodle ----------
@@ -141,7 +146,7 @@ const runOnJudge0 = async (language, source) => {
   throw fail(502, 'The code runner could not run this code. Please try again.');
 };
 
-// language: 'java' or 'python'
+// language: 'java', 'python' or 'cpp'
 const runCode = async (language, source) => {
   if (!LANGUAGE_SETUP[language]) throw fail(400, `Unsupported language ${language}`);
   if (useJdoodle()) return runOnJdoodle(language, source);

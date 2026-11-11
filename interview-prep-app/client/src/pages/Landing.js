@@ -69,7 +69,7 @@ const SHOWCASE = [
     image: 'dsa',
     eyebrow: 'DSA Practice',
     title: '120 most asked coding questions, checked as you code',
-    text: 'Every important topic, from arrays to dynamic programming. Write your solution in JavaScript, Java or Python and run it against real test cases.',
+    text: 'Every important topic, from arrays to dynamic programming. Write your solution in JavaScript, Java, Python or C++ and run it against real test cases.',
     points: ['15 topics, up to 10 questions each', 'Run and Submit with hidden test cases', 'Open any question on LeetCode in one tap'],
     dsaLink: true,
   },
@@ -98,7 +98,7 @@ const FAQS = [
   { q: 'Do I need to upload a resume?', a: 'No. You can practise for any role without one. With a resume, the interview asks about your own skills and projects.' },
   { q: 'What kind of questions does the mock interview ask?', a: 'Technical rounds ask concept questions like "What is the difference between useMemo and useCallback?" plus one question about your projects. Coding rounds give short problems, and HR and Behavioral rounds ask what those rounds really ask.' },
   { q: 'Can I answer by speaking?', a: 'Yes, in Chrome and Edge the interviewer reads questions aloud and you can answer by voice. In other browsers you type your answers.' },
-  { q: 'Which languages can I use for DSA practice?', a: 'JavaScript, Java and Python. Your code runs against the test cases of each question, and every question also links to the same one on LeetCode.' },
+  { q: 'Which languages can I use for DSA practice?', a: 'JavaScript, Java, Python and C++. Your code runs against the test cases of each question, and every question also links to the same one on LeetCode.' },
   { q: 'Who can see my notes?', a: 'Public notes appear in Explore for everyone and can be shared by link. Private notes are only visible to you.' },
 ];
 

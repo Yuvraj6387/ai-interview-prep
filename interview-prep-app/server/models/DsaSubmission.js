@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const dsaSubmissionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   problemId: { type: String, required: true },
-  language: { type: String, enum: ['javascript', 'java', 'python'], required: true },
+  language: { type: String, enum: ['javascript', 'java', 'python', 'cpp'], required: true },
   code: { type: String, required: true, maxlength: 20000 },
   passedCount: { type: Number, required: true },
   total: { type: Number, required: true },

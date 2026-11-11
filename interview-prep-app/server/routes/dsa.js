@@ -4,16 +4,16 @@ const auth = require('../middleware/auth');
 const DsaSubmission = require('../models/DsaSubmission');
 const { problems, TOPICS, SAMPLE_COUNT } = require('../data/dsaProblems');
 const {
-  starterCode, javaProgram, pythonProgram, pythonErrorLines, parseRunOutput, userOutput,
+  starterCode, javaProgram, pythonProgram, pythonErrorLines, cppProgram, cppErrorLines, parseRunOutput, userOutput,
 } = require('../utils/dsaCode');
 const { runCode, isRunnerAvailable } = require('../utils/codeRunner');
 const aiService = require('../utils/aiService');
 
 const { optionalAuth } = auth;
 const MAX_CODE_LENGTH = 20000;
-const LANGUAGES = ['javascript', 'java', 'python'];
+const LANGUAGES = ['javascript', 'java', 'python', 'cpp'];
 // JavaScript runs in the browser; these run on the outside code runner.
-const SERVER_LANGUAGES = ['java', 'python'];
+const SERVER_LANGUAGES = ['java', 'python', 'cpp'];
 
 const byId = new Map(problems.map((p) => [p.id, p]));
 
@@ -47,7 +47,7 @@ const readRequest = (req, res) => {
   }
   const { language, code } = req.body;
   if (!LANGUAGES.includes(language)) {
-    res.status(400).json({ message: 'Choose JavaScript, Java or Python' });
+    res.status(400).json({ message: 'Choose JavaScript, Java, Python or C++' });
     return null;
   }
   if (typeof code !== 'string' || !code.trim()) {
@@ -61,15 +61,16 @@ const readRequest = (req, res) => {
   return { problem, language, code };
 };
 
-const PROGRAM = { java: javaProgram, python: pythonProgram };
+const PROGRAM = { java: javaProgram, python: pythonProgram, cpp: cppProgram };
 // Error line numbers should match the user's editor. "Main.java:3: error"
 // becomes "Line 3: error" (the file name differs between Judge0 and JDoodle).
 const tidyErrors = {
   java: (text) => text.replace(/\S*\.java:(\d+):/g, 'Line $1:'),
   python: pythonErrorLines,
+  cpp: cppErrorLines,
 };
 
-// Runs Java or Python against the given tests and returns the same shape the
+// Runs Java, Python or C++ against the given tests and returns the same shape the
 // browser produces for JavaScript, so the page shows them all the same way.
 const runServerTests = async (language, problem, code, tests) => {
   const run = await runCode(language, PROGRAM[language](problem, code, tests));
@@ -128,7 +129,7 @@ router.get('/problems/:id', optionalAuth, async (req, res) => {
 
 const TOO_MANY_RUNS = 'Too many code runs. Please wait a few minutes.';
 
-// POST /api/dsa/problems/:id/run: Java or Python "Run" on the sample tests.
+// POST /api/dsa/problems/:id/run: Java, Python or C++ "Run" on the sample tests.
 // JavaScript "Run" never reaches the server.
 router.post('/problems/:id/run', auth, async (req, res) => {
   const input = readRequest(req, res);
@@ -145,7 +146,7 @@ router.post('/problems/:id/run', auth, async (req, res) => {
   }
 });
 
-// POST /api/dsa/problems/:id/submit: runs (Java, Python) or records
+// POST /api/dsa/problems/:id/submit: runs (Java, Python, C++) or records
 // (JavaScript) all tests and saves the attempt.
 router.post('/problems/:id/submit', auth, async (req, res) => {
   const input = readRequest(req, res);

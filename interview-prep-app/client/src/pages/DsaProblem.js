@@ -20,6 +20,7 @@ const LANGUAGES = [
   { id: 'javascript', label: 'JavaScript' },
   { id: 'java', label: 'Java' },
   { id: 'python', label: 'Python' },
+  { id: 'cpp', label: 'C++' },
 ];
 // JavaScript runs in the browser; the others need the server's code runner.
 const needsRunner = (language) => language !== 'javascript';
@@ -40,7 +41,7 @@ const formatInput = (problem, args) => problem.params
   .map((p, i) => `${p.name} = ${formatValue(args[i])}`)
   .join(', ');
 
-// Java and Python results come back as values, JavaScript ones already as text.
+// Java, Python and C++ results come back as values, JavaScript ones already as text.
 const outputText = (result) => {
   if (result.outputText !== undefined) {
     try { return formatValue(JSON.parse(result.outputText)); } catch { return result.outputText; }
@@ -163,7 +164,7 @@ const DsaProblem = () => {
       .catch((err) => setLoadError(err.response?.status === 404 ? 'This problem does not exist.' : 'Unable to load this problem.'));
   }, [id]);
 
-  // Java and Python need the server's runner; fall back if it isn't set up.
+  // Java, Python and C++ need the server's runner; fall back if it isn't set up.
   const knownLanguage = LANGUAGES.some((l) => l.id === language) ? language : 'javascript';
   const activeLanguage = problem && needsRunner(knownLanguage) && !problem.runnerAvailable ? 'javascript' : knownLanguage;
 

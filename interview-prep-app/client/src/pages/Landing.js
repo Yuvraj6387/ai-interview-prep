@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   FiArrowRight, FiCheckCircle, FiZap, FiFileText, FiMic, FiMap, FiTarget, FiBookOpen,
-  FiBarChart2, FiEdit, FiShield, FiEdit3, FiChevronDown, FiUpload, FiTrendingUp
+  FiBarChart2, FiEdit, FiShield, FiEdit3, FiChevronDown, FiUpload, FiTrendingUp, FiCode
 } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ToastProvider';
@@ -25,6 +25,7 @@ const PROBLEMS = [
   { icon: FiMic, pain: 'I go blank in technical rounds', fix: 'AI Mock Interview' },
   { icon: FiMap, pain: "I don't know what to study first", fix: 'Learning Roadmap' },
   { icon: FiTarget, pain: 'Am I even a fit for this job?', fix: 'Job Matcher' },
+  { icon: FiCode, pain: 'I freeze on coding questions', fix: 'DSA Practice' },
 ];
 
 const SHOWCASE = [
@@ -64,6 +65,14 @@ const SHOWCASE = [
     points: ['Search by topic or tag', 'Answers hidden until you check', 'Public or private notes'],
     notesLink: true,
   },
+  {
+    image: 'dsa',
+    eyebrow: 'DSA Practice',
+    title: '120 most asked coding questions, checked as you code',
+    text: 'Every important topic, from arrays to dynamic programming. Write your solution in JavaScript or Java and run it against real test cases.',
+    points: ['15 topics, up to 10 questions each', 'Run and Submit with hidden test cases', 'Open any question on LeetCode in one tap'],
+    dsaLink: true,
+  },
 ];
 
 const TOOLS = [
@@ -75,6 +84,7 @@ const TOOLS = [
   { icon: FiBarChart2, title: 'Analytics', text: 'Progress over time' },
   { icon: FiMap, title: 'Learning Roadmap', text: 'Daily study plan' },
   { icon: FiBookOpen, title: 'Important Notes', text: 'Community Q&A notes' },
+  { icon: FiCode, title: 'DSA Practice', text: '120 coding questions' },
 ];
 
 const STEPS = [
@@ -88,6 +98,7 @@ const FAQS = [
   { q: 'Do I need to upload a resume?', a: 'No. You can practise for any role without one. With a resume, the interview asks about your own skills and projects.' },
   { q: 'What kind of questions does the mock interview ask?', a: 'Technical rounds ask concept questions like "What is the difference between useMemo and useCallback?" plus one question about your projects. Coding rounds give short problems, and HR and Behavioral rounds ask what those rounds really ask.' },
   { q: 'Can I answer by speaking?', a: 'Yes, in Chrome and Edge the interviewer reads questions aloud and you can answer by voice. In other browsers you type your answers.' },
+  { q: 'Which languages can I use for DSA practice?', a: 'JavaScript and Java. Your code runs against the test cases of each question, and every question also links to the same one on LeetCode.' },
   { q: 'Who can see my notes?', a: 'Public notes appear in Explore for everyone and can be shared by link. Private notes are only visible to you.' },
 ];
 
@@ -189,9 +200,14 @@ const Landing = () => {
               />
             )}
           </div>
-          <Link to="/notes" className="inline-flex items-center gap-2 text-sm font-semibold text-orange-700 hover:text-orange-600 mb-7">
-            <FiBookOpen size={15} /> Browse interview notes from the community <FiArrowRight size={14} />
-          </Link>
+          <div className="flex flex-col items-start gap-2.5 mb-7">
+            <Link to="/dsa" className="inline-flex items-center gap-2 text-sm font-semibold text-orange-700 hover:text-orange-600">
+              <FiCode size={15} /> Practise 120 DSA questions, no sign-up <FiArrowRight size={14} />
+            </Link>
+            <Link to="/notes" className="inline-flex items-center gap-2 text-sm font-semibold text-orange-700 hover:text-orange-600">
+              <FiBookOpen size={15} /> Browse interview notes from the community <FiArrowRight size={14} />
+            </Link>
+          </div>
           <div className="space-y-2.5">
             {['Questions on your own skills, not generic ones', 'Instant AI scoring across 6 skills', '100% free, no credit card needed'].map((item) => (
               <div key={item} className="flex items-center gap-2.5 text-sm text-zinc-600">
@@ -216,7 +232,7 @@ const Landing = () => {
       {/* Problems */}
       <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-24">
         <SectionTitle eyebrow="Sound familiar?" title="Get prepped, get noticed, get hired" />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-5">
           {PROBLEMS.map(({ icon: Icon, pain, fix }, i) => (
             <motion.div
               key={pain}
@@ -254,7 +270,11 @@ const Landing = () => {
                       </li>
                     ))}
                   </ul>
-                  {item.notesLink ? (
+                  {item.dsaLink ? (
+                    <Link to="/dsa" className="inline-flex items-center gap-2 text-sm font-semibold text-orange-700 hover:text-orange-600">
+                      Browse the questions, no sign-up <FiArrowRight size={14} />
+                    </Link>
+                  ) : item.notesLink ? (
                     <Link to="/notes" className="inline-flex items-center gap-2 text-sm font-semibold text-orange-700 hover:text-orange-600">
                       Read notes now, no sign-up <FiArrowRight size={14} />
                     </Link>
@@ -275,8 +295,8 @@ const Landing = () => {
 
       {/* All tools */}
       <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <SectionTitle eyebrow="All tools" title="8 tools, one free app" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <SectionTitle eyebrow="All tools" title="9 tools, one free app" />
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {TOOLS.map(({ icon: Icon, title, text }) => (
             <motion.button
               key={title}

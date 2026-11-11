@@ -39,7 +39,7 @@ const ProblemRow = ({ problem, number }) => (
         <span className="w-[18px] h-[18px] rounded-full border-2 border-stone-200 flex-shrink-0" />
       )}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-zinc-800 text-sm sm:text-[15px] truncate">{number}. {problem.title}</p>
+        <p className="font-semibold text-zinc-800 text-sm sm:text-[15px] line-clamp-2">{number}. {problem.title}</p>
         <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${DIFFICULTY_STYLES[problem.difficulty]}`}>
           {problem.difficulty}
         </span>

@@ -56,6 +56,10 @@ const treeToArray = (root) => {
   return out;
 };
 
+// structuredClone is missing on older iPhones (before iOS 15.4). Test values
+// are plain JSON, so a JSON round trip copies them just as well.
+const copy = typeof structuredClone === 'function' ? structuredClone : (v) => JSON.parse(JSON.stringify(v));
+
 const toArg = (value, type) => (type === 'ListNode' ? buildList(value) : type === 'TreeNode' ? buildTree(value) : value);
 const fromOutput = (value, type) => {
   if (type === 'ListNode' && (value === null || value instanceof Object)) return listToArray(value);
@@ -105,7 +109,7 @@ self.onmessage = (event) => {
 
   const results = tests.map((test) => {
     try {
-      const args = structuredClone(test.args).map((value, i) => toArg(value, params[i].type));
+      const args = copy(test.args).map((value, i) => toArg(value, params[i].type));
       const output = fromOutput(solution(...args), returns);
       return {
         passed: show(normalize(output, compare)) === JSON.stringify(normalize(test.expected, compare)),

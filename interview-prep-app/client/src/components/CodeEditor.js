@@ -15,7 +15,9 @@ const CodeEditor = ({ value, onChange, language, height = '320px' }) => {
       extensions={extensions}
       height={height}
       basicSetup={{ foldGutter: false, highlightActiveLineGutter: true, autocompletion: true }}
-      className="text-[13px] [&_.cm-editor]:outline-none [&_.cm-gutters]:bg-stone-50 [&_.cm-gutters]:border-stone-200"
+      // 16px on phones: iPhone Safari zooms the whole page when you tap into
+      // text smaller than that.
+      className="text-[16px] sm:text-[13px] [&_.cm-editor]:outline-none [&_.cm-gutters]:bg-stone-50 [&_.cm-gutters]:border-stone-200"
     />
   );
 };

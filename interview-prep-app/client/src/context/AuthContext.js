@@ -98,6 +98,12 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
+  const updateProfileImage = async (profileImage) => {
+    const response = await authAPI.updateProfileImage(profileImage);
+    writeCachedUser(response.data.user);
+    setUser(response.data.user);
+  };
+
   const logout = () => {
     clearSession();
     setUser(null);
@@ -109,6 +115,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     googleLogin,
+    updateProfileImage,
     logout,
     isAuthenticated: !!user,
   };

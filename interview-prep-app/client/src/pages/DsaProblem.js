@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import {
   FiArrowLeft, FiCheckCircle, FiXCircle, FiPlay, FiSend, FiRotateCcw, FiLoader, FiAlertTriangle, FiLogIn, FiExternalLink,
-  FiZap, FiCpu
+  FiZap, FiCpu, FiMoon, FiSun
 } from 'react-icons/fi';
 import { dsaAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -164,6 +164,14 @@ const DsaProblem = () => {
   const [submitCount, setSubmitCount] = useState(0);
   const [split, setSplit] = useState(() => readSize(SPLIT));
   const [editorHeight, setEditorHeight] = useState(() => readSize(EDITOR_HEIGHT));
+  // Dark editor, remembered on this device.
+  const [editorDark, setEditorDark] = useState(() => readStore('dsa-editor-dark') === 'true');
+  const toggleEditorDark = () => {
+    setEditorDark((dark) => {
+      writeStore('dsa-editor-dark', String(!dark));
+      return !dark;
+    });
+  };
   const layoutRef = useRef(null);
   const dragStart = useRef(null); // the size when the current drag started
 
@@ -438,9 +446,20 @@ const DsaProblem = () => {
                 >
                   <FiRotateCcw size={12} /> Reset
                 </button>
+                <button
+                  type="button"
+                  onClick={toggleEditorDark}
+                  title={editorDark ? 'Light editor' : 'Dark editor'}
+                  aria-label={editorDark ? 'Switch to light editor' : 'Switch to dark editor'}
+                  aria-pressed={editorDark}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800 px-2 py-1.5"
+                >
+                  {editorDark ? <FiSun size={12} /> : <FiMoon size={12} />}
+                  <span className="hidden sm:inline">{editorDark ? 'Light' : 'Dark'}</span>
+                </button>
               </div>
               <Suspense fallback={<div className="bg-stone-50 animate-pulse" style={{ height: editorHeight }} />}>
-                <CodeEditor value={code} onChange={handleCodeChange} language={activeLanguage} height={`${editorHeight}px`} />
+                <CodeEditor value={code} onChange={handleCodeChange} language={activeLanguage} height={`${editorHeight}px`} dark={editorDark} />
               </Suspense>
               <ResizeHandle
                 direction="horizontal"

@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FiGrid, FiFileText, FiEdit, FiTarget, FiMic, FiBarChart2, FiMap, FiBookOpen, FiLogOut, FiUser, FiX,
+  FiGrid, FiFileText, FiEdit, FiTarget, FiMic, FiBarChart2, FiMap, FiBookOpen, FiLogOut, FiX,
   FiChevronsLeft, FiChevronsRight, FiCode
 } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
+import { UserAvatar, AvatarModal } from './Avatar';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: FiGrid },
@@ -43,6 +44,7 @@ const saveCollapsed = (value) => {
 const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, closeLabel = 'Close menu', collapsed = false }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const [avatarOpen, setAvatarOpen] = useState(false);
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -88,17 +90,15 @@ const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, close
           In the icon rail they stack instead. */}
       <div className={`py-2.5 border-t border-gray-100 ${collapsed ? 'px-2 space-y-2' : 'px-3'}`}>
         <div className={`flex items-center ${collapsed ? 'flex-col gap-2' : 'gap-2.5 px-1'}`} title={collapsed ? user?.fullName : undefined}>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white text-sm font-semibold shadow-sm flex-shrink-0">
-            {user?.profileImage ? (
-              <img
-                src={user.profileImage}
-                alt={user.fullName}
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              <FiUser className="text-base" />
-            )}
-          </div>
+          <button
+            type="button"
+            onClick={() => setAvatarOpen(true)}
+            title="Change avatar"
+            aria-label="Change avatar"
+            className="rounded-full flex-shrink-0 hover:ring-2 hover:ring-orange-300 transition-smooth"
+          >
+            <UserAvatar src={user?.profileImage} alt={user?.fullName} className="w-9 h-9" />
+          </button>
           {!collapsed && (
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-semibold text-gray-800 truncate leading-tight">{user?.fullName}</p>
@@ -120,6 +120,7 @@ const SidebarContent = ({ onNavigate, onClose, closeIcon: CloseIcon = FiX, close
           </p>
         )}
       </div>
+      {avatarOpen && <AvatarModal onClose={() => setAvatarOpen(false)} />}
     </div>
   );
 };

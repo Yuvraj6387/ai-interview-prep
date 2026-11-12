@@ -6,6 +6,17 @@ const auth = require('../middleware/auth');
 
 const GOOGLE_ISSUERS = ['accounts.google.com', 'https://accounts.google.com'];
 
+// Profile pictures are picked from the preset avatars in client/public/avatars
+// (avatar-1.svg ... avatar-12.svg). Only those paths are accepted, so nobody can
+// save a huge image or a link to some other site as their picture.
+// Google accounts get their Google photo, which the server sets itself.
+const AVATAR_COUNT = 12;
+const isPresetAvatar = (value) => {
+  if (typeof value !== 'string') return false;
+  const match = /^\/avatars\/avatar-(\d+)\.svg$/.exec(value);
+  return !!match && Number(match[1]) >= 1 && Number(match[1]) <= AVATAR_COUNT;
+};
+
 const authResponse = (user, message) => ({
   message,
   token: jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' }),
@@ -21,6 +32,10 @@ const authResponse = (user, message) => ({
 router.post('/register', async (req, res) => {
   try {
     const { fullName, email, password, profileImage } = req.body;
+
+    if (profileImage && !isPresetAvatar(profileImage)) {
+      return res.status(400).json({ message: 'Please pick one of the avatars shown.' });
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -152,6 +167,27 @@ router.post('/google', async (req, res) => {
   } catch (error) {
     console.error('Google sign-in error:', error);
     res.status(500).json({ message: 'Server error during Google sign-in' });
+  }
+});
+
+// Change the profile picture to another preset avatar.
+router.patch('/profile-image', auth, async (req, res) => {
+  try {
+    const { profileImage } = req.body;
+    if (!isPresetAvatar(profileImage)) {
+      return res.status(400).json({ message: 'Please pick one of the avatars shown.' });
+    }
+
+    const user = await User.findByIdAndUpdate(req.userId, { profileImage }, { new: true })
+      .select('fullName email profileImage').lean();
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    res.json({ user: { id: user._id, fullName: user.fullName, email: user.email, profileImage: user.profileImage } });
+  } catch (error) {
+    console.error('Profile image error:', error);
+    res.status(500).json({ message: 'Could not update your picture. Please try again.' });
   }
 });
 

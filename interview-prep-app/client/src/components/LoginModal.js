@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { FiX, FiMail, FiLock, FiUser, FiImage, FiLoader } from 'react-icons/fi';
+import { FiX, FiMail, FiLock, FiUser, FiLoader } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './ToastProvider';
 import GoogleSignInButton, { isGoogleSignInEnabled } from './GoogleSignInButton';
+import { AvatarPicker } from './Avatar';
 
 const LoginModal = ({ onClose }) => {
   const { login, register, googleLogin } = useAuth();
@@ -11,8 +12,7 @@ const LoginModal = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [slowLoading, setSlowLoading] = useState(false);
   const [error, setError] = useState('');
-  const [profilePreview, setProfilePreview] = useState('');
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -23,18 +23,6 @@ const LoginModal = ({ onClose }) => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
-  };
-
-  const handleFileUpload = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setProfilePreview(reader.result);
-      setFormData({ ...formData, profileImage: reader.result });
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
@@ -193,23 +181,13 @@ const LoginModal = ({ onClose }) => {
 
           {!isLogin && (
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Profile Image (Optional)
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                Pick an avatar (optional)
               </label>
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1 rounded-lg border border-gray-300 bg-gray-50 text-xs text-gray-600">
-                  <FiImage className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="w-full pl-9 pr-3 py-2.5 bg-transparent outline-none"
-                  />
-                </div>
-                {profilePreview && (
-                  <img src={profilePreview} alt="Profile preview" className="w-10 h-10 rounded-lg object-cover border border-gray-200 flex-shrink-0" />
-                )}
-              </div>
+              <AvatarPicker
+                value={formData.profileImage}
+                onChange={(src) => setFormData({ ...formData, profileImage: src })}
+              />
             </div>
           )}
 

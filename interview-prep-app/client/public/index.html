@@ -11,10 +11,29 @@
       name="description"
       content="AI-powered interview preparation platform"
     />
+    <!-- Wake the free-tier backend and open the font connections while the
+         app's JavaScript is still downloading, instead of after it runs. -->
+    <link rel="preconnect" href="https://ai-interview-backend-4bue.onrender.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Loaded here, not with @import inside the CSS, so the browser fetches it
+         in parallel with the app instead of one file after another. -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+    />
     <title>InterviewPrep AI - Ace Your Next Interview</title>
+    <!-- Shown the instant the HTML arrives, before any JavaScript. React
+         replaces it when the app mounts, so there is no blank white screen. -->
+    <style>
+      body { margin: 0; background: #fff6e5; }
+      .boot { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+      .boot-spinner { width: 40px; height: 40px; border-radius: 50%; border: 3px solid #f3f3f3; border-top-color: #ea580c; animation: boot-spin 1s linear infinite; }
+      @keyframes boot-spin { to { transform: rotate(360deg); } }
+    </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root"><div class="boot"><div class="boot-spinner"></div></div></div>
   </body>
 </html>

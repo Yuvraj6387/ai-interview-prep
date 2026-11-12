@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { verifySkillLists, resumeMentions } = require('./skillCheck');
 
 const extractJson = (response) => {
   const jsonStart = response.indexOf('{');
@@ -378,7 +379,7 @@ Rules: no greeting, do not repeat the problem, do not rewrite their whole soluti
   "score": <number 0-100, overall resume quality/strength>,
   "technicalSkills": [<technical skills found, e.g. "React", "Node.js">],
   "softSkills": [<soft skills found, e.g. "Communication", "Teamwork">],
-  "missingSkills": [<important skills for this candidate's apparent target role that are missing or weak>],
+  "missingSkills": [<important skills for this candidate's apparent target role that the resume does not mention at all>],
   "education": [<education entries as short strings>],
   "projects": [<project names/short descriptions found>],
   "experience": [<work experience entries as short strings>],
@@ -397,11 +398,17 @@ ${resumeText}
       const response = await this.generateJson(prompt);
       const analysis = extractJson(response);
 
+      const strings = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === 'string') : []);
+      // Check the AI's skill lists against the resume text, so a skill the
+      // resume names is never shown as missing, and one it never names is
+      // never shown as found.
+      const skills = verifySkillLists(resumeText, strings(analysis.technicalSkills), strings(analysis.missingSkills));
+
       return {
-        score: Number(analysis.score) || 0,
-        technicalSkills: Array.isArray(analysis.technicalSkills) ? analysis.technicalSkills : [],
+        score: Math.max(0, Math.min(100, Math.round(Number(analysis.score) || 0))),
+        technicalSkills: skills.matched,
         softSkills: Array.isArray(analysis.softSkills) ? analysis.softSkills : [],
-        missingSkills: Array.isArray(analysis.missingSkills) ? analysis.missingSkills : [],
+        missingSkills: skills.missing,
         education: Array.isArray(analysis.education) ? analysis.education : [],
         projects: Array.isArray(analysis.projects) ? analysis.projects : [],
         experience: Array.isArray(analysis.experience) ? analysis.experience : [],
@@ -429,7 +436,7 @@ ${resumeText}
     "responsibilities": <0-100, how well past work/projects show the duties this job describes>
   },
   "matchedSkills": [<skills the job asks for that the resume clearly shows>],
-  "missingSkills": [<skills the job asks for that the resume lacks or shows only weakly>],
+  "missingSkills": [<skills the job asks for that the resume does not mention at all. A skill the resume shows only weakly goes in matchedSkills, with a low "current" level in skillGap>],
   "experienceGaps": [<1-4 short gaps between the experience the job wants and what the resume shows, e.g. "Job wants 2+ years with Node.js; resume shows one internship". Empty array if none>],
   "skillGap": [<the 5-6 most important skills for this job, each { "skill": "<1-3 words>", "current": <0-100, the level the resume shows>, "target": <0-100, the level the job needs> }>],
   "learningPlan": [<for the 2-3 biggest missing skills, each { "skill": "<skill>", "topics": [<2-4 specific topics to study>], "project": "<one small portfolio project that would prove this skill>", "resource": "<one well-known free learning resource, e.g. the official docs or freeCodeCamp. Do not invent course names>" }>],
@@ -455,6 +462,8 @@ ${jobDescription}
       const list = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === 'string') : []);
       const clamp = (n) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
       const sections = parsed.sectionScores || {};
+      // Check the AI's skill lists against the resume text (see skillCheck.js).
+      const skills = verifySkillLists(resumeText, list(parsed.matchedSkills), list(parsed.missingSkills));
 
       return {
         matchScore: clamp(parsed.matchScore),
@@ -466,15 +475,16 @@ ${jobDescription}
           qualifications: clamp(sections.qualifications),
           responsibilities: clamp(sections.responsibilities),
         },
-        matchedSkills: list(parsed.matchedSkills),
-        missingSkills: list(parsed.missingSkills),
+        matchedSkills: skills.matched,
+        missingSkills: skills.missing,
         experienceGaps: list(parsed.experienceGaps),
         skillGap: (Array.isArray(parsed.skillGap) ? parsed.skillGap : [])
           .filter((s) => s && typeof s.skill === 'string')
           .slice(0, 6)
           .map((s) => ({ skill: s.skill, current: clamp(s.current), target: clamp(s.target) })),
         learningPlan: (Array.isArray(parsed.learningPlan) ? parsed.learningPlan : [])
-          .filter((p) => p && typeof p.skill === 'string')
+          // No learning plan for a skill the resume already names.
+          .filter((p) => p && typeof p.skill === 'string' && !resumeMentions(resumeText, p.skill))
           .slice(0, 3)
           .map((p) => ({
             skill: p.skill,

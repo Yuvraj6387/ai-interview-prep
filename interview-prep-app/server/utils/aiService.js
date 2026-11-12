@@ -199,18 +199,19 @@ class AIService {
     const topicsList = Array.isArray(topics) ? topics.join(', ') : topics;
     const prompt = `You are a senior interviewer preparing questions for a real ${targetRole} interview. The candidate has ${experience} years of experience. Topics to cover: ${topicsList}.
 
-Write exactly 5 questions:
+Write exactly 20 questions:
 - ${QUESTION_STYLE_RULE}
 - Keep each one under 25 words, in plain text with no markdown or backticks.
-- Spread them across the topics, and mix concepts, practical scenarios and one problem-solving question.
-- Order them from easiest to hardest: 2 Easy, 2 Medium, 1 Hard, pitched for this experience level.
+- Spread them evenly across the topics, and mix concepts, differences between two things, practical scenarios and a few problem-solving questions.
+- Every question must be on a different concept. No two questions may ask the same thing in different words.
+- Order them from easiest to hardest: 6 Easy, 8 Medium, 6 Hard, pitched for this experience level.
 
 Return ONLY a valid JSON array of objects, each with a "question" and a "difficulty" ("Easy", "Medium" or "Hard"). No other text or markdown formatting. Example: [{"question": "How would you...?", "difficulty": "Easy"}]`;
 
     try {
       // The model spends up to ~300 tokens reasoning before it writes the list,
-      // so 512 left too little room and could cut the JSON off mid-array.
-      const response = await this.sendRequest(prompt, { maxTokens: 1024 });
+      // and 20 questions take ~800 more, so leave room or the JSON gets cut off mid-array.
+      const response = await this.sendRequest(prompt, { maxTokens: 3000, reasoningEffort: 'low' });
 
       // Extract just the JSON array from the response in case there is extra text
       const jsonStart = response.indexOf('[');
@@ -226,7 +227,9 @@ Return ONLY a valid JSON array of objects, each with a "question" and a "difficu
           // The model still slips in markdown code ticks now and then; the card shows plain text.
           question: q.question.replace(/`/g, '').trim(),
           difficulty: QUESTION_DIFFICULTIES.includes(q.difficulty) ? q.difficulty : undefined,
-        }));
+        }))
+        // The model sometimes writes a couple extra; keep the list at 20.
+        .slice(0, 20);
     } catch (error) {
       console.error('Error in generateInterviewQuestions:', error);
       throw error;

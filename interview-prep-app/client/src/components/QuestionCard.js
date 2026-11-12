@@ -106,6 +106,9 @@ const QuestionCard = ({ question, onTogglePin, isExpanded, onToggleExplanation, 
       {/* Top row: difficulty, pin and answer as matching pills on the right */}
       <div className="flex items-start justify-end gap-2">
         <div className="flex flex-wrap items-center justify-end gap-1.5 mt-2 mr-3">
+          {question.isCustom && (
+            <span className={`${PILL} bg-zinc-100 text-zinc-700`}>Asked by you</span>
+          )}
           {DIFFICULTY_STYLES[question.difficulty] && (
             <span className={`${PILL} ${DIFFICULTY_STYLES[question.difficulty]}`}>
               {question.difficulty}

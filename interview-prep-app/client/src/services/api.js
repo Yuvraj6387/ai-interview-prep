@@ -134,6 +134,7 @@ export const questionAPI = {
   getPinned: () => api.get('/questions/pinned'),
   togglePin: (id) => api.patch(`/questions/${id}/pin`),
   getExplanation: (id) => api.post(`/questions/${id}/explanation`),
+  ask: (profileId, questionText) => api.post(`/questions/profile/${profileId}/ask`, { questionText }),
 };
 
 export default api;

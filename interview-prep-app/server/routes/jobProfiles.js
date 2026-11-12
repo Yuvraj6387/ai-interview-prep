@@ -91,18 +91,17 @@ router.post('/:id/generate-questions', auth, async (req, res) => {
       return res.status(404).json({ message: 'Profile not found' });
     }
 
-    // Delete existing questions for this profile
-    await Question.deleteMany({ jobProfileId: req.params.id });
-
-    // Generate new questions using AI
+    // Generate first, so a failed AI call doesn't wipe the old list
     const aiQuestions = await aiService.generateInterviewQuestions(
       profile.targetRole,
       profile.experience,
       profile.topics
     );
 
-    // Save questions to database
-    const questions = await Question.insertMany(
+    // Replace the old AI questions. Questions the user asked themselves stay.
+    await Question.deleteMany({ jobProfileId: req.params.id, isCustom: { $ne: true } });
+
+    await Question.insertMany(
       aiQuestions.map(q => ({
         jobProfileId: req.params.id,
         userId: req.userId,
@@ -110,6 +109,10 @@ router.post('/:id/generate-questions', auth, async (req, res) => {
         difficulty: q.difficulty
       }))
     );
+
+    // Same order as GET /questions/profile/:id: AI questions first, then the user's own
+    const questions = await Question.find({ jobProfileId: req.params.id, userId: req.userId })
+      .sort({ isCustom: 1, createdAt: 1 });
 
     // Update total questions count
     profile.totalQuestions = questions.length;

@@ -14,11 +14,45 @@ router.get('/profile/:profileId', auth, async (req, res) => {
     const questions = await Question.find({
       jobProfileId: req.params.profileId,
       userId: req.userId
-    }).sort({ createdAt: 1 });
-    
+    }).sort({ isCustom: 1, createdAt: 1 });
+
     res.json(questions);
   } catch (error) {
     console.error('Error fetching questions:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Ask AI: the user types their own question and it is saved to this profile.
+// The answer then comes from the same /:id/explanation route as every other question.
+router.post('/profile/:profileId/ask', auth, async (req, res) => {
+  try {
+    const questionText = (req.body.questionText || '').trim();
+    if (questionText.length < 5) {
+      return res.status(400).json({ message: 'Please type a question first.' });
+    }
+    if (questionText.length > 500) {
+      return res.status(400).json({ message: 'Keep the question under 500 characters.' });
+    }
+
+    const profile = await JobProfile.findOne({ _id: req.params.profileId, userId: req.userId });
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+
+    const question = await Question.create({
+      jobProfileId: profile._id,
+      userId: req.userId,
+      questionText,
+      isCustom: true,
+    });
+
+    profile.totalQuestions = (profile.totalQuestions || 0) + 1;
+    await profile.save();
+
+    res.status(201).json(question);
+  } catch (error) {
+    console.error('Error saving asked question:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

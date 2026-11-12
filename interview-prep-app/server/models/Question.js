@@ -33,6 +33,12 @@ const questionSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // Typed in by the user through "Ask AI", not generated. Kept when the
+  // AI questions are regenerated.
+  isCustom: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

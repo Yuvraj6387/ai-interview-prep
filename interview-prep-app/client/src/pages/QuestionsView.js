@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FiArrowLeft, FiRefreshCw, FiLoader, FiZap, FiHelpCircle, FiBookOpen } from 'react-icons/fi';
+import { FiArrowLeft, FiRefreshCw, FiLoader, FiZap, FiHelpCircle, FiBookOpen, FiSend } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import QuestionCard from '../components/QuestionCard';
 import { profileAPI, questionAPI } from '../services/api';
@@ -10,7 +10,29 @@ const QuestionsView = ({ profile, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [expandedQuestionId, setExpandedQuestionId] = useState(null);
+  const [askText, setAskText] = useState('');
+  const [asking, setAsking] = useState(false);
   const { showToast } = useToast();
+
+  // Ask AI: save the typed question, add it to the list and open its answer
+  // straight away, like asking ChatGPT.
+  const handleAsk = async (e) => {
+    e.preventDefault();
+    const text = askText.trim();
+    if (text.length < 5 || asking) return;
+
+    setAsking(true);
+    try {
+      const response = await questionAPI.ask(profile._id, text);
+      setQuestions((prev) => [...prev, response.data]);
+      setExpandedQuestionId(response.data._id);
+      setAskText('');
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Could not ask the AI. Please try again.', 'error');
+    } finally {
+      setAsking(false);
+    }
+  };
 
   const generateQuestions = useCallback(async () => {
     const profileId = profile?._id || profile?.id;
@@ -146,7 +168,7 @@ const QuestionsView = ({ profile, onBack }) => {
           <div className="space-y-4">
             <p className="flex items-center gap-2 text-zinc-600 text-sm">
               <FiLoader className="animate-spin text-orange-400" />
-              AI is writing 5 interview questions for {profile.targetRole}, from easy to hard...
+              AI is writing 20 interview questions for {profile.targetRole}, from easy to hard...
             </p>
             {[0, 1, 2, 3, 4].map((i) => (
               <div key={i} className="bg-white rounded-xl shadow-md p-4 border-l-4 border-orange-600 animate-pulse">
@@ -169,7 +191,7 @@ const QuestionsView = ({ profile, onBack }) => {
               No Questions Yet
             </h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Generate 5 real interview questions for this role, from easy to hard, each with a model answer.
+              Generate 20 real interview questions for this role, from easy to hard, each with a model answer.
             </p>
             <button
               onClick={generateQuestions}
@@ -204,6 +226,38 @@ const QuestionsView = ({ profile, onBack }) => {
               />
             ))}
           </div>
+        )}
+
+        {/* Ask AI: any question of your own, answered the same way as the list above */}
+        {!loading && !generating && questions.length > 0 && (
+          <form onSubmit={handleAsk} className="card p-3 md:p-4 mt-5">
+            <label htmlFor="ask-ai" className="block text-sm font-semibold text-zinc-900 mb-2">
+              Ask AI anything about {profile.targetRole}
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="ask-ai"
+                type="text"
+                value={askText}
+                onChange={(e) => setAskText(e.target.value)}
+                maxLength={500}
+                placeholder="e.g. What is the difference between let, const and var?"
+                className="flex-1 min-w-0 px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                disabled={asking}
+              />
+              <button
+                type="submit"
+                disabled={asking || askText.trim().length < 5}
+                className="btn-primary flex-shrink-0"
+              >
+                {asking ? <FiLoader className="animate-spin" /> : <FiSend />}
+                <span className="hidden sm:inline">Ask</span>
+              </button>
+            </div>
+            <p className="text-xs text-zinc-500 mt-2">
+              Your question is saved to this list with its answer, and stays when you regenerate.
+            </p>
+          </form>
         )}
       </div>
     </div>
